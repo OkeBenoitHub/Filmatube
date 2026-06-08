@@ -1,11 +1,12 @@
 package com.filmatube.app
 
 import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 
 /**
- * Filmatube application entry point.
+ * Filmatube application entry point and Hilt dependency graph root.
  *
- * Kept intentionally minimal for the initial scaffold. Hilt (`@HiltAndroidApp`) and
- * Firebase/Crashlytics/App Check initialization are wired in on later days.
+ * Firebase / Crashlytics / App Check initialization is wired in on Day 5.
  */
+@HiltAndroidApp
 class FilmatubeApp : Application()

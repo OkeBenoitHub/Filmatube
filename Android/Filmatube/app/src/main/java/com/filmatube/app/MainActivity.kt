@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.filmatube.app.ui.theme.FilmatubeTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Single Activity that hosts the entire Compose UI.
@@ -23,6 +24,7 @@ import com.filmatube.app.ui.theme.FilmatubeTheme
  * For now it renders a placeholder. The forced-dark green Material 3 theme arrives on Day 2,
  * and the Navigation-Compose graph + bottom navigation on Day 4.
  */
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
