@@ -9,4 +9,15 @@
     <string name="nav_profile">Profile</string>
 
     <string name="coming_soon">Coming soon</string>
+
+    <!-- Common actions -->
+    <string name="action_see_all">See all</string>
+    <string name="action_retry">Retry</string>
+
+    <!-- States -->
+    <string name="state_empty_default">Nothing here yet</string>
+    <string name="error_generic">Something went wrong</string>
+    <string name="error_network">No internet connection</string>
+    <string name="error_not_found">Not found</string>
+    <string name="error_unauthorized">Please sign in again</string>
 </resources>
