@@ -50,8 +50,8 @@
 ## PHASE 1 — Foundations (Days 1–14)
 
 ### Week 1 — Android Foundation (Days 1–7) (A)
-- **Day 1** — Compose project; `ui/domain/data/di` packages; Gradle version catalog; AGP/Kotlin/Compose BOM; git init + `.gitignore`.
-- **Day 2** — Material 3 **forced-dark green** theme (tokens from logo), typography, shapes; adaptive app icon + splash from logo.
+- **Day 1** ✅ — Compose project; `ui/domain/data/di` packages; Gradle version catalog; AGP/Kotlin/Compose BOM; git init + `.gitignore`.
+- **Day 2** ✅ — Material 3 **forced-dark green** theme (tokens from logo), typography, shapes; adaptive app icon + splash from logo.
 - **Day 3** — Hilt; `NetworkModule`/`FirebaseModule`/`RepositoryModule`; `DataState<T>`; `BaseViewModel`; Result/error handling.
 - **Day 4** — Navigation-Compose graph; bottom nav (Home, Search, **Theater**, Community, Profile); placeholder screens.
 - **Day 5** — Firebase wiring (`google-services.json`; Auth/Firestore/FCM/Crashlytics/App Check); Retrofit/OkHttp; Coil; DataStore.

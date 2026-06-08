@@ -14,6 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.filmatube.app.ui.theme.FilmatubeTheme
 
 /**
  * Single Activity that hosts the entire Compose UI.
@@ -23,10 +25,11 @@ import androidx.compose.ui.tooling.preview.Preview
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MaterialTheme {
+            FilmatubeTheme {
                 FilmatubeRoot()
             }
         }
@@ -53,7 +56,7 @@ private fun FilmatubeRoot() {
 @Preview(showBackground = true)
 @Composable
 private fun FilmatubeRootPreview() {
-    MaterialTheme {
+    FilmatubeTheme {
         FilmatubeRoot()
     }
 }

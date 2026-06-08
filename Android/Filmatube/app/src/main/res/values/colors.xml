@@ -1,0 +1,4 @@
+<resources>
+    <!-- Window + splash background: matches Compose theme `background` (green-tinted dark) -->
+    <color name="filmatube_background">#0E1512</color>
+</resources>

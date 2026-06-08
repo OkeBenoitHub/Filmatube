@@ -1,12 +1,23 @@
 <resources>
     <!--
-      Minimal placeholder window theme. The real forced-dark green Material 3 theme
-      (status bar, window background, dynamic color opt-out) is configured on Day 2.
-      Colors at runtime come from the Compose MaterialTheme, not this XML theme.
+      Post-splash window theme. Colors at runtime come from the Compose `FilmatubeTheme`;
+      this only sets the window chrome (forced-dark green background, transparent system bars
+      for edge-to-edge).
     -->
     <style name="Theme.Filmatube" parent="android:Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@android:color/black</item>
-        <item name="android:statusBarColor">@android:color/black</item>
-        <item name="android:navigationBarColor">@android:color/black</item>
+        <item name="android:windowBackground">@color/filmatube_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <!--
+      Launch theme using the AndroidX SplashScreen API. Shows the Filmatube mark on a
+      dark green background, then hands off to Theme.Filmatube. (The richer animated splash
+      is Day 15.)
+    -->
+    <style name="Theme.Filmatube.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/filmatube_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.Filmatube</item>
     </style>
 </resources>
