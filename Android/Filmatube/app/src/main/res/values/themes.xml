@@ -1,0 +1,12 @@
+<resources>
+    <!--
+      Minimal placeholder window theme. The real forced-dark green Material 3 theme
+      (status bar, window background, dynamic color opt-out) is configured on Day 2.
+      Colors at runtime come from the Compose MaterialTheme, not this XML theme.
+    -->
+    <style name="Theme.Filmatube" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+    </style>
+</resources>

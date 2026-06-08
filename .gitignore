@@ -1,0 +1,19 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+
+# Node (WebApp)
+node_modules/
+.next/
+out/
+*.env
+.env.local
+
+# Secrets
+google-services.json
+serviceAccountKey.json
+secrets.properties
+
+# Android build artifacts are handled by Android/Filmatube/.gitignore
