@@ -1,15 +1,32 @@
 package com.filmatube.app.di
 
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 /**
- * Firebase dependencies (Auth, Firestore, Messaging, App Check).
- *
- * Providers are added on **Day 5**, once `google-services.json` and Firebase initialization are in
- * place. Kept as an empty, installed module for now so the DI structure is in place.
+ * Firebase singletons. FirebaseApp itself auto-initializes from `google-services.json`;
+ * these just expose the SDK entry points for injection. App Check is initialized in
+ * [com.filmatube.app.FilmatubeApp].
  */
 @Module
 @InstallIn(SingletonComponent::class)
-object FirebaseModule
+object FirebaseModule {
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideFirebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideFirebaseMessaging(): FirebaseMessaging = FirebaseMessaging.getInstance()
+}

@@ -54,7 +54,7 @@
 - **Day 2** ✅ — Material 3 **forced-dark green** theme (tokens from logo), typography, shapes; adaptive app icon + splash from logo.
 - **Day 3** ✅ — Hilt; `NetworkModule`/`FirebaseModule`/`RepositoryModule`; `DataState<T>`; `BaseViewModel`; Result/error handling.
 - **Day 4** ✅ — Navigation-Compose graph; bottom nav (Home, Search, **Theater**, Community, Profile); placeholder screens.
-- **Day 5** — Firebase wiring (`google-services.json`; Auth/Firestore/FCM/Crashlytics/App Check); Retrofit/OkHttp; Coil; DataStore.
+- **Day 5** ✅ — Firebase wiring (`google-services.json`; Auth/Firestore/FCM/Crashlytics/App Check); Retrofit/OkHttp; Coil; DataStore.
 - **Day 6** — Compose design system: buttons, cards, chips, poster tile, content rows, section header, shimmer, empty/error/loading, snackbars.
 - **Day 7** — Localization scaffold (EN + FR); on-device theme QA; smoke build; **CI** (GitHub Actions `assembleDebug`).
 
