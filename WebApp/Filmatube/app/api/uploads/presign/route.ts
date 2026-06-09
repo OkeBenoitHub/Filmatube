@@ -52,12 +52,11 @@ export async function POST(request: NextRequest) {
       : `${prefix ? `${sanitize(prefix)}/` : ""}${randomUUID()}-${safeName}`;
 
   const uploadUrl = await presignUpload(b, key, contentType);
-  const isPublic = b !== "videos";
 
   return NextResponse.json({
     uploadUrl,
     key,
     bucket: b,
-    publicUrl: isPublic ? r2PublicUrl(key) : null,
+    publicUrl: r2PublicUrl(b, key), // null for the private `videos` bucket
   });
 }

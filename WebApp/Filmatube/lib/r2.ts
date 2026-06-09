@@ -33,8 +33,17 @@ export function getR2Client(): S3Client {
   return client;
 }
 
-/** Public CDN URL for a stored object (R2 public bucket or custom domain). */
-export function r2PublicUrl(key: string): string {
-  const base = (process.env.R2_PUBLIC_BASE_URL ?? "").replace(/\/$/, "");
-  return `${base}/${key}`;
+// Each R2 bucket has its own public base URL (pub-*.r2.dev or a custom domain).
+// `videos` is private (served via /api/stream), so it has no public URL.
+const R2_PUBLIC_BASES: Partial<Record<R2Bucket, string | undefined>> = {
+  images: process.env.R2_PUBLIC_URL_IMAGES,
+  avatars: process.env.R2_PUBLIC_URL_AVATARS,
+  subtitles: process.env.R2_PUBLIC_URL_SUBTITLES,
+};
+
+/** Public CDN URL for an object in a public bucket, or null if the bucket is private/unset. */
+export function r2PublicUrl(bucket: R2Bucket, key: string): string | null {
+  const base = R2_PUBLIC_BASES[bucket];
+  if (!base) return null;
+  return `${base.replace(/\/$/, "")}/${key}`;
 }

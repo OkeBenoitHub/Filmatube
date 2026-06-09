@@ -30,7 +30,10 @@ R2_BUCKET_VIDEOS=filmatube-videos
 R2_BUCKET_IMAGES=filmatube-images
 R2_BUCKET_AVATARS=filmatube-avatars
 R2_BUCKET_SUBTITLES=filmatube-subtitles
-R2_PUBLIC_BASE_URL=https://media.filmatube.app   # custom domain / pub-*.r2.dev for public buckets
+# Each public bucket has its OWN public URL (pub-*.r2.dev or custom domain). videos = private.
+R2_PUBLIC_URL_IMAGES=https://pub-xxxx.r2.dev
+R2_PUBLIC_URL_AVATARS=https://pub-yyyy.r2.dev
+R2_PUBLIC_URL_SUBTITLES=https://pub-zzzz.r2.dev
 ```
 
 ## 4. Apply CORS + lifecycle
