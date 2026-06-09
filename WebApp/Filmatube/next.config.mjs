@@ -2,9 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    // TMDB artwork now; the Cloudflare R2 image host is added on Day 11.
     remotePatterns: [
-      { protocol: "https", hostname: "image.tmdb.org" },
+      { protocol: "https", hostname: "image.tmdb.org" }, // TMDB artwork
+      { protocol: "https", hostname: "**.r2.dev" }, // R2 public dev domain
+      { protocol: "https", hostname: "**.r2.cloudflarestorage.com" }, // R2 S3 endpoint
     ],
   },
 };
