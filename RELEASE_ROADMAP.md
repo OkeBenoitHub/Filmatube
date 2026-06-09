@@ -59,7 +59,7 @@
 - **Day 7** ✅ — Localization scaffold (EN + FR); on-device theme QA; smoke build; **CI** (GitHub Actions `assembleDebug`).
 
 ### Week 2 — Web Foundation + Shared Backend (Days 8–14) (W/B)
-- **Day 8** — Next.js 15 project (mirror old `package.json`); TS + ESLint; layout `/app`, `/app/admin`, `/app/watch`, `/lib`, `/components`.
+- **Day 8** ✅ — Next.js 15 project (mirror old `package.json`); TS + ESLint; layout `/app`, `/app/admin`, `/app/watch`, `/lib`, `/components`.
 - **Day 9** — Tailwind **green `brand` + dark `surface`** tokens; base components (Button/Card/Input/Modal/Toast/Skeleton).
 - **Day 10** — Firebase client (`lib/firebase.ts`) + admin SDK (`lib/firebase-admin.ts`); `.env.local`; session-cookie helper.
 - **Day 11 (B)** — R2 buckets (`videos`,`images`,`avatars`,`subtitles`); `lib/r2.ts` S3 client; CORS; lifecycle rules.

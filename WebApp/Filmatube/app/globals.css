@@ -1,0 +1,23 @@
+/*
+ * Minimal global styles for the scaffold. Replaced on Day 9 with the Tailwind
+ * layers + green design tokens (this matches the Android forced-dark green theme).
+ */
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #0e1512;
+  color: #dee4dd;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+}
