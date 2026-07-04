@@ -21,6 +21,7 @@ const en = {
       "Stream movies, follow people who share your taste, and talk about it all in real time.",
     ctaPrimary: "Get early access",
     ctaHint: "Android app and web player in active development.",
+    storeBadge: "Soon on Google Play",
     featuresKicker: "Why Filmatube",
     featuresTitle: "Everything a movie night needs",
     features: {
@@ -70,6 +71,7 @@ const fr: Dictionary = {
       "Regardez des films, suivez des gens qui partagent vos goûts et discutez-en en temps réel.",
     ctaPrimary: "Accès anticipé",
     ctaHint: "Application Android et lecteur web en cours de développement.",
+    storeBadge: "Bientôt sur Google Play",
     featuresKicker: "Pourquoi Filmatube",
     featuresTitle: "Tout ce qu'il faut pour une soirée cinéma",
     features: {

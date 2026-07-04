@@ -3,6 +3,7 @@ import {
   Download,
   Film,
   MessagesSquare,
+  Play,
   Sparkles,
   Theater,
   UsersRound,
@@ -63,12 +64,18 @@ export default async function LandingPage() {
             </p>
 
             <div className="mt-8 flex flex-col items-center gap-3">
-              <Link
-                href="#features"
-                className="inline-flex h-12 items-center rounded-lg bg-brand-500 px-7 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
-              >
-                {t.ctaPrimary}
-              </Link>
+              <div className="flex flex-col items-center gap-3 sm:flex-row">
+                <Link
+                  href="#features"
+                  className="inline-flex h-12 items-center rounded-lg bg-brand-500 px-7 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+                >
+                  {t.ctaPrimary}
+                </Link>
+                <span className="inline-flex h-12 items-center gap-2 rounded-lg border border-surface-border px-5 text-sm font-medium text-ink-muted">
+                  <Play className="h-4 w-4 fill-current" aria-hidden />
+                  {t.storeBadge}
+                </span>
+              </div>
               <p className="text-xs text-ink-faint">{t.ctaHint}</p>
             </div>
 
