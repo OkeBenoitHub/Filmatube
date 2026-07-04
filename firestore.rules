@@ -1,0 +1,150 @@
+rules_version = '2';
+
+// Filmatube security rules v1 (movies-only).
+// Principles: everything requires sign-in; users own their subtrees; catalog is
+// admin-written; the `admin` custom claim (not the users doc) is authoritative.
+// Final hardening audit is scheduled for Days 117/122.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ───────── helpers ─────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isSelf(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    // ───────── users ─────────
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSelf(userId)
+        && request.resource.data.get('isAdmin', false) == false
+        && request.resource.data.get('isBanned', false) == false;
+      allow update: if isAdmin()
+        || (isSelf(userId)
+          && request.resource.data.get('isAdmin', false) == resource.data.get('isAdmin', false)
+          && request.resource.data.get('isBanned', false) == resource.data.get('isBanned', false));
+      allow delete: if isAdmin();
+
+      match /profiles/{profileId} {
+        allow read, write: if isSelf(userId) || isAdmin();
+      }
+
+      match /notifications/{notificationId} {
+        allow read, update, delete: if isSelf(userId);
+        allow create: if isSignedIn(); // actor writes a notification into the recipient's inbox
+      }
+    }
+
+    // ───────── catalog ─────────
+    match /movies/{movieId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.status == 'published');
+      allow write: if isAdmin();
+    }
+
+    // ───────── per-user viewing state ─────────
+    match /watchProgress/{userId}/items/{movieId} {
+      allow read, write: if isSelf(userId);
+    }
+    match /watchlists/{userId}/movies/{movieId} {
+      allow read, write: if isSelf(userId);
+    }
+    match /likes/{userId}/items/{movieId} {
+      allow read: if isSignedIn();
+      allow write: if isSelf(userId);
+    }
+    match /reactions/{userId}/items/{movieId} {
+      allow read: if isSignedIn();
+      allow write: if isSelf(userId);
+    }
+
+    // ───────── collections ─────────
+    match /collections/{collectionId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && (resource.data.isPublic == true || resource.data.userId == request.auth.uid));
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin()
+        || (isSignedIn() && resource.data.userId == request.auth.uid);
+
+      match /items/{movieId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn()
+          && get(/databases/$(database)/documents/collections/$(collectionId)).data.userId == request.auth.uid;
+      }
+    }
+
+    // ───────── social graph ─────────
+    match /follows/{followId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.followerId == request.auth.uid
+        && followId == (request.auth.uid + '_' + request.resource.data.followedId);
+      allow delete: if isSignedIn() && resource.data.followerId == request.auth.uid;
+    }
+
+    match /feed/{userId}/events/{eventId} {
+      allow read: if isSelf(userId);
+      // fan-out: the actor may write their own event into a follower's feed
+      allow create: if isSignedIn() && request.resource.data.actorId == request.auth.uid;
+      allow delete: if isSelf(userId);
+    }
+
+    match /recommendations/{toUserId}/items/{recommendationId} {
+      allow read, update, delete: if isSelf(toUserId);
+      allow create: if isSignedIn() && request.resource.data.fromUserId == request.auth.uid;
+    }
+
+    // ───────── reviews & comments ─────────
+    match /reviews/{movieId}/items/{reviewId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+    match /comments/{movieId}/items/{commentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    // ───────── content requests ─────────
+    match /requests/{requestId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
+    }
+
+    // ───────── gamification ─────────
+    match /achievements/{userId}/badges/{badgeId} {
+      allow read: if isSignedIn();
+      allow write: if isSelf(userId) || isAdmin();
+    }
+    match /stats/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSelf(userId) || isAdmin();
+    }
+
+    // ───────── online movie theater (v1.2 — reserved) ─────────
+    match /showtimes/{showtimeId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+
+      match /attendees/{userId} {
+        allow read: if isSignedIn();
+        allow write: if isSelf(userId);
+      }
+      match /chat/{messageId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+        allow update, delete: if isAdmin();
+      }
+    }
+  }
+}

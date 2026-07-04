@@ -64,7 +64,7 @@
 - **Day 10** ✅ — Firebase client (`lib/firebase.ts`) + admin SDK (`lib/firebase-admin.ts`); `.env.local`; session-cookie helper.
 - **Day 11 (B)** ✅ — R2 buckets (`videos`,`images`,`avatars`,`subtitles`); `lib/r2.ts` S3 client; CORS; lifecycle rules.
 - **Day 12 (B)** ✅ — Presign API: `POST /api/uploads/presign` (admin-gated), `GET /api/stream/[id]` (expiring token URL), image/avatar presign.
-- **Day 13 (B)** — **Finalize movies-only Firestore schema** + **security rules v1** + composite indexes file.
+- **Day 13 (B)** ✅ — **Finalize movies-only Firestore schema** + **security rules v1** + composite indexes file.
 - **Day 14** — Landing skeleton (hero/features/store buttons); web **CI** (lint/build); week review.
 
 ## PHASE 2 — Auth & Profiles (Days 15–28)
