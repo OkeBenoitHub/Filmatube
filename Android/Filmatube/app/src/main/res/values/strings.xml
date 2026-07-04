@@ -10,6 +10,21 @@
 
     <string name="coming_soon">Coming soon</string>
 
+    <!-- Home preview -->
+    <string name="home_hero_kicker">Your cinema, together</string>
+    <string name="home_hero_title">Watch. Share. Discuss.</string>
+    <string name="home_hero_tagline">Stream movies and enjoy them with people who share your taste.</string>
+    <string name="row_trending">Trending</string>
+    <string name="row_new_releases">New Releases</string>
+    <string name="row_top_rated">Top Rated</string>
+    <string name="notifications">Notifications</string>
+
+    <!-- Feature previews -->
+    <string name="search_subtitle">Find any movie in seconds — by title, genre, year or rating.</string>
+    <string name="theater_subtitle">Scheduled showtimes and live premieres, watched together in sync.</string>
+    <string name="community_subtitle">Discussion boards, real-time chat and watch parties with your people.</string>
+    <string name="profile_subtitle">Your profile, taste stats, badges and library — all in one place.</string>
+
     <!-- Common actions -->
     <string name="action_see_all">See all</string>
     <string name="action_retry">Retry</string>
