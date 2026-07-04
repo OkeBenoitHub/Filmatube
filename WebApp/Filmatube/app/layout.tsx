@@ -1,19 +1,29 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { LocaleProvider } from "@/components/providers/LocaleProvider";
 import { ToastProvider } from "@/components/ui/Toast";
+import { getLocale } from "@/lib/i18n/server";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Filmatube",
-  description: "Watch movies, follow people who share your taste, and discuss in real time.",
+  title: {
+    default: "Filmatube — Watch. Share. Discuss.",
+    template: "%s · Filmatube",
+  },
+  description:
+    "Stream movies, follow people who share your taste, and talk about it all in real time.",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  // `dark` class enables Tailwind's class-based dark mode app-wide.
+export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+  const locale = await getLocale();
+
+  // `dark` class enables Tailwind's class-based dark mode app-wide (forced dark).
   return (
-    <html lang="en" className="dark">
+    <html lang={locale} className="dark">
       <body>
-        <ToastProvider>{children}</ToastProvider>
+        <LocaleProvider initialLocale={locale}>
+          <ToastProvider>{children}</ToastProvider>
+        </LocaleProvider>
       </body>
     </html>
   );
