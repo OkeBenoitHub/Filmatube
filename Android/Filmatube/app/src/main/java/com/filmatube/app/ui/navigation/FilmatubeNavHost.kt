@@ -7,9 +7,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.filmatube.app.ui.community.CommunityScreen
 import com.filmatube.app.ui.home.HomeScreen
+import com.filmatube.app.ui.profile.EditProfileScreen
 import com.filmatube.app.ui.profile.ProfileScreen
 import com.filmatube.app.ui.search.SearchScreen
 import com.filmatube.app.ui.theater.TheaterScreen
+
+private const val ROUTE_PROFILE_EDIT = "profile/edit"
 
 /**
  * Top-level navigation graph. Each [TopLevelDestination] maps to one composable screen.
@@ -32,9 +35,12 @@ fun FilmatubeNavHost(
         composable(TopLevelDestination.COMMUNITY.route) { CommunityScreen() }
         composable(TopLevelDestination.PROFILE.route) {
             ProfileScreen(
-                onEditProfile = { /* wired on Day 20 */ },
+                onEditProfile = { navController.navigate(ROUTE_PROFILE_EDIT) },
                 onSignedOut = onSignedOut,
             )
+        }
+        composable(ROUTE_PROFILE_EDIT) {
+            EditProfileScreen(onDone = { navController.popBackStack() })
         }
     }
 }

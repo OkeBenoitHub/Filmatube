@@ -89,6 +89,15 @@
     <string name="profile_sign_out">Se déconnecter</string>
     <string name="profile_admin">Admin</string>
 
+    <!-- Modifier le profil -->
+    <string name="edit_profile_title">Modifier le profil</string>
+    <string name="edit_profile_bio">Bio</string>
+    <string name="edit_profile_save">Enregistrer</string>
+    <string name="edit_profile_change_photo">Changer la photo</string>
+    <string name="edit_profile_back">Retour</string>
+    <string name="edit_profile_error">Enregistrement impossible. Veuillez réessayer.</string>
+    <string name="edit_profile_photo_error">Échec de l\'envoi de la photo. Veuillez réessayer.</string>
+
     <!-- Onboarding des goûts -->
     <string name="taste_title">Qu\'aimez-vous ?</string>
     <string name="taste_subtitle">Choisissez quelques genres pour personnaliser vos films.</string>

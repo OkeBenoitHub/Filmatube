@@ -41,6 +41,8 @@ fun FilmatubeTextField(
     onImeAction: () -> Unit = {},
     errorText: String? = null,
     enabled: Boolean = true,
+    singleLine: Boolean = true,
+    minLines: Int = 1,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
     val isError = errorText != null
@@ -50,7 +52,8 @@ fun FilmatubeTextField(
         onValueChange = onValueChange,
         modifier = modifier.fillMaxWidth(),
         label = { Text(label) },
-        singleLine = true,
+        singleLine = singleLine,
+        minLines = minLines,
         enabled = enabled,
         isError = isError,
         leadingIcon = leadingIcon?.let { { Icon(it, contentDescription = null) } },

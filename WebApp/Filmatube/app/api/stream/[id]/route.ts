@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getRequestUser } from "@/lib/auth/request-user";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { presignDownload } from "@/lib/r2-presign";
 
@@ -9,10 +9,10 @@ import { presignDownload } from "@/lib/r2-presign";
  * shared/hotlinked. The player (Day 50) sets this as the <video> source.
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await getCurrentUser();
+  const user = await getRequestUser(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

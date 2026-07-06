@@ -92,6 +92,15 @@
     <string name="profile_sign_out">Sign out</string>
     <string name="profile_admin">Admin</string>
 
+    <!-- Edit profile -->
+    <string name="edit_profile_title">Edit profile</string>
+    <string name="edit_profile_bio">Bio</string>
+    <string name="edit_profile_save">Save</string>
+    <string name="edit_profile_change_photo">Change photo</string>
+    <string name="edit_profile_back">Back</string>
+    <string name="edit_profile_error">Couldn\'t save. Please try again.</string>
+    <string name="edit_profile_photo_error">Couldn\'t upload photo. Please try again.</string>
+
     <!-- Taste onboarding -->
     <string name="taste_title">What do you love?</string>
     <string name="taste_subtitle">Pick a few genres so we can tailor your movies.</string>

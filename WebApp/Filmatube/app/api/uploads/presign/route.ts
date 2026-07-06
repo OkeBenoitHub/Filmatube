@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getRequestUser } from "@/lib/auth/request-user";
 import { R2_BUCKETS, r2PublicUrl, type R2Bucket } from "@/lib/r2";
 import { presignUpload } from "@/lib/r2-presign";
 
@@ -20,7 +20,7 @@ interface PresignBody {
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getCurrentUser();
+  const user = await getRequestUser(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

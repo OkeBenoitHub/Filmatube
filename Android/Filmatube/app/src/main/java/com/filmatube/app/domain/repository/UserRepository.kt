@@ -25,4 +25,13 @@ interface UserRepository {
         contentLanguage: String,
         language: String,
     )
+
+    /** One-shot read of the user document. */
+    suspend fun getUser(uid: String): UserProfile?
+
+    /** Updates editable profile fields. */
+    suspend fun updateProfile(uid: String, displayName: String, bio: String)
+
+    /** Updates the avatar URL (after uploading to R2). */
+    suspend fun updateAvatarUrl(uid: String, avatarUrl: String)
 }

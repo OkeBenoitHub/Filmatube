@@ -24,12 +24,17 @@ android {
     }
 
     buildTypes {
+        debug {
+            // 10.0.2.2 = host machine's localhost from the Android emulator.
+            buildConfigField("String", "WEB_API_BASE_URL", "\"http://10.0.2.2:3000\"")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            buildConfigField("String", "WEB_API_BASE_URL", "\"https://filmatube.app\"")
         }
     }
 

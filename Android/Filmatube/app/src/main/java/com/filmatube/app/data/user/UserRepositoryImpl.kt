@@ -83,6 +83,23 @@ class UserRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun getUser(uid: String): UserProfile? =
+        firestore.collection(USERS).document(uid).get().await().toUserProfile()
+
+    override suspend fun updateProfile(uid: String, displayName: String, bio: String) {
+        firestore.collection(USERS).document(uid).update(
+            mapOf(
+                "displayName" to displayName,
+                "bio" to bio,
+                FIELD_LAST_ACTIVE to FieldValue.serverTimestamp(),
+            ),
+        ).await()
+    }
+
+    override suspend fun updateAvatarUrl(uid: String, avatarUrl: String) {
+        firestore.collection(USERS).document(uid).update("avatarUrl", avatarUrl).await()
+    }
+
     private fun DocumentSnapshot.toUserProfile(): UserProfile? {
         if (!exists()) return null
         return UserProfile(
