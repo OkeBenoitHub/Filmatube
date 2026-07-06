@@ -26,4 +26,7 @@ interface MovieRepository {
 
     /** Title search (client-side contains match over the published catalog). */
     suspend fun search(query: String, limit: Int = 40): List<Movie>
+
+    /** Movies whose cast includes the given actor name. */
+    suspend fun getByActor(actorName: String, limit: Int = 40): List<Movie>
 }

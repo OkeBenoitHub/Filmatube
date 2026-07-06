@@ -87,6 +87,16 @@ class MovieRepositoryImpl @Inject constructor(
         }.take(limit)
     }
 
+    override suspend fun getByActor(actorName: String, limit: Int): List<Movie> {
+        val all = published()
+            .orderBy("addedAt", Query.Direction.DESCENDING)
+            .limit(200)
+            .get().await().toMovies()
+        return all.filter { movie ->
+            movie.cast.any { it.name.equals(actorName, ignoreCase = true) }
+        }.take(limit)
+    }
+
     private fun com.google.firebase.firestore.QuerySnapshot.toMovies(): List<Movie> =
         documents.mapNotNull { it.toMovie() }
 

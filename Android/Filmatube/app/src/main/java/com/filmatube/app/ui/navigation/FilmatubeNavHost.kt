@@ -7,8 +7,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import android.net.Uri
 import com.filmatube.app.ui.browse.BrowseScreen
 import com.filmatube.app.ui.community.CommunityScreen
+import com.filmatube.app.ui.detail.ActorScreen
 import com.filmatube.app.ui.detail.MovieDetailScreen
 import com.filmatube.app.ui.home.HomeScreen
 import com.filmatube.app.ui.profile.EditProfileScreen
@@ -23,9 +25,11 @@ private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_PROFILES = "settings/profiles"
 private const val ROUTE_MOVIE = "movie/{movieId}"
 private const val ROUTE_BROWSE = "browse?genre={genre}"
+private const val ROUTE_ACTOR = "actor/{name}"
 
 fun movieRoute(movieId: String) = "movie/$movieId"
 fun browseRoute(genre: String?) = if (genre == null) "browse" else "browse?genre=$genre"
+fun actorRoute(name: String) = "actor/${Uri.encode(name)}"
 
 /**
  * Top-level navigation graph. Each [TopLevelDestination] maps to one composable screen.
@@ -49,7 +53,20 @@ fun FilmatubeNavHost(
             )
         }
         composable(ROUTE_MOVIE) {
-            MovieDetailScreen(onBack = { navController.popBackStack() })
+            MovieDetailScreen(
+                onBack = { navController.popBackStack() },
+                onMovieClick = { navController.navigate(movieRoute(it)) },
+                onActorClick = { navController.navigate(actorRoute(it)) },
+            )
+        }
+        composable(
+            route = ROUTE_ACTOR,
+            arguments = listOf(navArgument("name") { type = NavType.StringType }),
+        ) {
+            ActorScreen(
+                onBack = { navController.popBackStack() },
+                onMovieClick = { navController.navigate(movieRoute(it)) },
+            )
         }
         composable(
             route = ROUTE_BROWSE,

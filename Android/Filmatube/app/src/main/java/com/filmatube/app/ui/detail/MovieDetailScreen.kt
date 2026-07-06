@@ -1,20 +1,26 @@
 package com.filmatube.app.ui.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,12 +48,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.filmatube.app.R
+import com.filmatube.app.domain.model.CastMember
 import com.filmatube.app.domain.model.Movie
 import com.filmatube.app.domain.util.DataState
+import com.filmatube.app.ui.components.ContentRow
 import com.filmatube.app.ui.components.EmptyView
 import com.filmatube.app.ui.components.ErrorView
 import com.filmatube.app.ui.components.FilmatubePrimaryButton
 import com.filmatube.app.ui.components.LoadingView
+import com.filmatube.app.ui.components.PosterTile
+import com.filmatube.app.ui.components.UserAvatar
 import com.filmatube.app.ui.taste.genreLabel
 import com.filmatube.app.ui.theme.FilmatubeGold
 import com.filmatube.app.ui.theme.FilmatubeSpacing
@@ -56,6 +66,8 @@ import com.filmatube.app.util.LocaleController
 @Composable
 fun MovieDetailScreen(
     onBack: () -> Unit,
+    onMovieClick: (String) -> Unit,
+    onActorClick: (String) -> Unit,
     viewModel: MovieDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -66,7 +78,13 @@ fun MovieDetailScreen(
             DataState.Loading -> LoadingView()
             DataState.Empty -> EmptyView()
             is DataState.Error -> ErrorView(error = movie.error, onRetry = viewModel::load)
-            is DataState.Success -> DetailContent(movie = movie.data, language = language)
+            is DataState.Success -> DetailContent(
+                movie = movie.data,
+                related = state.related,
+                language = language,
+                onMovieClick = onMovieClick,
+                onActorClick = onActorClick,
+            )
         }
         IconButton(
             onClick = onBack,
@@ -86,7 +104,13 @@ fun MovieDetailScreen(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DetailContent(movie: Movie, language: String) {
+private fun DetailContent(
+    movie: Movie,
+    related: List<Movie>,
+    language: String,
+    onMovieClick: (String) -> Unit,
+    onActorClick: (String) -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -188,6 +212,66 @@ private fun DetailContent(movie: Movie, language: String) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+
+        if (movie.cast.isNotEmpty()) {
+            CastSection(cast = movie.cast, onActorClick = onActorClick)
+        }
+        if (related.isNotEmpty()) {
+            ContentRow(
+                title = stringResource(R.string.detail_more_like_this),
+                items = related,
+                key = { it.id },
+            ) { related ->
+                PosterTile(
+                    posterUrl = related.posterUrl,
+                    title = related.title.get(language),
+                    onClick = { onMovieClick(related.id) },
+                )
+            }
+        }
+        Spacer(Modifier.height(FilmatubeSpacing.xxl))
+    }
+}
+
+@Composable
+private fun CastSection(cast: List<CastMember>, onActorClick: (String) -> Unit) {
+    Column {
+        Text(
+            text = stringResource(R.string.detail_cast),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = FilmatubeSpacing.lg, vertical = FilmatubeSpacing.sm),
+        )
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = FilmatubeSpacing.lg),
+            horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
+        ) {
+            items(cast, key = { it.name + it.character }) { member ->
+                Column(
+                    modifier = Modifier
+                        .width(84.dp)
+                        .clickable { onActorClick(member.name) },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xs),
+                ) {
+                    UserAvatar(url = member.photoUrl, name = member.name, size = 64.dp)
+                    Text(
+                        text = member.name,
+                        style = MaterialTheme.typography.labelMedium,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        maxLines = 2,
+                    )
+                    if (member.character.isNotBlank()) {
+                        Text(
+                            text = member.character,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            maxLines = 1,
+                        )
+                    }
+                }
+            }
         }
     }
 }
