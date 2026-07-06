@@ -129,6 +129,13 @@ const en = {
   admin: {
     title: "Filmatube Studio",
     subtitle: "The admin CMS — manage movies, users, requests, showtimes and more.",
+    dashboard: "Dashboard",
+    movies: "Movies",
+    users: "Users",
+    requests: "Requests",
+    theater: "Theater",
+    notifications: "Notifications",
+    analytics: "Analytics",
   },
 };
 
@@ -256,6 +263,13 @@ const fr: Dictionary = {
   admin: {
     title: "Filmatube Studio",
     subtitle: "Le CMS d'administration — gérez films, utilisateurs, demandes, séances et plus.",
+    dashboard: "Tableau de bord",
+    movies: "Films",
+    users: "Utilisateurs",
+    requests: "Demandes",
+    theater: "Cinéma",
+    notifications: "Notifications",
+    analytics: "Statistiques",
   },
 };
 
