@@ -23,7 +23,8 @@ export function RegisterForm({ dict }: { dict: Dictionary["auth"] }) {
   const [loading, setLoading] = useState(false);
 
   const succeed = () => {
-    router.replace("/");
+    // New accounts go through taste onboarding first.
+    router.replace("/account/taste");
     router.refresh();
   };
 

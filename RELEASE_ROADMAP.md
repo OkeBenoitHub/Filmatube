@@ -82,7 +82,7 @@
 - **Day 22** ✅ — Web Auth (Email/Password + Google); session cookies via admin SDK; route-protection middleware.
 - **Day 23** ✅ — Register/login/forgot pages; create user doc.
 - **Day 24** ✅ — Web profile + edit; avatar → R2.
-- **Day 25** — Taste onboarding (web); profile switcher.
+- **Day 25** ✅ — Taste onboarding (web); profile switcher.
 - **Day 26** — **Admin auth** (`isAdmin` gate); admin layout + sidebar (Dashboard, Movies, Users, Requests, Theater, Notifications, Analytics).
 - **Day 27** — Admin dashboard skeleton (stat cards, recent-activity placeholders).
 - **Day 28** — Auth parity QA (Android ↔ web, same account); week review.
