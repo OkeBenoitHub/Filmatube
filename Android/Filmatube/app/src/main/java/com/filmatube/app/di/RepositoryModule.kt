@@ -1,9 +1,11 @@
 package com.filmatube.app.di
 
 import com.filmatube.app.data.auth.AuthRepositoryImpl
+import com.filmatube.app.data.movie.MovieRepositoryImpl
 import com.filmatube.app.data.user.ProfilesRepositoryImpl
 import com.filmatube.app.data.user.UserRepositoryImpl
 import com.filmatube.app.domain.repository.AuthRepository
+import com.filmatube.app.domain.repository.MovieRepository
 import com.filmatube.app.domain.repository.ProfilesRepository
 import com.filmatube.app.domain.repository.UserRepository
 import dagger.Binds
@@ -31,4 +33,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindProfilesRepository(impl: ProfilesRepositoryImpl): ProfilesRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMovieRepository(impl: MovieRepositoryImpl): MovieRepository
 }
