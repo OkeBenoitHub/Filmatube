@@ -139,6 +139,20 @@ const en = {
     showtimes: "Showtimes",
     recentActivity: "Recent activity",
   },
+  adminMovies: {
+    add: "Add movie",
+    search: "Search movies…",
+    title: "Title",
+    year: "Year",
+    status: "Status",
+    edit: "Edit",
+    draft: "Draft",
+    published: "Published",
+    featured: "Featured",
+    pinned: "Pinned",
+    comingSoon: "Coming soon",
+    empty: "No movies yet. Add your first one.",
+  },
 };
 
 export type Dictionary = typeof en;
@@ -274,6 +288,20 @@ const fr: Dictionary = {
     analytics: "Statistiques",
     showtimes: "Séances",
     recentActivity: "Activité récente",
+  },
+  adminMovies: {
+    add: "Ajouter un film",
+    search: "Rechercher des films…",
+    title: "Titre",
+    year: "Année",
+    status: "Statut",
+    edit: "Modifier",
+    draft: "Brouillon",
+    published: "Publié",
+    featured: "À la une",
+    pinned: "Épinglé",
+    comingSoon: "Prochainement",
+    empty: "Aucun film. Ajoutez le premier.",
   },
 };
 
