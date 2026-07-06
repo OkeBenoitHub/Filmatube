@@ -92,6 +92,25 @@
     <string name="profile_sign_out">Sign out</string>
     <string name="profile_admin">Admin</string>
 
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_manage_profiles">Manage profiles</string>
+    <string name="settings_back">Back</string>
+
+    <!-- Watch profiles -->
+    <string name="profiles_title">Profiles</string>
+    <string name="profiles_add">Add profile</string>
+    <string name="profiles_active">Active</string>
+    <string name="profiles_default">Default</string>
+    <string name="profiles_name">Profile name</string>
+    <string name="profiles_create">Create profile</string>
+    <string name="profiles_edit">Edit profile</string>
+    <string name="profiles_choose_emoji">Choose an emoji</string>
+    <string name="profiles_delete">Delete</string>
+    <string name="profiles_save">Save</string>
+    <string name="profiles_cancel">Cancel</string>
+
     <!-- Edit profile -->
     <string name="edit_profile_title">Edit profile</string>
     <string name="edit_profile_bio">Bio</string>

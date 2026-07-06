@@ -34,4 +34,7 @@ interface UserRepository {
 
     /** Updates the avatar URL (after uploading to R2). */
     suspend fun updateAvatarUrl(uid: String, avatarUrl: String)
+
+    /** Updates the account UI language ("en" / "fr"). */
+    suspend fun updateLanguage(uid: String, language: String)
 }

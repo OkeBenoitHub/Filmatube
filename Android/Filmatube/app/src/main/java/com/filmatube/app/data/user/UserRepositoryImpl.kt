@@ -100,6 +100,10 @@ class UserRepositoryImpl @Inject constructor(
         firestore.collection(USERS).document(uid).update("avatarUrl", avatarUrl).await()
     }
 
+    override suspend fun updateLanguage(uid: String, language: String) {
+        firestore.collection(USERS).document(uid).update("language", language).await()
+    }
+
     private fun DocumentSnapshot.toUserProfile(): UserProfile? {
         if (!exists()) return null
         return UserProfile(

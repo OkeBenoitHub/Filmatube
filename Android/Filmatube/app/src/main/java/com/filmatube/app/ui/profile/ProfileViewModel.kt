@@ -34,6 +34,4 @@ class ProfileViewModel @Inject constructor(
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = DataState.Loading,
             )
-
-    fun signOut() = authRepository.signOut()
 }

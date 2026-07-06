@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -22,16 +23,27 @@ class UserPreferencesRepository @Inject constructor(
 ) {
     private object Keys {
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val ACTIVE_PROFILE_ID = stringPreferencesKey("active_profile_id")
     }
 
-    /** Whether the user has finished the first-run onboarding flow. */
-    val onboardingCompleted: Flow<Boolean> = dataStore.data
+    private val preferences: Flow<androidx.datastore.preferences.core.Preferences> = dataStore.data
         .catch { throwable ->
             if (throwable is IOException) emit(emptyPreferences()) else throw throwable
         }
-        .map { prefs -> prefs[Keys.ONBOARDING_COMPLETED] ?: false }
+
+    /** Whether the user has finished the first-run onboarding flow. */
+    val onboardingCompleted: Flow<Boolean> =
+        preferences.map { prefs -> prefs[Keys.ONBOARDING_COMPLETED] ?: false }
 
     suspend fun setOnboardingCompleted(completed: Boolean) {
         dataStore.edit { prefs -> prefs[Keys.ONBOARDING_COMPLETED] = completed }
+    }
+
+    /** The currently selected watch profile id (null if none picked yet). */
+    val activeProfileId: Flow<String?> =
+        preferences.map { prefs -> prefs[Keys.ACTIVE_PROFILE_ID] }
+
+    suspend fun setActiveProfileId(id: String) {
+        dataStore.edit { prefs -> prefs[Keys.ACTIVE_PROFILE_ID] = id }
     }
 }

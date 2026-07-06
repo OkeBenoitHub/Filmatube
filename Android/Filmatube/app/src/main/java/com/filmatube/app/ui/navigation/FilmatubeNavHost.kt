@@ -10,9 +10,13 @@ import com.filmatube.app.ui.home.HomeScreen
 import com.filmatube.app.ui.profile.EditProfileScreen
 import com.filmatube.app.ui.profile.ProfileScreen
 import com.filmatube.app.ui.search.SearchScreen
+import com.filmatube.app.ui.settings.ProfilesScreen
+import com.filmatube.app.ui.settings.SettingsScreen
 import com.filmatube.app.ui.theater.TheaterScreen
 
 private const val ROUTE_PROFILE_EDIT = "profile/edit"
+private const val ROUTE_SETTINGS = "settings"
+private const val ROUTE_PROFILES = "settings/profiles"
 
 /**
  * Top-level navigation graph. Each [TopLevelDestination] maps to one composable screen.
@@ -36,11 +40,21 @@ fun FilmatubeNavHost(
         composable(TopLevelDestination.PROFILE.route) {
             ProfileScreen(
                 onEditProfile = { navController.navigate(ROUTE_PROFILE_EDIT) },
-                onSignedOut = onSignedOut,
+                onOpenSettings = { navController.navigate(ROUTE_SETTINGS) },
             )
         }
         composable(ROUTE_PROFILE_EDIT) {
             EditProfileScreen(onDone = { navController.popBackStack() })
+        }
+        composable(ROUTE_SETTINGS) {
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onManageProfiles = { navController.navigate(ROUTE_PROFILES) },
+                onSignedOut = onSignedOut,
+            )
+        }
+        composable(ROUTE_PROFILES) {
+            ProfilesScreen(onBack = { navController.popBackStack() })
         }
     }
 }

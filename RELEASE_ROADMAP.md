@@ -76,7 +76,7 @@
 - **Day 18** ✅ — Taste onboarding: genre picker, language (EN/FR), content prefs.
 - **Day 19** ✅ — Profile screen: avatar, bio, stats, followers/following, badges placeholder.
 - **Day 20** ✅ — Edit profile; **avatar upload → R2** (presign → PUT → store URL).
-- **Day 21** — Netflix-style multi-profiles per account; language toggle; week review.
+- **Day 21** ✅ — Netflix-style multi-profiles per account; language toggle; week review.
 
 ### Week 4 — Web Auth, Profiles & Admin Shell (Days 22–28) (W)
 - **Day 22** — Web Auth (Email/Password + Google); session cookies via admin SDK; route-protection middleware.

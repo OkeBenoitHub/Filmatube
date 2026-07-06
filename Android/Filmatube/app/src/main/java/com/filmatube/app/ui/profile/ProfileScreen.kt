@@ -15,8 +15,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -46,7 +46,7 @@ import com.filmatube.app.ui.theme.FilmatubeSpacing
 @Composable
 fun ProfileScreen(
     onEditProfile: () -> Unit,
-    onSignedOut: () -> Unit,
+    onOpenSettings: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -63,13 +63,10 @@ fun ProfileScreen(
                 style = MaterialTheme.typography.titleLarge,
             )
             Spacer(Modifier.weight(1f))
-            IconButton(onClick = {
-                viewModel.signOut()
-                onSignedOut()
-            }) {
+            IconButton(onClick = onOpenSettings) {
                 Icon(
-                    Icons.AutoMirrored.Outlined.Logout,
-                    contentDescription = stringResource(R.string.profile_sign_out),
+                    Icons.Outlined.Settings,
+                    contentDescription = stringResource(R.string.settings_title),
                 )
             }
         }
