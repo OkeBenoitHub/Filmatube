@@ -35,15 +35,15 @@ import com.filmatube.app.ui.theme.FilmatubeSpacing
 
 @Composable
 fun RegisterScreen(
-    onRegistered: () -> Unit,
+    onAuthenticated: (AuthNavTarget) -> Unit,
     onNavigateToLogin: () -> Unit,
     viewModel: RegisterViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    LaunchedEffect(state.isSuccess) {
-        if (state.isSuccess) onRegistered()
+    LaunchedEffect(state.navTarget) {
+        state.navTarget?.let { onAuthenticated(it) }
     }
 
     Column(

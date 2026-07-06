@@ -18,5 +18,8 @@ interface AuthRepository {
 
     suspend fun sendPasswordReset(email: String)
 
+    /** Whether the signed-in user still needs taste onboarding. */
+    suspend fun needsTasteOnboarding(): Boolean
+
     fun signOut()
 }

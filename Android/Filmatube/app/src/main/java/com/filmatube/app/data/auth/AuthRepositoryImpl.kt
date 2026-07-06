@@ -58,6 +58,11 @@ class AuthRepositoryImpl @Inject constructor(
         auth.sendPasswordResetEmail(email).await()
     }
 
+    override suspend fun needsTasteOnboarding(): Boolean {
+        val uid = auth.currentUser?.uid ?: return false
+        return userRepository.needsTasteOnboarding(uid)
+    }
+
     override fun signOut() {
         auth.signOut()
     }

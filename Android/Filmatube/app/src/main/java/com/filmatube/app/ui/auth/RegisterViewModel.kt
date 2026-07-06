@@ -25,7 +25,7 @@ data class RegisterUiState(
     val confirmError: Int? = null,
     val generalError: Int? = null,
     val isLoading: Boolean = false,
-    val isSuccess: Boolean = false,
+    val navTarget: AuthNavTarget? = null,
 )
 
 @HiltViewModel
@@ -64,7 +64,7 @@ class RegisterViewModel @Inject constructor(
             _state.update { it.copy(isLoading = true, generalError = null) }
             runCatching { authRepository.register(s.name.trim(), s.email.trim(), s.password) }
                 .fold(
-                    onSuccess = { _state.update { it.copy(isLoading = false, isSuccess = true) } },
+                    onSuccess = { _state.update { it.copy(isLoading = false, navTarget = resolveTarget()) } },
                     onFailure = { e -> _state.update { it.copy(isLoading = false, generalError = mapAuthError(e)) } },
                 )
         }
@@ -77,7 +77,7 @@ class RegisterViewModel @Inject constructor(
                 val idToken = googleAuthClient.getIdToken(activityContext)
                 authRepository.signInWithGoogle(idToken)
             }.fold(
-                onSuccess = { _state.update { it.copy(isLoading = false, isSuccess = true) } },
+                onSuccess = { _state.update { it.copy(isLoading = false, navTarget = resolveTarget()) } },
                 onFailure = { e ->
                     if (e is GetCredentialCancellationException) {
                         _state.update { it.copy(isLoading = false) }
@@ -87,5 +87,10 @@ class RegisterViewModel @Inject constructor(
                 },
             )
         }
+    }
+
+    private suspend fun resolveTarget(): AuthNavTarget {
+        val needsTaste = runCatching { authRepository.needsTasteOnboarding() }.getOrDefault(true)
+        return if (needsTaste) AuthNavTarget.TASTE else AuthNavTarget.MAIN
     }
 }

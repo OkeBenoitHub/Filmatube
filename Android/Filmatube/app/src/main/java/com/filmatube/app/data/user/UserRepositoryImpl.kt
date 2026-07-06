@@ -24,6 +24,28 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun needsTasteOnboarding(uid: String): Boolean {
+        val snapshot = firestore.collection(USERS).document(uid).get().await()
+        return snapshot.getBoolean("tasteCompleted") != true
+    }
+
+    override suspend fun saveTaste(
+        uid: String,
+        genres: List<String>,
+        contentLanguage: String,
+        language: String,
+    ) {
+        firestore.collection(USERS).document(uid).update(
+            mapOf(
+                "genrePreferences" to genres,
+                "contentLanguage" to contentLanguage,
+                "language" to language,
+                "tasteCompleted" to true,
+                FIELD_LAST_ACTIVE to FieldValue.serverTimestamp(),
+            ),
+        ).await()
+    }
+
     private fun defaultUserData(user: AuthUser): Map<String, Any?> {
         val language = if (Locale.getDefault().language == "fr") "fr" else "en"
         return mapOf(
@@ -34,6 +56,9 @@ class UserRepositoryImpl @Inject constructor(
             "language" to language,
             "followersCount" to 0L,
             "followingCount" to 0L,
+            "genrePreferences" to emptyList<String>(),
+            "contentLanguage" to "both",
+            "tasteCompleted" to false,
             "isAdmin" to false,
             "isBanned" to false,
             "createdAt" to FieldValue.serverTimestamp(),

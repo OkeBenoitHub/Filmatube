@@ -9,4 +9,15 @@ interface UserRepository {
      * otherwise refreshes `lastActiveAt`. Idempotent.
      */
     suspend fun ensureUserDocument(user: AuthUser)
+
+    /** True when the user hasn't finished taste onboarding (`tasteCompleted` != true). */
+    suspend fun needsTasteOnboarding(uid: String): Boolean
+
+    /** Saves taste preferences and marks onboarding complete. */
+    suspend fun saveTaste(
+        uid: String,
+        genres: List<String>,
+        contentLanguage: String,
+        language: String,
+    )
 }

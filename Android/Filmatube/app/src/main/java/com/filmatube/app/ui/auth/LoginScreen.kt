@@ -37,7 +37,7 @@ import com.filmatube.app.ui.theme.FilmatubeSpacing
 
 @Composable
 fun LoginScreen(
-    onLoggedIn: () -> Unit,
+    onAuthenticated: (AuthNavTarget) -> Unit,
     onNavigateToRegister: () -> Unit,
     onNavigateToForgot: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
@@ -45,8 +45,8 @@ fun LoginScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    LaunchedEffect(state.isSuccess) {
-        if (state.isSuccess) onLoggedIn()
+    LaunchedEffect(state.navTarget) {
+        state.navTarget?.let { onAuthenticated(it) }
     }
 
     Column(

@@ -79,6 +79,42 @@
     <string name="auth_error_too_many">Trop de tentatives. Réessayez plus tard</string>
     <string name="auth_error_generic">Une erreur s\'est produite. Veuillez réessayer</string>
 
+    <!-- Onboarding des goûts -->
+    <string name="taste_title">Qu\'aimez-vous ?</string>
+    <string name="taste_subtitle">Choisissez quelques genres pour personnaliser vos films.</string>
+    <string name="taste_section_app_language">Langue de l\'application</string>
+    <string name="taste_section_content_language">Langue de film préférée</string>
+    <string name="taste_section_genres">Vos genres préférés</string>
+    <string name="taste_genre_hint">Choisissez-en au moins un</string>
+    <string name="taste_continue">Continuer</string>
+
+    <!-- Noms de langue (autonymes) -->
+    <string name="lang_english">English</string>
+    <string name="lang_french">Français</string>
+    <string name="content_lang_en">Anglais</string>
+    <string name="content_lang_fr">Français</string>
+    <string name="content_lang_both">Les deux</string>
+
+    <!-- Genres -->
+    <string name="genre_action">Action</string>
+    <string name="genre_adventure">Aventure</string>
+    <string name="genre_animation">Animation</string>
+    <string name="genre_comedy">Comédie</string>
+    <string name="genre_crime">Crime</string>
+    <string name="genre_documentary">Documentaire</string>
+    <string name="genre_drama">Drame</string>
+    <string name="genre_family">Famille</string>
+    <string name="genre_fantasy">Fantastique</string>
+    <string name="genre_history">Histoire</string>
+    <string name="genre_horror">Horreur</string>
+    <string name="genre_music">Musique</string>
+    <string name="genre_mystery">Mystère</string>
+    <string name="genre_romance">Romance</string>
+    <string name="genre_scifi">Science-fiction</string>
+    <string name="genre_thriller">Thriller</string>
+    <string name="genre_war">Guerre</string>
+    <string name="genre_western">Western</string>
+
     <!-- Actions communes -->
     <string name="action_see_all">Tout voir</string>
     <string name="action_retry">Réessayer</string>
