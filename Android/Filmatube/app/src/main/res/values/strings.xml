@@ -59,6 +59,14 @@
     <string name="auth_show_password">Show password</string>
     <string name="auth_hide_password">Hide password</string>
 
+    <!-- Forgot password -->
+    <string name="forgot_title">Reset password</string>
+    <string name="forgot_subtitle">Enter your email and we\'ll send you a reset link.</string>
+    <string name="forgot_send">Send reset link</string>
+    <string name="forgot_sent_title">Check your email</string>
+    <string name="forgot_sent_message">If an account exists for %1$s, a password reset link is on its way.</string>
+    <string name="forgot_back_to_login">Back to sign in</string>
+
     <!-- Auth validation -->
     <string name="auth_error_email_required">Enter your email</string>
     <string name="auth_error_email_invalid">Enter a valid email</string>

@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.filmatube.app.ui.FilmatubeAppRoot
+import com.filmatube.app.ui.auth.ForgotPasswordScreen
 import com.filmatube.app.ui.auth.LoginScreen
 import com.filmatube.app.ui.auth.RegisterScreen
 import com.filmatube.app.ui.onboarding.OnboardingScreen
@@ -18,6 +19,7 @@ object RootRoutes {
     const val ONBOARDING = "onboarding"
     const val LOGIN = "login"
     const val REGISTER = "register"
+    const val FORGOT = "forgot"
     const val MAIN = "main"
 }
 
@@ -58,8 +60,12 @@ fun RootNavHost() {
             LoginScreen(
                 onLoggedIn = { navController.navigateToMain() },
                 onNavigateToRegister = { navController.navigate(RootRoutes.REGISTER) },
-                onNavigateToForgot = { /* wired on Day 17 */ },
+                onNavigateToForgot = { navController.navigate(RootRoutes.FORGOT) },
             )
+        }
+
+        composable(RootRoutes.FORGOT) {
+            ForgotPasswordScreen(onBack = { navController.popBackStack() })
         }
 
         composable(RootRoutes.REGISTER) {

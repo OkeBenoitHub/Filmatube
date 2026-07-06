@@ -56,6 +56,14 @@
     <string name="auth_show_password">Afficher le mot de passe</string>
     <string name="auth_hide_password">Masquer le mot de passe</string>
 
+    <!-- Mot de passe oublié -->
+    <string name="forgot_title">Réinitialiser le mot de passe</string>
+    <string name="forgot_subtitle">Saisissez votre e-mail et nous vous enverrons un lien de réinitialisation.</string>
+    <string name="forgot_send">Envoyer le lien</string>
+    <string name="forgot_sent_title">Vérifiez vos e-mails</string>
+    <string name="forgot_sent_message">Si un compte existe pour %1$s, un lien de réinitialisation est en route.</string>
+    <string name="forgot_back_to_login">Retour à la connexion</string>
+
     <!-- Validation auth -->
     <string name="auth_error_email_required">Saisissez votre e-mail</string>
     <string name="auth_error_email_invalid">Saisissez un e-mail valide</string>

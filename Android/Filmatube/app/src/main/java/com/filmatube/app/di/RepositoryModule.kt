@@ -1,7 +1,9 @@
 package com.filmatube.app.di
 
 import com.filmatube.app.data.auth.AuthRepositoryImpl
+import com.filmatube.app.data.user.UserRepositoryImpl
 import com.filmatube.app.domain.repository.AuthRepository
+import com.filmatube.app.domain.repository.UserRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -19,4 +21,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAuthRepository(impl: AuthRepositoryImpl): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserRepository(impl: UserRepositoryImpl): UserRepository
 }

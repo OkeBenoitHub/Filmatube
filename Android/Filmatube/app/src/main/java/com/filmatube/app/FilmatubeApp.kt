@@ -28,12 +28,14 @@ class FilmatubeApp : Application(), ImageLoaderFactory {
     }
 
     private fun initAppCheck() {
+        val appCheck = FirebaseAppCheck.getInstance()
+        appCheck.setTokenAutoRefreshEnabled(true)
         val factory = if (BuildConfig.DEBUG) {
             DebugAppCheckProviderFactory.getInstance()
         } else {
             PlayIntegrityAppCheckProviderFactory.getInstance()
         }
-        FirebaseAppCheck.getInstance().installAppCheckProviderFactory(factory)
+        appCheck.installAppCheckProviderFactory(factory)
     }
 
     override fun newImageLoader(): ImageLoader =
