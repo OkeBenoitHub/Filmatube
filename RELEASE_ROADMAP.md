@@ -95,7 +95,7 @@
 - **Day 31** ✅ — Browse grid + genre chips; sort (newest/rating/A–Z); year filter.
 - **Day 32** ✅ — Movie detail: backdrop, poster, meta (year/runtime/age rating), genres, overview, average rating.
 - **Day 33** ✅ — Cast row + tap → actor filmography (Firestore search); "More like this" related row.
-- **Day 34** — Search: debounced; filters (genre/year/rating); recent + trending searches.
+- **Day 34** ✅ — Search: debounced; filters (genre/year/rating); recent + trending searches.
 - **Day 35** — Trailer (YouTube intent); **Coming Soon** row + reminder bell; paging/caching; week review.
 
 ### Week 6 — Web Admin CMS: Movies + R2 Upload (Days 36–42) (W)

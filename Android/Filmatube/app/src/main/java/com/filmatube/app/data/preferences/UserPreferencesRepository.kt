@@ -24,6 +24,12 @@ class UserPreferencesRepository @Inject constructor(
     private object Keys {
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val ACTIVE_PROFILE_ID = stringPreferencesKey("active_profile_id")
+        val RECENT_SEARCHES = stringPreferencesKey("recent_searches")
+    }
+
+    private companion object {
+        const val MAX_RECENT_SEARCHES = 8
+        const val SEPARATOR = "\n"
     }
 
     private val preferences: Flow<androidx.datastore.preferences.core.Preferences> = dataStore.data
@@ -45,5 +51,25 @@ class UserPreferencesRepository @Inject constructor(
 
     suspend fun setActiveProfileId(id: String) {
         dataStore.edit { prefs -> prefs[Keys.ACTIVE_PROFILE_ID] = id }
+    }
+
+    /** Recent search terms, most-recent first. */
+    val recentSearches: Flow<List<String>> = preferences.map { prefs ->
+        prefs[Keys.RECENT_SEARCHES]?.split(SEPARATOR)?.filter { it.isNotBlank() } ?: emptyList()
+    }
+
+    suspend fun addRecentSearch(term: String) {
+        val clean = term.trim()
+        if (clean.isBlank()) return
+        dataStore.edit { prefs ->
+            val current = prefs[Keys.RECENT_SEARCHES]?.split(SEPARATOR)?.filter { it.isNotBlank() } ?: emptyList()
+            val updated = (listOf(clean) + current.filterNot { it.equals(clean, ignoreCase = true) })
+                .take(MAX_RECENT_SEARCHES)
+            prefs[Keys.RECENT_SEARCHES] = updated.joinToString(SEPARATOR)
+        }
+    }
+
+    suspend fun clearRecentSearches() {
+        dataStore.edit { prefs -> prefs.remove(Keys.RECENT_SEARCHES) }
     }
 }

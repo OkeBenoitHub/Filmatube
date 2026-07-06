@@ -77,7 +77,9 @@ fun FilmatubeNavHost(
                 onMovieClick = { navController.navigate(movieRoute(it)) },
             )
         }
-        composable(TopLevelDestination.SEARCH.route) { SearchScreen() }
+        composable(TopLevelDestination.SEARCH.route) {
+            SearchScreen(onMovieClick = { navController.navigate(movieRoute(it)) })
+        }
         composable(TopLevelDestination.THEATER.route) { TheaterScreen() }
         composable(TopLevelDestination.COMMUNITY.route) { CommunityScreen() }
         composable(TopLevelDestination.PROFILE.route) {

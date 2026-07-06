@@ -34,6 +34,17 @@
     <string name="community_subtitle">Forums de discussion, chat en temps réel et soirées cinéma avec vos proches.</string>
     <string name="profile_subtitle">Votre profil, vos statistiques, vos badges et votre bibliothèque — au même endroit.</string>
 
+    <!-- Recherche -->
+    <string name="search_hint">Rechercher des films</string>
+    <string name="search_recent">Récentes</string>
+    <string name="search_trending">Tendances</string>
+    <string name="search_clear">Effacer</string>
+    <string name="search_no_results">Aucun résultat.</string>
+    <string name="search_rating">Note</string>
+    <string name="search_rating_any">Toutes les notes</string>
+    <string name="search_rating_3">3★ et plus</string>
+    <string name="search_rating_4">4★ et plus</string>
+
     <!-- Parcourir -->
     <string name="browse_title">Parcourir</string>
     <string name="browse_all">Tous</string>
