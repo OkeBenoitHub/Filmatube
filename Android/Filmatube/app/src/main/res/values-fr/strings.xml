@@ -25,6 +25,17 @@
     <string name="community_subtitle">Forums de discussion, chat en temps réel et soirées cinéma avec vos proches.</string>
     <string name="profile_subtitle">Votre profil, vos statistiques, vos badges et votre bibliothèque — au même endroit.</string>
 
+    <!-- Intégration (onboarding) -->
+    <string name="onboarding_skip">Passer</string>
+    <string name="onboarding_next">Suivant</string>
+    <string name="onboarding_get_started">Commencer</string>
+    <string name="onboarding_1_title">Streaming &amp; téléchargement</string>
+    <string name="onboarding_1_desc">Regardez des films en HD ou hors ligne — votre bibliothèque vous suit partout.</string>
+    <string name="onboarding_2_title">Suivez vos goûts</string>
+    <string name="onboarding_2_desc">Suivez des gens qui aiment ce que vous aimez et voyez ce qu\'ils regardent.</string>
+    <string name="onboarding_3_title">Regardez ensemble</string>
+    <string name="onboarding_3_desc">Rejoignez des premières en direct, organisez des soirées et discutez en temps réel.</string>
+
     <!-- Actions communes -->
     <string name="action_see_all">Tout voir</string>
     <string name="action_retry">Réessayer</string>

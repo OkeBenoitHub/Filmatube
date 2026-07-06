@@ -25,6 +25,17 @@
     <string name="community_subtitle">Discussion boards, real-time chat and watch parties with your people.</string>
     <string name="profile_subtitle">Your profile, taste stats, badges and library — all in one place.</string>
 
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_1_title">Stream &amp; download</string>
+    <string name="onboarding_1_desc">Watch movies in HD or save them offline — your library follows you everywhere.</string>
+    <string name="onboarding_2_title">Follow your taste</string>
+    <string name="onboarding_2_desc">Follow people who love what you love and see what they\'re watching next.</string>
+    <string name="onboarding_3_title">Watch together</string>
+    <string name="onboarding_3_desc">Join live premieres, host watch parties and discuss every scene in real time.</string>
+
     <!-- Common actions -->
     <string name="action_see_all">See all</string>
     <string name="action_retry">Retry</string>

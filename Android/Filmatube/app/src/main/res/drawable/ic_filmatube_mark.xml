@@ -1,0 +1,17 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Film-strip body with a punched-out viewing window + perforations (evenOdd) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M14,4 L34,4 A5,5 0 0 1 39,9 L39,39 A5,5 0 0 1 34,44 L14,44 A5,5 0 0 1 9,39 L9,9 A5,5 0 0 1 14,4 Z M18,11 L30,11 A2,2 0 0 1 32,13 L32,35 A2,2 0 0 1 30,37 L18,37 A2,2 0 0 1 16,35 L16,13 A2,2 0 0 1 18,11 Z M11.5,8 h3 v3 h-3 Z M11.5,14 h3 v3 h-3 Z M11.5,20 h3 v3 h-3 Z M11.5,26 h3 v3 h-3 Z M11.5,32 h3 v3 h-3 Z M33.5,8 h3 v3 h-3 Z M33.5,14 h3 v3 h-3 Z M33.5,20 h3 v3 h-3 Z M33.5,26 h3 v3 h-3 Z M33.5,32 h3 v3 h-3 Z" />
+
+    <!-- Play triangle in the viewing window -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M21,17 L21,31 L31,24 Z" />
+</vector>

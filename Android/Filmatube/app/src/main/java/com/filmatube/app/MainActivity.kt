@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.filmatube.app.ui.FilmatubeAppRoot
+import com.filmatube.app.ui.navigation.RootNavHost
 import com.filmatube.app.ui.theme.FilmatubeTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FilmatubeTheme {
-                FilmatubeAppRoot()
+                RootNavHost()
             }
         }
     }
