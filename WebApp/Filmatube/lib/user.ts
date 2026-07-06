@@ -4,6 +4,42 @@ import type { DecodedIdToken } from "firebase-admin/auth";
 import { FieldValue } from "firebase-admin/firestore";
 import { getAdminDb } from "@/lib/firebase-admin";
 
+export interface UserProfileDoc {
+  uid: string;
+  email: string | null;
+  displayName: string;
+  bio: string;
+  avatarUrl: string;
+  language: string;
+  followersCount: number;
+  followingCount: number;
+  isAdmin: boolean;
+  tasteCompleted: boolean;
+  genrePreferences: string[];
+  contentLanguage: string;
+}
+
+/** Reads the `users/{uid}` document (server). */
+export async function getUserProfile(uid: string): Promise<UserProfileDoc | null> {
+  const snapshot = await getAdminDb().collection("users").doc(uid).get();
+  if (!snapshot.exists) return null;
+  const d = snapshot.data() ?? {};
+  return {
+    uid,
+    email: d.email ?? null,
+    displayName: d.displayName ?? "",
+    bio: d.bio ?? "",
+    avatarUrl: d.avatarUrl ?? "",
+    language: d.language ?? "en",
+    followersCount: d.followersCount ?? 0,
+    followingCount: d.followingCount ?? 0,
+    isAdmin: d.isAdmin ?? false,
+    tasteCompleted: d.tasteCompleted ?? false,
+    genrePreferences: d.genrePreferences ?? [],
+    contentLanguage: d.contentLanguage ?? "both",
+  };
+}
+
 /**
  * Creates `users/{uid}` with defaults on first sign-in, otherwise refreshes `lastActiveAt`.
  * Mirrors the Android UserRepository so both platforms produce identical documents.
