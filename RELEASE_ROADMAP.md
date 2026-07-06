@@ -85,7 +85,7 @@
 - **Day 25** ✅ — Taste onboarding (web); profile switcher.
 - **Day 26** ✅ — **Admin auth** (`isAdmin` gate); admin layout + sidebar (Dashboard, Movies, Users, Requests, Theater, Notifications, Analytics).
 - **Day 27** ✅ — Admin dashboard skeleton (stat cards, recent-activity placeholders).
-- **Day 28** — Auth parity QA (Android ↔ web, same account); week review.
+- **Day 28** ✅ — Auth parity QA (Android ↔ web, same account); week review.
 
 ## PHASE 3 — Movie Catalog & Admin CMS (Days 29–42)
 
