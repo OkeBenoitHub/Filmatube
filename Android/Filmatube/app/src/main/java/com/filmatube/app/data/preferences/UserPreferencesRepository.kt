@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -25,6 +26,7 @@ class UserPreferencesRepository @Inject constructor(
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val ACTIVE_PROFILE_ID = stringPreferencesKey("active_profile_id")
         val RECENT_SEARCHES = stringPreferencesKey("recent_searches")
+        val REMINDERS = stringSetPreferencesKey("coming_soon_reminders")
     }
 
     private companion object {
@@ -71,5 +73,15 @@ class UserPreferencesRepository @Inject constructor(
 
     suspend fun clearRecentSearches() {
         dataStore.edit { prefs -> prefs.remove(Keys.RECENT_SEARCHES) }
+    }
+
+    /** Movie ids the user asked to be reminded about (coming-soon). */
+    val reminders: Flow<Set<String>> = preferences.map { prefs -> prefs[Keys.REMINDERS] ?: emptySet() }
+
+    suspend fun toggleReminder(movieId: String) {
+        dataStore.edit { prefs ->
+            val current = prefs[Keys.REMINDERS] ?: emptySet()
+            prefs[Keys.REMINDERS] = if (movieId in current) current - movieId else current + movieId
+        }
     }
 }

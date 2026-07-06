@@ -26,6 +26,9 @@
     <string name="detail_directed_by">Réalisé par %1$s</string>
     <string name="detail_cast">Distribution</string>
     <string name="detail_more_like_this">Dans le même genre</string>
+    <string name="detail_trailer">Bande-annonce</string>
+    <string name="detail_remind">Me rappeler</string>
+    <string name="detail_reminder_set">Rappel activé</string>
     <string name="action_retry_desc">Réessayer</string>
 
     <!-- Aperçus des sections -->

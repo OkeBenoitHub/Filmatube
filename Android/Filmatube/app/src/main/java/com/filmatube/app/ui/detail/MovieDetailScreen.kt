@@ -25,10 +25,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.NotificationsNone
+import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -55,6 +61,7 @@ import com.filmatube.app.ui.components.ContentRow
 import com.filmatube.app.ui.components.EmptyView
 import com.filmatube.app.ui.components.ErrorView
 import com.filmatube.app.ui.components.FilmatubePrimaryButton
+import com.filmatube.app.ui.components.FilmatubeSecondaryButton
 import com.filmatube.app.ui.components.LoadingView
 import com.filmatube.app.ui.components.PosterTile
 import com.filmatube.app.ui.components.UserAvatar
@@ -71,7 +78,9 @@ fun MovieDetailScreen(
     viewModel: MovieDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val reminderSet by viewModel.reminderSet.collectAsStateWithLifecycle()
     val language = LocaleController.currentTag()
+    val context = LocalContext.current
 
     Box(modifier = Modifier.fillMaxSize()) {
         when (val movie = state.movie) {
@@ -82,6 +91,11 @@ fun MovieDetailScreen(
                 movie = movie.data,
                 related = state.related,
                 language = language,
+                reminderSet = reminderSet,
+                onToggleReminder = viewModel::toggleReminder,
+                onOpenTrailer = { url ->
+                    runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+                },
                 onMovieClick = onMovieClick,
                 onActorClick = onActorClick,
             )
@@ -108,6 +122,9 @@ private fun DetailContent(
     movie: Movie,
     related: List<Movie>,
     language: String,
+    reminderSet: Boolean,
+    onToggleReminder: () -> Unit,
+    onOpenTrailer: (String) -> Unit,
     onMovieClick: (String) -> Unit,
     onActorClick: (String) -> Unit,
 ) {
@@ -182,12 +199,29 @@ private fun DetailContent(
                 }
             }
 
-            FilmatubePrimaryButton(
-                text = stringResource(R.string.detail_play),
-                onClick = { /* player wired on Day 43 */ },
-                leadingIcon = Icons.Filled.PlayArrow,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            if (movie.isComingSoon) {
+                FilmatubePrimaryButton(
+                    text = stringResource(if (reminderSet) R.string.detail_reminder_set else R.string.detail_remind),
+                    onClick = onToggleReminder,
+                    leadingIcon = if (reminderSet) Icons.Filled.NotificationsActive else Icons.Outlined.NotificationsNone,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            } else {
+                FilmatubePrimaryButton(
+                    text = stringResource(R.string.detail_play),
+                    onClick = { /* player wired on Day 43 */ },
+                    leadingIcon = Icons.Filled.PlayArrow,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            if (!movie.trailerUrl.isNullOrBlank()) {
+                FilmatubeSecondaryButton(
+                    text = stringResource(R.string.detail_trailer),
+                    onClick = { onOpenTrailer(movie.trailerUrl) },
+                    leadingIcon = Icons.Outlined.PlayCircle,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
 
             if (movie.genres.isNotEmpty()) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {

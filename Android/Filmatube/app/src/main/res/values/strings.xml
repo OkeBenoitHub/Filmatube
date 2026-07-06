@@ -26,6 +26,9 @@
     <string name="detail_directed_by">Directed by %1$s</string>
     <string name="detail_cast">Cast</string>
     <string name="detail_more_like_this">More like this</string>
+    <string name="detail_trailer">Trailer</string>
+    <string name="detail_remind">Remind me</string>
+    <string name="detail_reminder_set">Reminder set</string>
     <string name="action_retry_desc">Retry</string>
 
     <!-- Feature previews -->
