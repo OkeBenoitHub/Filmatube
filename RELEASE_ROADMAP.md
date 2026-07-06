@@ -100,7 +100,7 @@
 
 ### Week 6 — Web Admin CMS: Movies + R2 Upload (Days 36–42) (W)
 - **Day 36** ✅ — Movies list: paginated/searchable/sortable; featured/pinned/coming-soon badges; status (draft/published).
-- **Day 37** — Add/Edit movie form; **TMDB auto-fill** (IMDB/TMDB ID → title/overview/cast/runtime/genres/artwork/age rating).
+- **Day 37** ✅ — Add/Edit movie form; **TMDB auto-fill** (IMDB/TMDB ID → title/overview/cast/runtime/genres/artwork/age rating).
 - **Day 38** — **Video upload to R2** (multipart presigned) with progress; store `videoKey`; generate token playback URL; replace-video flow.
 - **Day 39** — Poster/backdrop/thumbnail upload to R2; **subtitle (.vtt) upload per language**; trailer URL field.
 - **Day 40** — Featured/pinned/coming-soon toggles; bilingual (en/fr) title+description; delete-with-confirm; publish/unpublish.
