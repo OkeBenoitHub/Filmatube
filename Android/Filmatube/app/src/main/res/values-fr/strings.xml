@@ -23,6 +23,9 @@
     <string name="home_empty_message">De nouveaux films arrivent. Revenez bientôt.</string>
     <string name="detail_play">Regarder</string>
     <string name="detail_back">Retour</string>
+    <string name="detail_directed_by">Réalisé par %1$s</string>
+    <string name="detail_cast">Distribution</string>
+    <string name="detail_more_like_this">Dans le même genre</string>
     <string name="action_retry_desc">Réessayer</string>
 
     <!-- Aperçus des sections -->

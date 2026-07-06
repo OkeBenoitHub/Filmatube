@@ -57,6 +57,11 @@ class MovieRepositoryImpl @Inject constructor(
     override suspend fun getMovie(id: String): Movie? =
         movies.document(id).get().await().toMovie()
 
+    override suspend fun getRelated(movieId: String, genres: List<String>, limit: Int): List<Movie> {
+        val genre = genres.firstOrNull() ?: return emptyList()
+        return getByGenre(genre, limit + 1).filter { it.id != movieId }.take(limit)
+    }
+
     override suspend fun browse(sort: MovieSort, genre: String?, year: Int?, limit: Int): List<Movie> {
         // Index-safe: one server-side order, then filter/sort client-side.
         val ordered = when (sort) {

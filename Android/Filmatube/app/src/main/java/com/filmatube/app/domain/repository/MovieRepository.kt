@@ -13,6 +13,9 @@ interface MovieRepository {
     suspend fun getByGenre(genre: String, limit: Int = 15): List<Movie>
     suspend fun getMovie(id: String): Movie?
 
+    /** Movies sharing a genre with the given one (excludes it). */
+    suspend fun getRelated(movieId: String, genres: List<String>, limit: Int = 15): List<Movie>
+
     /** Grid browse with client-side genre/year filtering + sort. */
     suspend fun browse(
         sort: MovieSort = MovieSort.NEWEST,

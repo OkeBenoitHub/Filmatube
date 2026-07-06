@@ -1,6 +1,8 @@
 package com.filmatube.app.ui.taste
 
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import com.filmatube.app.R
 
 /**
@@ -26,4 +28,11 @@ enum class Genre(val key: String, @StringRes val labelRes: Int) {
     THRILLER("thriller", R.string.genre_thriller),
     WAR("war", R.string.genre_war),
     WESTERN("western", R.string.genre_western),
+}
+
+/** Localized label for a genre key (falls back to the capitalized key). */
+@Composable
+fun genreLabel(key: String): String {
+    val res = Genre.entries.find { it.key == key }?.labelRes
+    return if (res != null) stringResource(res) else key.replaceFirstChar { it.uppercase() }
 }

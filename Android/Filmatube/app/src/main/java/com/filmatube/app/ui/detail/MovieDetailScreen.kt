@@ -4,22 +4,29 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,6 +48,8 @@ import com.filmatube.app.ui.components.EmptyView
 import com.filmatube.app.ui.components.ErrorView
 import com.filmatube.app.ui.components.FilmatubePrimaryButton
 import com.filmatube.app.ui.components.LoadingView
+import com.filmatube.app.ui.taste.genreLabel
+import com.filmatube.app.ui.theme.FilmatubeGold
 import com.filmatube.app.ui.theme.FilmatubeSpacing
 import com.filmatube.app.util.LocaleController
 
@@ -53,11 +62,11 @@ fun MovieDetailScreen(
     val language = LocaleController.currentTag()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        when (val s = state) {
+        when (val movie = state.movie) {
             DataState.Loading -> LoadingView()
             DataState.Empty -> EmptyView()
-            is DataState.Error -> ErrorView(error = s.error, onRetry = viewModel::load)
-            is DataState.Success -> DetailContent(movie = s.data, language = language)
+            is DataState.Error -> ErrorView(error = movie.error, onRetry = viewModel::load)
+            is DataState.Success -> DetailContent(movie = movie.data, language = language)
         }
         IconButton(
             onClick = onBack,
@@ -75,6 +84,7 @@ fun MovieDetailScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DetailContent(movie: Movie, language: String) {
     Column(
@@ -108,23 +118,71 @@ private fun DetailContent(movie: Movie, language: String) {
             modifier = Modifier.padding(FilmatubeSpacing.lg),
             verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
         ) {
-            Text(movie.title.get(language), style = MaterialTheme.typography.headlineMedium)
-            Text(
-                text = buildString {
-                    append(movie.year)
-                    if (movie.duration > 0) append("  •  ${movie.duration} min")
-                    if (movie.ageRating.isNotBlank()) append("  •  ${movie.ageRating}")
-                    if (movie.averageRating > 0) append("  •  ★ ${"%.1f".format(movie.averageRating)}")
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md)) {
+                AsyncImage(
+                    model = movie.posterUrl,
+                    contentDescription = movie.title.get(language),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .width(96.dp)
+                        .aspectRatio(2f / 3f)
+                        .clip(RoundedCornerShape(10.dp)),
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xs)) {
+                    Text(movie.title.get(language), style = MaterialTheme.typography.headlineSmall)
+                    Text(
+                        text = buildString {
+                            append(movie.year)
+                            if (movie.duration > 0) append("  •  ${movie.duration} min")
+                            if (movie.ageRating.isNotBlank()) append("  •  ${movie.ageRating}")
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (movie.averageRating > 0) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Filled.Star, contentDescription = null, tint = FilmatubeGold, modifier = Modifier.width(18.dp))
+                            Text(
+                                text = "  ${"%.1f".format(movie.averageRating)}  (${movie.ratingsCount})",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        }
+                    }
+                    if (movie.directors.isNotEmpty()) {
+                        Text(
+                            text = stringResource(R.string.detail_directed_by, movie.directors.joinToString(", ")),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+
             FilmatubePrimaryButton(
                 text = stringResource(R.string.detail_play),
                 onClick = { /* player wired on Day 43 */ },
                 leadingIcon = Icons.Filled.PlayArrow,
                 modifier = Modifier.fillMaxWidth(),
             )
+
+            if (movie.genres.isNotEmpty()) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {
+                    movie.genres.forEach { genre ->
+                        Surface(
+                            shape = RoundedCornerShape(50),
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        ) {
+                            Text(
+                                text = genreLabel(genre),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            )
+                        }
+                    }
+                }
+            }
+
             Text(
                 text = movie.description.get(language),
                 style = MaterialTheme.typography.bodyMedium,

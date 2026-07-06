@@ -93,7 +93,7 @@
 - **Day 29** ✅ — Domain models (`Movie`,`Genre`,`CastMember`); `MovieRepository` queries (featured, trending, new, by-genre, detail, search).
 - **Day 30** ✅ — Home: hero banner (auto-rotate), Trending, New Releases, Continue Watching (stub), By-genre rows.
 - **Day 31** ✅ — Browse grid + genre chips; sort (newest/rating/A–Z); year filter.
-- **Day 32** — Movie detail: backdrop, poster, meta (year/runtime/age rating), genres, overview, average rating.
+- **Day 32** ✅ — Movie detail: backdrop, poster, meta (year/runtime/age rating), genres, overview, average rating.
 - **Day 33** — Cast row + tap → actor filmography (Firestore search); "More like this" related row.
 - **Day 34** — Search: debounced; filters (genre/year/rating); recent + trending searches.
 - **Day 35** — Trailer (YouTube intent); **Coming Soon** row + reminder bell; paging/caching; week review.

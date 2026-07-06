@@ -10,8 +10,14 @@ import com.filmatube.app.domain.util.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+data class DetailUiState(
+    val movie: DataState<Movie> = DataState.Loading,
+    val related: List<Movie> = emptyList(),
+)
 
 @HiltViewModel
 class MovieDetailViewModel @Inject constructor(
@@ -21,7 +27,7 @@ class MovieDetailViewModel @Inject constructor(
 
     private val movieId: String = savedStateHandle["movieId"] ?: ""
 
-    private val _state = MutableStateFlow<DataState<Movie>>(DataState.Loading)
+    private val _state = MutableStateFlow(DetailUiState())
     val state = _state.asStateFlow()
 
     init {
@@ -30,13 +36,27 @@ class MovieDetailViewModel @Inject constructor(
 
     fun load() {
         viewModelScope.launch {
-            _state.value = DataState.Loading
+            _state.update { it.copy(movie = DataState.Loading) }
             runCatching { movieRepository.getMovie(movieId) }.fold(
                 onSuccess = { movie ->
-                    _state.value = if (movie == null) DataState.Empty else DataState.Success(movie)
+                    if (movie == null) {
+                        _state.update { it.copy(movie = DataState.Empty) }
+                    } else {
+                        _state.update { it.copy(movie = DataState.Success(movie)) }
+                        loadRelated(movie)
+                    }
                 },
-                onFailure = { _state.value = DataState.Error(it.toAppError()) },
+                onFailure = { error -> _state.update { it.copy(movie = DataState.Error(error.toAppError())) } },
             )
+        }
+    }
+
+    private fun loadRelated(movie: Movie) {
+        viewModelScope.launch {
+            val related = runCatching {
+                movieRepository.getRelated(movie.id, movie.genres)
+            }.getOrDefault(emptyList())
+            _state.update { it.copy(related = related) }
         }
     }
 }
