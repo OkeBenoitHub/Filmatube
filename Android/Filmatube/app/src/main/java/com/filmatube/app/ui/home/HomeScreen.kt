@@ -44,6 +44,7 @@ import com.filmatube.app.util.LocaleController
 @Composable
 fun HomeScreen(
     onMovieClick: (String) -> Unit,
+    onBrowse: (String?) -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -59,14 +60,19 @@ fun HomeScreen(
                     title = stringResource(R.string.home_empty_title),
                     message = stringResource(R.string.home_empty_message),
                 )
-                else -> HomeContent(state = state, language = language, onMovieClick = onMovieClick)
+                else -> HomeContent(state, language, onMovieClick, onBrowse)
             }
         }
     }
 }
 
 @Composable
-private fun HomeContent(state: HomeUiState, language: String, onMovieClick: (String) -> Unit) {
+private fun HomeContent(
+    state: HomeUiState,
+    language: String,
+    onMovieClick: (String) -> Unit,
+    onBrowse: (String?) -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -77,24 +83,30 @@ private fun HomeContent(state: HomeUiState, language: String, onMovieClick: (Str
             FeaturedHero(movies = state.featured, language = language, onMovieClick = onMovieClick)
         }
         if (state.trending.isNotEmpty()) {
-            MovieRow(stringResource(R.string.row_trending), state.trending, language, onMovieClick)
+            MovieRow(stringResource(R.string.row_trending), state.trending, language, onMovieClick) { onBrowse(null) }
         }
         if (state.newReleases.isNotEmpty()) {
-            MovieRow(stringResource(R.string.row_new_releases), state.newReleases, language, onMovieClick)
+            MovieRow(stringResource(R.string.row_new_releases), state.newReleases, language, onMovieClick) { onBrowse(null) }
         }
         state.genreRows.forEach { row ->
-            MovieRow(genreLabel(row.genreKey), row.movies, language, onMovieClick)
+            MovieRow(genreLabel(row.genreKey), row.movies, language, onMovieClick) { onBrowse(row.genreKey) }
         }
         if (state.comingSoon.isNotEmpty()) {
-            MovieRow(stringResource(R.string.row_coming_soon), state.comingSoon, language, onMovieClick)
+            MovieRow(stringResource(R.string.row_coming_soon), state.comingSoon, language, onMovieClick) { onBrowse(null) }
         }
         Spacer(Modifier.height(FilmatubeSpacing.xxl))
     }
 }
 
 @Composable
-private fun MovieRow(title: String, movies: List<Movie>, language: String, onMovieClick: (String) -> Unit) {
-    ContentRow(title = title, items = movies, key = { it.id }) { movie ->
+private fun MovieRow(
+    title: String,
+    movies: List<Movie>,
+    language: String,
+    onMovieClick: (String) -> Unit,
+    onSeeAll: () -> Unit,
+) {
+    ContentRow(title = title, items = movies, key = { it.id }, onSeeAll = onSeeAll) { movie ->
         PosterTile(
             posterUrl = movie.posterUrl,
             title = movie.title.get(language),

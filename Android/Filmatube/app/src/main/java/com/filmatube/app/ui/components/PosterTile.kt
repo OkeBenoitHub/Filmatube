@@ -22,7 +22,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import com.filmatube.app.ui.theme.FilmatubeSpacing
@@ -32,16 +34,18 @@ private val PosterShape = RoundedCornerShape(12.dp)
 
 /**
  * Movie poster tile (2:3) with shimmer while loading and a film-icon fallback on error.
- * Used in home rows, browse grids and search results.
+ * Used in home rows (fixed [width]) and browse/search grids (pass `width = null` to fill the cell).
  */
 @Composable
 fun PosterTile(
     posterUrl: String?,
     title: String?,
     modifier: Modifier = Modifier,
+    width: Dp? = PosterTileWidth,
     onClick: () -> Unit = {},
 ) {
-    Column(modifier = modifier.width(PosterTileWidth).clickable(onClick = onClick)) {
+    val sized = if (width != null) modifier.width(width) else modifier.fillMaxWidth()
+    Column(modifier = sized.clickable(onClick = onClick)) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()

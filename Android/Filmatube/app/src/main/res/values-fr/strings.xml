@@ -31,6 +31,16 @@
     <string name="community_subtitle">Forums de discussion, chat en temps réel et soirées cinéma avec vos proches.</string>
     <string name="profile_subtitle">Votre profil, vos statistiques, vos badges et votre bibliothèque — au même endroit.</string>
 
+    <!-- Parcourir -->
+    <string name="browse_title">Parcourir</string>
+    <string name="browse_all">Tous</string>
+    <string name="browse_sort_newest">Récents</string>
+    <string name="browse_sort_rating">Mieux notés</string>
+    <string name="browse_sort_az">A–Z</string>
+    <string name="browse_year">Année</string>
+    <string name="browse_year_all">Toutes les années</string>
+    <string name="browse_empty">Aucun film ne correspond à vos filtres.</string>
+
     <!-- Intégration (onboarding) -->
     <string name="onboarding_skip">Passer</string>
     <string name="onboarding_next">Suivant</string>

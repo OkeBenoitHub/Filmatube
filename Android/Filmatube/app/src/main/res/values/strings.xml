@@ -31,6 +31,16 @@
     <string name="community_subtitle">Discussion boards, real-time chat and watch parties with your people.</string>
     <string name="profile_subtitle">Your profile, taste stats, badges and library — all in one place.</string>
 
+    <!-- Browse -->
+    <string name="browse_title">Browse</string>
+    <string name="browse_all">All</string>
+    <string name="browse_sort_newest">Newest</string>
+    <string name="browse_sort_rating">Top rated</string>
+    <string name="browse_sort_az">A–Z</string>
+    <string name="browse_year">Year</string>
+    <string name="browse_year_all">All years</string>
+    <string name="browse_empty">No movies match your filters.</string>
+
     <!-- Onboarding -->
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_next">Next</string>

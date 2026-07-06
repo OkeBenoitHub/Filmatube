@@ -3,8 +3,11 @@ package com.filmatube.app.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.filmatube.app.ui.browse.BrowseScreen
 import com.filmatube.app.ui.community.CommunityScreen
 import com.filmatube.app.ui.detail.MovieDetailScreen
 import com.filmatube.app.ui.home.HomeScreen
@@ -19,8 +22,10 @@ private const val ROUTE_PROFILE_EDIT = "profile/edit"
 private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_PROFILES = "settings/profiles"
 private const val ROUTE_MOVIE = "movie/{movieId}"
+private const val ROUTE_BROWSE = "browse?genre={genre}"
 
 fun movieRoute(movieId: String) = "movie/$movieId"
+fun browseRoute(genre: String?) = if (genre == null) "browse" else "browse?genre=$genre"
 
 /**
  * Top-level navigation graph. Each [TopLevelDestination] maps to one composable screen.
@@ -38,10 +43,22 @@ fun FilmatubeNavHost(
         modifier = modifier,
     ) {
         composable(TopLevelDestination.HOME.route) {
-            HomeScreen(onMovieClick = { navController.navigate(movieRoute(it)) })
+            HomeScreen(
+                onMovieClick = { navController.navigate(movieRoute(it)) },
+                onBrowse = { genre -> navController.navigate(browseRoute(genre)) },
+            )
         }
         composable(ROUTE_MOVIE) {
             MovieDetailScreen(onBack = { navController.popBackStack() })
+        }
+        composable(
+            route = ROUTE_BROWSE,
+            arguments = listOf(navArgument("genre") { type = NavType.StringType; nullable = true; defaultValue = null }),
+        ) {
+            BrowseScreen(
+                onBack = { navController.popBackStack() },
+                onMovieClick = { navController.navigate(movieRoute(it)) },
+            )
         }
         composable(TopLevelDestination.SEARCH.route) { SearchScreen() }
         composable(TopLevelDestination.THEATER.route) { TheaterScreen() }
