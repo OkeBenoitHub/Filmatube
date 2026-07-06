@@ -1,9 +1,14 @@
 package com.filmatube.app.data.user
 
 import com.filmatube.app.domain.model.AuthUser
+import com.filmatube.app.domain.model.UserProfile
 import com.filmatube.app.domain.repository.UserRepository
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.util.Locale
 import javax.inject.Inject
@@ -13,6 +18,18 @@ import javax.inject.Singleton
 class UserRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
 ) : UserRepository {
+
+    override fun observeUser(uid: String): Flow<UserProfile?> = callbackFlow {
+        val registration = firestore.collection(USERS).document(uid)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                trySend(snapshot?.toUserProfile())
+            }
+        awaitClose { registration.remove() }
+    }
 
     override suspend fun ensureUserDocument(user: AuthUser) {
         val ref = firestore.collection(USERS).document(user.uid)
@@ -63,6 +80,21 @@ class UserRepositoryImpl @Inject constructor(
             "isBanned" to false,
             "createdAt" to FieldValue.serverTimestamp(),
             FIELD_LAST_ACTIVE to FieldValue.serverTimestamp(),
+        )
+    }
+
+    private fun DocumentSnapshot.toUserProfile(): UserProfile? {
+        if (!exists()) return null
+        return UserProfile(
+            uid = id,
+            email = getString("email"),
+            displayName = getString("displayName").orEmpty(),
+            bio = getString("bio").orEmpty(),
+            avatarUrl = getString("avatarUrl").orEmpty(),
+            language = getString("language") ?: "en",
+            followersCount = getLong("followersCount") ?: 0L,
+            followingCount = getLong("followingCount") ?: 0L,
+            isAdmin = getBoolean("isAdmin") ?: false,
         )
     }
 

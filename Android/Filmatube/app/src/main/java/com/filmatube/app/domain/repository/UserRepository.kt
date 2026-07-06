@@ -1,9 +1,14 @@
 package com.filmatube.app.domain.repository
 
 import com.filmatube.app.domain.model.AuthUser
+import com.filmatube.app.domain.model.UserProfile
+import kotlinx.coroutines.flow.Flow
 
 /** Firestore user-profile document operations. */
 interface UserRepository {
+
+    /** Real-time stream of the `users/{uid}` document (null if it doesn't exist). */
+    fun observeUser(uid: String): Flow<UserProfile?>
     /**
      * Creates `users/{uid}` with defaults if it doesn't exist (first sign-in),
      * otherwise refreshes `lastActiveAt`. Idempotent.

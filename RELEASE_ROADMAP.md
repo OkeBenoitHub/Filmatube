@@ -74,7 +74,7 @@
 - **Day 16** ✅ — Register/Login (Email/Password + Google); validation + error states.
 - **Day 17** ✅ — Forgot-password flow; create `users/{uid}` on first login; App Check tokens.
 - **Day 18** ✅ — Taste onboarding: genre picker, language (EN/FR), content prefs.
-- **Day 19** — Profile screen: avatar, bio, stats, followers/following, badges placeholder.
+- **Day 19** ✅ — Profile screen: avatar, bio, stats, followers/following, badges placeholder.
 - **Day 20** — Edit profile; **avatar upload → R2** (presign → PUT → store URL).
 - **Day 21** — Netflix-style multi-profiles per account; language toggle; week review.
 

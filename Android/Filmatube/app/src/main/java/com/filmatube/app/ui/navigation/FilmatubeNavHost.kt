@@ -18,6 +18,7 @@ import com.filmatube.app.ui.theater.TheaterScreen
 @Composable
 fun FilmatubeNavHost(
     navController: NavHostController,
+    onSignedOut: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -29,6 +30,11 @@ fun FilmatubeNavHost(
         composable(TopLevelDestination.SEARCH.route) { SearchScreen() }
         composable(TopLevelDestination.THEATER.route) { TheaterScreen() }
         composable(TopLevelDestination.COMMUNITY.route) { CommunityScreen() }
-        composable(TopLevelDestination.PROFILE.route) { ProfileScreen() }
+        composable(TopLevelDestination.PROFILE.route) {
+            ProfileScreen(
+                onEditProfile = { /* wired on Day 20 */ },
+                onSignedOut = onSignedOut,
+            )
+        }
     }
 }

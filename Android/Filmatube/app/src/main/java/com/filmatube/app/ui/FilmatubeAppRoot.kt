@@ -17,7 +17,7 @@ import com.filmatube.app.ui.navigation.FilmatubeNavHost
  * and the top-level nav graph. Mounted by `MainActivity` inside `FilmatubeTheme`.
  */
 @Composable
-fun FilmatubeAppRoot() {
+fun FilmatubeAppRoot(onSignedOut: () -> Unit) {
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -27,6 +27,7 @@ fun FilmatubeAppRoot() {
     ) { innerPadding ->
         FilmatubeNavHost(
             navController = navController,
+            onSignedOut = onSignedOut,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),

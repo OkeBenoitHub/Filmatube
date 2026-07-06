@@ -83,7 +83,9 @@ fun RootNavHost() {
         }
 
         composable(RootRoutes.MAIN) {
-            FilmatubeAppRoot()
+            FilmatubeAppRoot(
+                onSignedOut = { navController.navigateClearingBackStack(RootRoutes.LOGIN) },
+            )
         }
     }
 }

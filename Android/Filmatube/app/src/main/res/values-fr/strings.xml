@@ -79,6 +79,16 @@
     <string name="auth_error_too_many">Trop de tentatives. Réessayez plus tard</string>
     <string name="auth_error_generic">Une erreur s\'est produite. Veuillez réessayer</string>
 
+    <!-- Profil -->
+    <string name="profile_edit">Modifier le profil</string>
+    <string name="profile_followers">Abonnés</string>
+    <string name="profile_following">Abonnements</string>
+    <string name="profile_watched">Vus</string>
+    <string name="profile_badges">Badges</string>
+    <string name="profile_badges_empty">Regardez des films et soyez actif pour gagner des badges.</string>
+    <string name="profile_sign_out">Se déconnecter</string>
+    <string name="profile_admin">Admin</string>
+
     <!-- Onboarding des goûts -->
     <string name="taste_title">Qu\'aimez-vous ?</string>
     <string name="taste_subtitle">Choisissez quelques genres pour personnaliser vos films.</string>

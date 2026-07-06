@@ -82,6 +82,16 @@
     <string name="auth_error_too_many">Too many attempts. Try again later</string>
     <string name="auth_error_generic">Something went wrong. Please try again</string>
 
+    <!-- Profile -->
+    <string name="profile_edit">Edit profile</string>
+    <string name="profile_followers">Followers</string>
+    <string name="profile_following">Following</string>
+    <string name="profile_watched">Watched</string>
+    <string name="profile_badges">Badges</string>
+    <string name="profile_badges_empty">Watch movies and be social to earn badges.</string>
+    <string name="profile_sign_out">Sign out</string>
+    <string name="profile_admin">Admin</string>
+
     <!-- Taste onboarding -->
     <string name="taste_title">What do you love?</string>
     <string name="taste_subtitle">Pick a few genres so we can tailor your movies.</string>
