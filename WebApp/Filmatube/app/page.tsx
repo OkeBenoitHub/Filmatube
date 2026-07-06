@@ -34,7 +34,7 @@ export default async function LandingPage() {
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
             <Link
-              href="#"
+              href="/login"
               className="hidden h-9 items-center rounded-lg border border-surface-border px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-hover sm:inline-flex"
             >
               {dict.common.signIn}

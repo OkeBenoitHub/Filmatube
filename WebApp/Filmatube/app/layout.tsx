@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 import { LocaleProvider } from "@/components/providers/LocaleProvider";
 import { ToastProvider } from "@/components/ui/Toast";
 import { getLocale } from "@/lib/i18n/server";
@@ -22,7 +23,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html lang={locale} className="dark">
       <body>
         <LocaleProvider initialLocale={locale}>
-          <ToastProvider>{children}</ToastProvider>
+          <AuthProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </AuthProvider>
         </LocaleProvider>
       </body>
     </html>

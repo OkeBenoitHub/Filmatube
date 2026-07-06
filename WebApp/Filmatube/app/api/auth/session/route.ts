@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { clearSession, createSession } from "@/lib/auth/session";
+import { getAdminAuth } from "@/lib/firebase-admin";
+import { ensureUserDocument } from "@/lib/user";
 
-/** POST { idToken } -> sets the session cookie. Called after client-side sign-in (Day 22). */
+/** POST { idToken } -> sets the session cookie and provisions the user doc. */
 export async function POST(request: NextRequest) {
   const { idToken } = (await request.json().catch(() => ({}))) as { idToken?: string };
   if (!idToken) {
@@ -9,6 +11,8 @@ export async function POST(request: NextRequest) {
   }
   try {
     await createSession(idToken);
+    const decoded = await getAdminAuth().verifyIdToken(idToken);
+    await ensureUserDocument(decoded);
     return NextResponse.json({ status: "ok" });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
