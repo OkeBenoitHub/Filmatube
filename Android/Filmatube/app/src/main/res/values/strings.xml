@@ -37,7 +37,7 @@
     <string name="onboarding_3_desc">Join live premieres, host watch parties and discuss every scene in real time.</string>
 
     <!-- OAuth 2.0 Web client ID (from Google Cloud / Firebase). REPLACE before Google Sign-In works. -->
-    <string name="google_web_client_id" translatable="false">YOUR_WEB_CLIENT_ID.apps.googleusercontent.com</string>
+    <string name="google_web_client_id" translatable="false">147690566788-kp6mgck3tvl4s8637lufkg3v47umhg6e.apps.googleusercontent.com</string>
 
     <!-- Auth -->
     <string name="auth_login_title">Welcome back</string>
