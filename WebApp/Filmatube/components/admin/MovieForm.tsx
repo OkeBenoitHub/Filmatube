@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Chip } from "@/components/account/Chip";
 import { ErrorBanner } from "@/components/auth/AuthBits";
+import { VideoUpload } from "@/components/admin/VideoUpload";
 
 export function MovieForm({
   movieId,
@@ -163,6 +164,8 @@ export function MovieForm({
       <Field label={dict.trailerUrl}>
         <Input value={values.trailerUrl} onChange={(e) => set({ trailerUrl: e.target.value })} />
       </Field>
+
+      <VideoUpload videoKey={values.videoKey} onUploaded={(key) => set({ videoKey: key })} dict={dict} />
 
       {/* Flags + status */}
       <div className="flex flex-wrap items-center gap-4">
