@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.filmatube.app.ui.community.CommunityScreen
+import com.filmatube.app.ui.detail.MovieDetailScreen
 import com.filmatube.app.ui.home.HomeScreen
 import com.filmatube.app.ui.profile.EditProfileScreen
 import com.filmatube.app.ui.profile.ProfileScreen
@@ -17,6 +18,9 @@ import com.filmatube.app.ui.theater.TheaterScreen
 private const val ROUTE_PROFILE_EDIT = "profile/edit"
 private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_PROFILES = "settings/profiles"
+private const val ROUTE_MOVIE = "movie/{movieId}"
+
+fun movieRoute(movieId: String) = "movie/$movieId"
 
 /**
  * Top-level navigation graph. Each [TopLevelDestination] maps to one composable screen.
@@ -33,7 +37,12 @@ fun FilmatubeNavHost(
         startDestination = TopLevelDestination.HOME.route,
         modifier = modifier,
     ) {
-        composable(TopLevelDestination.HOME.route) { HomeScreen() }
+        composable(TopLevelDestination.HOME.route) {
+            HomeScreen(onMovieClick = { navController.navigate(movieRoute(it)) })
+        }
+        composable(ROUTE_MOVIE) {
+            MovieDetailScreen(onBack = { navController.popBackStack() })
+        }
         composable(TopLevelDestination.SEARCH.route) { SearchScreen() }
         composable(TopLevelDestination.THEATER.route) { TheaterScreen() }
         composable(TopLevelDestination.COMMUNITY.route) { CommunityScreen() }

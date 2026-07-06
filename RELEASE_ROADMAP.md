@@ -91,7 +91,7 @@
 
 ### Week 5 — Android Movie Catalog (Days 29–35) (A)
 - **Day 29** ✅ — Domain models (`Movie`,`Genre`,`CastMember`); `MovieRepository` queries (featured, trending, new, by-genre, detail, search).
-- **Day 30** — Home: hero banner (auto-rotate), Trending, New Releases, Continue Watching (stub), By-genre rows.
+- **Day 30** ✅ — Home: hero banner (auto-rotate), Trending, New Releases, Continue Watching (stub), By-genre rows.
 - **Day 31** — Browse grid + genre chips; sort (newest/rating/A–Z); year filter.
 - **Day 32** — Movie detail: backdrop, poster, meta (year/runtime/age rating), genres, overview, average rating.
 - **Day 33** — Cast row + tap → actor filmography (Firestore search); "More like this" related row.

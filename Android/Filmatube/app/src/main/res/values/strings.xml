@@ -17,7 +17,13 @@
     <string name="row_trending">Trending</string>
     <string name="row_new_releases">New Releases</string>
     <string name="row_top_rated">Top Rated</string>
+    <string name="row_coming_soon">Coming Soon</string>
     <string name="notifications">Notifications</string>
+    <string name="home_empty_title">No movies yet</string>
+    <string name="home_empty_message">New movies are on the way. Check back soon.</string>
+    <string name="detail_play">Play</string>
+    <string name="detail_back">Back</string>
+    <string name="action_retry_desc">Retry</string>
 
     <!-- Feature previews -->
     <string name="search_subtitle">Find any movie in seconds — by title, genre, year or rating.</string>

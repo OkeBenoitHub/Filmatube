@@ -21,55 +21,107 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.filmatube.app.R
-import com.filmatube.app.ui.components.HeroBanner
-import com.filmatube.app.ui.components.PosterPlaceholderRow
-import com.filmatube.app.ui.components.SectionHeader
+import com.filmatube.app.domain.model.Movie
+import com.filmatube.app.ui.components.ContentRow
+import com.filmatube.app.ui.components.ContentRowShimmer
+import com.filmatube.app.ui.components.EmptyView
+import com.filmatube.app.ui.components.ErrorView
+import com.filmatube.app.ui.components.PosterTile
+import com.filmatube.app.ui.taste.Genre
 import com.filmatube.app.ui.theme.FilmatubeSpacing
+import com.filmatube.app.util.LocaleController
 
-/**
- * Home — branded preview layout: wordmark top bar, gradient hero, and ranked/plain
- * poster rows. Real featured/trending/new-release data replaces the placeholders on Day 30.
- */
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onMovieClick: (String) -> Unit,
+    viewModel: HomeViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val language = LocaleController.currentTag()
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        HomeTopBar()
+        Box(modifier = Modifier.fillMaxSize()) {
+            when {
+                state.isLoading -> HomeLoading()
+                state.error != null -> ErrorView(error = state.error!!, onRetry = viewModel::load)
+                state.isEmpty -> EmptyView(
+                    title = stringResource(R.string.home_empty_title),
+                    message = stringResource(R.string.home_empty_message),
+                )
+                else -> HomeContent(state = state, language = language, onMovieClick = onMovieClick)
+            }
+        }
+    }
+}
+
+@Composable
+private fun HomeContent(state: HomeUiState, language: String, onMovieClick: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.lg),
     ) {
-        HomeTopBar()
-
-        HeroBanner(
-            kicker = stringResource(R.string.home_hero_kicker),
-            title = stringResource(R.string.home_hero_title),
-            tagline = stringResource(R.string.home_hero_tagline),
-            badge = stringResource(R.string.coming_soon),
-            modifier = Modifier.padding(horizontal = FilmatubeSpacing.lg),
-        )
-
-        Spacer(Modifier.height(FilmatubeSpacing.lg))
-
-        SectionHeader(title = stringResource(R.string.row_trending))
-        PosterPlaceholderRow(count = 6, ranked = true)
-
-        Spacer(Modifier.height(FilmatubeSpacing.lg))
-
-        SectionHeader(title = stringResource(R.string.row_new_releases))
-        PosterPlaceholderRow(count = 6)
-
-        Spacer(Modifier.height(FilmatubeSpacing.lg))
-
-        SectionHeader(title = stringResource(R.string.row_top_rated))
-        PosterPlaceholderRow(count = 6)
-
+        if (state.featured.isNotEmpty()) {
+            FeaturedHero(movies = state.featured, language = language, onMovieClick = onMovieClick)
+        }
+        if (state.trending.isNotEmpty()) {
+            MovieRow(stringResource(R.string.row_trending), state.trending, language, onMovieClick)
+        }
+        if (state.newReleases.isNotEmpty()) {
+            MovieRow(stringResource(R.string.row_new_releases), state.newReleases, language, onMovieClick)
+        }
+        state.genreRows.forEach { row ->
+            MovieRow(genreLabel(row.genreKey), row.movies, language, onMovieClick)
+        }
+        if (state.comingSoon.isNotEmpty()) {
+            MovieRow(stringResource(R.string.row_coming_soon), state.comingSoon, language, onMovieClick)
+        }
         Spacer(Modifier.height(FilmatubeSpacing.xxl))
     }
+}
+
+@Composable
+private fun MovieRow(title: String, movies: List<Movie>, language: String, onMovieClick: (String) -> Unit) {
+    ContentRow(title = title, items = movies, key = { it.id }) { movie ->
+        PosterTile(
+            posterUrl = movie.posterUrl,
+            title = movie.title.get(language),
+            onClick = { onMovieClick(movie.id) },
+        )
+    }
+}
+
+@Composable
+private fun HomeLoading() {
+    Column(verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.lg)) {
+        Box(
+            modifier = Modifier
+                .padding(FilmatubeSpacing.lg)
+                .fillMaxWidth()
+                .height(220.dp)
+                .clip(MaterialTheme.shapes.large)
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+        )
+        repeat(3) { ContentRowShimmer() }
+    }
+}
+
+@Composable
+private fun genreLabel(key: String): String {
+    val res = Genre.entries.find { it.key == key }?.labelRes
+    return if (res != null) stringResource(res) else key.replaceFirstChar { it.uppercase() }
 }
 
 @Composable
@@ -87,23 +139,14 @@ private fun HomeTopBar() {
         )
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md)) {
-            TopBarIcon(
-                icon = Icons.Outlined.Notifications,
-                contentDescription = stringResource(R.string.notifications),
-            )
-            TopBarIcon(
-                icon = Icons.Outlined.Person,
-                contentDescription = stringResource(R.string.nav_profile),
-            )
+            TopBarIcon(Icons.Outlined.Notifications, stringResource(R.string.notifications))
+            TopBarIcon(Icons.Outlined.Person, stringResource(R.string.nav_profile))
         }
     }
 }
 
 @Composable
-private fun TopBarIcon(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    contentDescription: String,
-) {
+private fun TopBarIcon(icon: ImageVector, contentDescription: String) {
     Box(
         modifier = Modifier
             .size(36.dp)

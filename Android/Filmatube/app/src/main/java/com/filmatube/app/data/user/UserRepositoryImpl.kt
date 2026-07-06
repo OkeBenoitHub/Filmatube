@@ -116,6 +116,7 @@ class UserRepositoryImpl @Inject constructor(
             followersCount = getLong("followersCount") ?: 0L,
             followingCount = getLong("followingCount") ?: 0L,
             isAdmin = getBoolean("isAdmin") ?: false,
+            genrePreferences = (get("genrePreferences") as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
         )
     }
 

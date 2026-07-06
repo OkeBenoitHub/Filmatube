@@ -17,7 +17,13 @@
     <string name="row_trending">Tendances</string>
     <string name="row_new_releases">Nouveautés</string>
     <string name="row_top_rated">Les mieux notés</string>
+    <string name="row_coming_soon">Prochainement</string>
     <string name="notifications">Notifications</string>
+    <string name="home_empty_title">Aucun film pour l\'instant</string>
+    <string name="home_empty_message">De nouveaux films arrivent. Revenez bientôt.</string>
+    <string name="detail_play">Regarder</string>
+    <string name="detail_back">Retour</string>
+    <string name="action_retry_desc">Réessayer</string>
 
     <!-- Aperçus des sections -->
     <string name="search_subtitle">Trouvez n\'importe quel film en quelques secondes — par titre, genre, année ou note.</string>

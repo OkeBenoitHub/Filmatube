@@ -11,4 +11,5 @@ data class UserProfile(
     val followersCount: Long,
     val followingCount: Long,
     val isAdmin: Boolean,
+    val genrePreferences: List<String> = emptyList(),
 )
