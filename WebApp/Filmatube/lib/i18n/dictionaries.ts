@@ -136,6 +136,8 @@ const en = {
     theater: "Theater",
     notifications: "Notifications",
     analytics: "Analytics",
+    showtimes: "Showtimes",
+    recentActivity: "Recent activity",
   },
 };
 
@@ -270,6 +272,8 @@ const fr: Dictionary = {
     theater: "Cinéma",
     notifications: "Notifications",
     analytics: "Statistiques",
+    showtimes: "Séances",
+    recentActivity: "Activité récente",
   },
 };
 
