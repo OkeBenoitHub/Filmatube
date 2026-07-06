@@ -71,7 +71,7 @@
 
 ### Week 3 — Android Auth & Profiles (Days 15–21) (A)
 - **Day 15** ✅ — Splash + animated logo; 3-slide onboarding.
-- **Day 16** — Register/Login (Email/Password + Google); validation + error states.
+- **Day 16** ✅ — Register/Login (Email/Password + Google); validation + error states.
 - **Day 17** — Forgot-password flow; create `users/{uid}` on first login; App Check tokens.
 - **Day 18** — Taste onboarding: genre picker, language (EN/FR), content prefs.
 - **Day 19** — Profile screen: avatar, bio, stats, followers/following, badges placeholder.

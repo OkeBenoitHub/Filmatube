@@ -41,10 +41,10 @@ private const val MIN_SPLASH_MS = 1600L
  */
 @Composable
 fun SplashScreen(
-    onNavigate: (onboardingCompleted: Boolean) -> Unit,
+    onNavigate: (SplashDestination) -> Unit,
     viewModel: SplashViewModel = hiltViewModel(),
 ) {
-    val onboardingCompleted by viewModel.onboardingCompleted.collectAsStateWithLifecycle()
+    val destination by viewModel.destination.collectAsStateWithLifecycle()
 
     var started by remember { mutableStateOf(false) }
     var minTimeElapsed by remember { mutableStateOf(false) }
@@ -71,10 +71,10 @@ fun SplashScreen(
         minTimeElapsed = true
     }
 
-    LaunchedEffect(minTimeElapsed, onboardingCompleted) {
-        val completed = onboardingCompleted
-        if (minTimeElapsed && completed != null) {
-            onNavigate(completed)
+    LaunchedEffect(minTimeElapsed, destination) {
+        val target = destination
+        if (minTimeElapsed && target != null) {
+            onNavigate(target)
         }
     }
 

@@ -36,6 +36,44 @@
     <string name="onboarding_3_title">Watch together</string>
     <string name="onboarding_3_desc">Join live premieres, host watch parties and discuss every scene in real time.</string>
 
+    <!-- OAuth 2.0 Web client ID (from Google Cloud / Firebase). REPLACE before Google Sign-In works. -->
+    <string name="google_web_client_id" translatable="false">YOUR_WEB_CLIENT_ID.apps.googleusercontent.com</string>
+
+    <!-- Auth -->
+    <string name="auth_login_title">Welcome back</string>
+    <string name="auth_login_subtitle">Sign in to keep watching</string>
+    <string name="auth_register_title">Create your account</string>
+    <string name="auth_register_subtitle">Join the movie community</string>
+    <string name="auth_name">Name</string>
+    <string name="auth_email">Email</string>
+    <string name="auth_password">Password</string>
+    <string name="auth_confirm_password">Confirm password</string>
+    <string name="auth_sign_in">Sign in</string>
+    <string name="auth_create_account">Create account</string>
+    <string name="auth_continue_google">Continue with Google</string>
+    <string name="auth_or">or</string>
+    <string name="auth_no_account">Don\'t have an account?</string>
+    <string name="auth_have_account">Already have an account?</string>
+    <string name="auth_sign_up">Sign up</string>
+    <string name="auth_forgot_password">Forgot password?</string>
+    <string name="auth_show_password">Show password</string>
+    <string name="auth_hide_password">Hide password</string>
+
+    <!-- Auth validation -->
+    <string name="auth_error_email_required">Enter your email</string>
+    <string name="auth_error_email_invalid">Enter a valid email</string>
+    <string name="auth_error_password_required">Enter your password</string>
+    <string name="auth_error_password_short">Password must be at least 6 characters</string>
+    <string name="auth_error_name_required">Enter your name</string>
+    <string name="auth_error_password_mismatch">Passwords don\'t match</string>
+
+    <!-- Auth errors (from Firebase) -->
+    <string name="auth_error_invalid_credentials">Incorrect email or password</string>
+    <string name="auth_error_email_in_use">That email is already registered</string>
+    <string name="auth_error_network">No internet connection</string>
+    <string name="auth_error_too_many">Too many attempts. Try again later</string>
+    <string name="auth_error_generic">Something went wrong. Please try again</string>
+
     <!-- Common actions -->
     <string name="action_see_all">See all</string>
     <string name="action_retry">Retry</string>
