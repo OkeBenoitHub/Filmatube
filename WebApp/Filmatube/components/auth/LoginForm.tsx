@@ -14,7 +14,7 @@ import { GoogleButton } from "./GoogleButton";
 
 export function LoginForm({ dict }: { dict: Dictionary["auth"] }) {
   const router = useRouter();
-  const next = useSearchParams().get("next") || "/";
+  const next = useSearchParams().get("next") || "/home";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
