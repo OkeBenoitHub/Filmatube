@@ -39,6 +39,8 @@
     <string name="player_fullscreen">Toggle fullscreen</string>
     <string name="player_lock">Lock controls</string>
     <string name="player_unlock">Unlock controls</string>
+    <string name="player_resize">Resize mode</string>
+    <string name="player_pip">Picture in picture</string>
 
     <!-- Feature previews -->
     <string name="search_subtitle">Find any movie in seconds — by title, genre, year or rating.</string>

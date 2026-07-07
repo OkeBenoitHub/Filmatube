@@ -17,10 +17,12 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.Forward10
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.PictureInPictureAlt
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Replay
@@ -113,6 +115,8 @@ fun PlayerControls(
     onToggleImmersive: () -> Unit,
     onBack: () -> Unit,
     onLock: () -> Unit,
+    onCycleResize: () -> Unit,
+    onEnterPip: () -> Unit,
     onInteract: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -223,6 +227,20 @@ fun PlayerControls(
                 modifier = Modifier.weight(1f),
             )
             Text(formatTime(state.duration), color = Color.White, style = MaterialTheme.typography.labelMedium)
+            IconButton(onClick = { onInteract(); onCycleResize() }) {
+                Icon(
+                    Icons.Filled.AspectRatio,
+                    contentDescription = stringResource(R.string.player_resize),
+                    tint = Color.White,
+                )
+            }
+            IconButton(onClick = { onInteract(); onEnterPip() }) {
+                Icon(
+                    Icons.Filled.PictureInPictureAlt,
+                    contentDescription = stringResource(R.string.player_pip),
+                    tint = Color.White,
+                )
+            }
             IconButton(onClick = { onInteract(); onToggleImmersive() }) {
                 Icon(
                     if (immersive) Icons.Filled.FullscreenExit else Icons.Filled.Fullscreen,

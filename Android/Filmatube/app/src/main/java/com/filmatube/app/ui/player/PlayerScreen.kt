@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -54,13 +55,21 @@ fun PlayerScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val player = viewModel.player
     val controlState = rememberPlayerControlState(player)
+    val activity = LocalContext.current.findComponentActivity()
+    val isInPip = rememberIsInPipMode()
 
     var controlsVisible by remember { mutableStateOf(true) }
     var immersive by remember { mutableStateOf(true) }
     var locked by remember { mutableStateOf(false) }
+    var resizeMode by remember { mutableIntStateOf(AspectRatioFrameLayout.RESIZE_MODE_FIT) }
     var interaction by remember { mutableIntStateOf(0) }
 
-    ImmersiveFullscreen(immersive)
+    ImmersiveFullscreen(immersive && !isInPip)
+
+    // Let the system auto-enter PiP when the user leaves while a video is playing.
+    LaunchedEffect(controlState.isPlaying) {
+        activity?.setPipAutoEnter(controlState.isPlaying)
+    }
 
     // Pause playback when the screen leaves the foreground.
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -96,10 +105,13 @@ fun PlayerScreen(
                     setBackgroundColor(android.graphics.Color.BLACK)
                 }
             },
+            update = { it.resizeMode = resizeMode },
             modifier = Modifier.fillMaxSize(),
         )
 
-        if (locked) {
+        if (isInPip) {
+            // In Picture-in-Picture: video only, no controls or gestures.
+        } else if (locked) {
             // Locked: swallow all gestures, only a tap-revealed unlock button.
             Box(
                 modifier = Modifier
@@ -144,18 +156,28 @@ fun PlayerScreen(
                     onToggleImmersive = { immersive = !immersive },
                     onBack = onBack,
                     onLock = { locked = true; controlsVisible = false },
+                    onCycleResize = {
+                        resizeMode = when (resizeMode) {
+                            AspectRatioFrameLayout.RESIZE_MODE_FIT -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+                            AspectRatioFrameLayout.RESIZE_MODE_ZOOM -> AspectRatioFrameLayout.RESIZE_MODE_FILL
+                            else -> AspectRatioFrameLayout.RESIZE_MODE_FIT
+                        }
+                    },
+                    onEnterPip = { activity?.enterPip() },
                     onInteract = { interaction++ },
                 )
             }
         }
 
-        when (val state = uiState) {
-            PlayerUiState.Loading -> CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.White,
-            )
-            is PlayerUiState.Error -> ErrorView(error = state.error, onRetry = viewModel::load)
-            PlayerUiState.Ready -> Unit
+        if (!isInPip) {
+            when (val state = uiState) {
+                PlayerUiState.Loading -> CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.White,
+                )
+                is PlayerUiState.Error -> ErrorView(error = state.error, onRetry = viewModel::load)
+                PlayerUiState.Ready -> Unit
+            }
         }
     }
 }

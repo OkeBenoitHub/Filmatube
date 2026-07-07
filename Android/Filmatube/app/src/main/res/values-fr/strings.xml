@@ -39,6 +39,8 @@
     <string name="player_fullscreen">Plein écran</string>
     <string name="player_lock">Verrouiller les commandes</string>
     <string name="player_unlock">Déverrouiller les commandes</string>
+    <string name="player_resize">Mode d\'affichage</string>
+    <string name="player_pip">Image dans l\'image</string>
 
     <!-- Aperçus des sections -->
     <string name="search_subtitle">Trouvez n\'importe quel film en quelques secondes — par titre, genre, année ou note.</string>
