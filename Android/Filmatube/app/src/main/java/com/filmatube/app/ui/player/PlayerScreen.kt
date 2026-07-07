@@ -4,8 +4,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -17,8 +26,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.filmatube.app.R
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -27,6 +38,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.filmatube.app.ui.components.ErrorView
+import com.filmatube.app.ui.theme.FilmatubeSpacing
 
 /**
  * Full-screen movie player. Progressive MP4 from a token-protected R2 URL via
@@ -45,6 +57,7 @@ fun PlayerScreen(
 
     var controlsVisible by remember { mutableStateOf(true) }
     var immersive by remember { mutableStateOf(true) }
+    var locked by remember { mutableStateOf(false) }
     var interaction by remember { mutableIntStateOf(0) }
 
     ImmersiveFullscreen(immersive)
@@ -59,9 +72,10 @@ fun PlayerScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    // Auto-hide the controls after a few seconds of no interaction while playing.
-    LaunchedEffect(interaction, controlsVisible, controlState.isPlaying, controlState.isScrubbing) {
-        if (controlsVisible && controlState.isPlaying && !controlState.isScrubbing) {
+    // Auto-hide the controls (or the lock button) after a few seconds of no interaction.
+    LaunchedEffect(interaction, controlsVisible, locked, controlState.isPlaying, controlState.isScrubbing) {
+        val idlePlayback = controlState.isPlaying && !controlState.isScrubbing
+        if (controlsVisible && (locked || idlePlayback)) {
             kotlinx.coroutines.delay(3500)
             controlsVisible = false
         }
@@ -85,28 +99,54 @@ fun PlayerScreen(
             modifier = Modifier.fillMaxSize(),
         )
 
-        // Tap anywhere to toggle the controls.
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                ) {
-                    controlsVisible = !controlsVisible
-                    interaction++
-                },
-        )
-
-        if (controlsVisible && uiState == PlayerUiState.Ready) {
-            PlayerControls(
-                player = player,
-                state = controlState,
-                immersive = immersive,
-                onToggleImmersive = { immersive = !immersive },
-                onBack = onBack,
-                onInteract = { interaction++ },
+        if (locked) {
+            // Locked: swallow all gestures, only a tap-revealed unlock button.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                    ) {
+                        controlsVisible = !controlsVisible
+                        interaction++
+                    },
             )
+            if (controlsVisible) {
+                IconButton(
+                    onClick = { locked = false; controlsVisible = true; interaction++ },
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .windowInsetsPadding(WindowInsets.systemBars)
+                        .padding(FilmatubeSpacing.md)
+                        .background(Color.Black.copy(alpha = 0.4f), CircleShape),
+                ) {
+                    Icon(
+                        Icons.Filled.LockOpen,
+                        contentDescription = stringResource(R.string.player_unlock),
+                        tint = Color.White,
+                    )
+                }
+            }
+        } else {
+            // Unlocked: full gesture surface + custom controls.
+            PlayerGestureBox(
+                player = player,
+                onTap = { controlsVisible = !controlsVisible; interaction++ },
+                modifier = Modifier.fillMaxSize(),
+            )
+
+            if (controlsVisible && uiState == PlayerUiState.Ready) {
+                PlayerControls(
+                    player = player,
+                    state = controlState,
+                    immersive = immersive,
+                    onToggleImmersive = { immersive = !immersive },
+                    onBack = onBack,
+                    onLock = { locked = true; controlsVisible = false },
+                    onInteract = { interaction++ },
+                )
+            }
         }
 
         when (val state = uiState) {

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Forward10
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Replay
@@ -111,6 +112,7 @@ fun PlayerControls(
     immersive: Boolean,
     onToggleImmersive: () -> Unit,
     onBack: () -> Unit,
+    onLock: () -> Unit,
     onInteract: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -134,6 +136,22 @@ fun PlayerControls(
             Icon(
                 Icons.AutoMirrored.Outlined.ArrowBack,
                 contentDescription = stringResource(R.string.detail_back),
+                tint = Color.White,
+            )
+        }
+
+        // Top bar — lock.
+        IconButton(
+            onClick = onLock,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .windowInsetsPadding(WindowInsets.systemBars)
+                .padding(FilmatubeSpacing.sm)
+                .background(Color.Black.copy(alpha = 0.35f), CircleShape),
+        ) {
+            Icon(
+                Icons.Filled.Lock,
+                contentDescription = stringResource(R.string.player_lock),
                 tint = Color.White,
             )
         }
