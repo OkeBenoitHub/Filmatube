@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Chip } from "@/components/account/Chip";
 import { ErrorBanner } from "@/components/auth/AuthBits";
+import { ImageUpload } from "@/components/admin/ImageUpload";
+import { SubtitleTracks } from "@/components/admin/SubtitleTracks";
 import { VideoUpload } from "@/components/admin/VideoUpload";
 
 export function MovieForm({
@@ -147,9 +149,11 @@ export function MovieForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={dict.posterUrl}>
           <Input value={values.posterUrl} onChange={(e) => set({ posterUrl: e.target.value })} />
+          <ImageUpload label={dict.upload} onUploaded={(url) => set({ posterUrl: url })} />
         </Field>
         <Field label={dict.backdropUrl}>
           <Input value={values.backdropUrl} onChange={(e) => set({ backdropUrl: e.target.value })} />
+          <ImageUpload label={dict.upload} onUploaded={(url) => set({ backdropUrl: url })} />
         </Field>
       </div>
       {(values.posterUrl || values.backdropUrl) && (
@@ -166,6 +170,12 @@ export function MovieForm({
       </Field>
 
       <VideoUpload videoKey={values.videoKey} onUploaded={(key) => set({ videoKey: key })} dict={dict} />
+
+      <SubtitleTracks
+        tracks={values.subtitleTracks}
+        onChange={(subtitleTracks) => set({ subtitleTracks })}
+        dict={dict}
+      />
 
       {/* Flags + status */}
       <div className="flex flex-wrap items-center gap-4">

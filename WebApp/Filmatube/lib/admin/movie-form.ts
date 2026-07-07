@@ -4,6 +4,11 @@ export interface CastEntry {
   photoUrl: string;
 }
 
+export interface SubtitleTrack {
+  lang: string;
+  url: string;
+}
+
 /** Flat editable movie fields used by the admin form + save action. */
 export interface MovieFormValues {
   imdbId: string;
@@ -22,6 +27,7 @@ export interface MovieFormValues {
   backdropUrl: string;
   trailerUrl: string;
   videoKey: string;
+  subtitleTracks: SubtitleTrack[];
   status: "draft" | "published";
   isFeatured: boolean;
   isPinned: boolean;
@@ -45,6 +51,7 @@ export const emptyMovie: MovieFormValues = {
   backdropUrl: "",
   trailerUrl: "",
   videoKey: "",
+  subtitleTracks: [],
   status: "draft",
   isFeatured: false,
   isPinned: false,

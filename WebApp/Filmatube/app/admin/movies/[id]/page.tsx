@@ -30,6 +30,7 @@ export default async function EditMoviePage({ params }: { params: Promise<{ id: 
     backdropUrl: (movie.backdropUrl as string) ?? "",
     trailerUrl: (movie.trailerUrl as string) ?? "",
     videoKey: (movie.videoKey as string) ?? "",
+    subtitleTracks: (movie.subtitleTracks as MovieFormValues["subtitleTracks"]) ?? [],
     status: ((movie.status as string) === "published" ? "published" : "draft"),
     isFeatured: !!movie.isFeatured,
     isPinned: !!movie.isPinned,
