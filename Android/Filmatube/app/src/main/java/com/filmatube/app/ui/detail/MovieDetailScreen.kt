@@ -73,6 +73,7 @@ import com.filmatube.app.util.LocaleController
 @Composable
 fun MovieDetailScreen(
     onBack: () -> Unit,
+    onPlay: (String) -> Unit,
     onMovieClick: (String) -> Unit,
     onActorClick: (String) -> Unit,
     viewModel: MovieDetailViewModel = hiltViewModel(),
@@ -92,6 +93,7 @@ fun MovieDetailScreen(
                 related = state.related,
                 language = language,
                 reminderSet = reminderSet,
+                onPlay = onPlay,
                 onToggleReminder = viewModel::toggleReminder,
                 onOpenTrailer = { url ->
                     runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
@@ -123,6 +125,7 @@ private fun DetailContent(
     related: List<Movie>,
     language: String,
     reminderSet: Boolean,
+    onPlay: (String) -> Unit,
     onToggleReminder: () -> Unit,
     onOpenTrailer: (String) -> Unit,
     onMovieClick: (String) -> Unit,
@@ -209,7 +212,7 @@ private fun DetailContent(
             } else {
                 FilmatubePrimaryButton(
                     text = stringResource(R.string.detail_play),
-                    onClick = { /* player wired on Day 43 */ },
+                    onClick = { onPlay(movie.id) },
                     leadingIcon = Icons.Filled.PlayArrow,
                     modifier = Modifier.fillMaxWidth(),
                 )

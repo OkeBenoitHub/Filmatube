@@ -13,6 +13,7 @@ import com.filmatube.app.ui.community.CommunityScreen
 import com.filmatube.app.ui.detail.ActorScreen
 import com.filmatube.app.ui.detail.MovieDetailScreen
 import com.filmatube.app.ui.home.HomeScreen
+import com.filmatube.app.ui.player.PlayerScreen
 import com.filmatube.app.ui.profile.EditProfileScreen
 import com.filmatube.app.ui.profile.ProfileScreen
 import com.filmatube.app.ui.search.SearchScreen
@@ -24,10 +25,12 @@ private const val ROUTE_PROFILE_EDIT = "profile/edit"
 private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_PROFILES = "settings/profiles"
 private const val ROUTE_MOVIE = "movie/{movieId}"
+private const val ROUTE_PLAYER = "player/{movieId}"
 private const val ROUTE_BROWSE = "browse?genre={genre}"
 private const val ROUTE_ACTOR = "actor/{name}"
 
 fun movieRoute(movieId: String) = "movie/$movieId"
+fun playerRoute(movieId: String) = "player/$movieId"
 fun browseRoute(genre: String?) = if (genre == null) "browse" else "browse?genre=$genre"
 fun actorRoute(name: String) = "actor/${Uri.encode(name)}"
 
@@ -55,9 +58,16 @@ fun FilmatubeNavHost(
         composable(ROUTE_MOVIE) {
             MovieDetailScreen(
                 onBack = { navController.popBackStack() },
+                onPlay = { navController.navigate(playerRoute(it)) },
                 onMovieClick = { navController.navigate(movieRoute(it)) },
                 onActorClick = { navController.navigate(actorRoute(it)) },
             )
+        }
+        composable(
+            route = ROUTE_PLAYER,
+            arguments = listOf(navArgument("movieId") { type = NavType.StringType }),
+        ) {
+            PlayerScreen(onBack = { navController.popBackStack() })
         }
         composable(
             route = ROUTE_ACTOR,

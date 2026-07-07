@@ -102,6 +102,11 @@ dependencies {
     // Image loading
     implementation(libs.coil.compose)
 
+    // Media / player
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.common)
+
     // Local storage
     implementation(libs.androidx.datastore.preferences)
 
