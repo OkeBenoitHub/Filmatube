@@ -64,6 +64,15 @@ export async function upsertMovie(id: string | null, values: MovieFormValues): P
   return ref.id;
 }
 
+export async function setMovieStatus(id: string, status: "draft" | "published"): Promise<void> {
+  await assertAdmin();
+  await getAdminDb().collection("movies").doc(id).set(
+    { status, updatedAt: FieldValue.serverTimestamp() },
+    { merge: true },
+  );
+  revalidatePath("/admin/movies");
+}
+
 export async function deleteMovie(id: string): Promise<void> {
   await assertAdmin();
   await getAdminDb().collection("movies").doc(id).delete();

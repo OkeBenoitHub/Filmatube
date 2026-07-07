@@ -1,12 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
+import { deleteMovie, setMovieStatus } from "@/app/admin/movies/actions";
 import type { AdminMovieRow } from "@/lib/admin/movies";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Modal } from "@/components/ui/Modal";
 
 type SortKey = "title" | "year" | "status";
 
@@ -21,6 +25,26 @@ export function MoviesTable({
 }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("year");
+  const [deleting, setDeleting] = useState<AdminMovieRow | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const toggleStatus = (m: AdminMovieRow) => {
+    startTransition(async () => {
+      await setMovieStatus(m.id, m.status === "published" ? "draft" : "published");
+      router.refresh();
+    });
+  };
+
+  const confirmDelete = () => {
+    if (!deleting) return;
+    const id = deleting.id;
+    setDeleting(null);
+    startTransition(async () => {
+      await deleteMovie(id);
+      router.refresh();
+    });
+  };
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -101,10 +125,28 @@ export function MoviesTable({
                   <td className="p-3">
                     <StatusBadge status={m.status} draftLabel={dict.draft} publishedLabel={dict.published} />
                   </td>
-                  <td className="p-3 text-right">
-                    <Link href={`/admin/movies/${m.id}`} className="text-brand-400 hover:underline">
-                      {dict.edit}
-                    </Link>
+                  <td className="p-3">
+                    <div className="flex items-center justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => toggleStatus(m)}
+                        disabled={isPending}
+                        className="text-ink-muted hover:text-ink disabled:opacity-50"
+                      >
+                        {m.status === "published" ? dict.unpublish : dict.publish}
+                      </button>
+                      <Link href={`/admin/movies/${m.id}`} className="text-brand-400 hover:underline">
+                        {dict.edit}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setDeleting(m)}
+                        disabled={isPending}
+                        className="text-red-300 hover:text-red-200 disabled:opacity-50"
+                      >
+                        {dict.delete}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -112,6 +154,18 @@ export function MoviesTable({
           </table>
         </div>
       )}
+
+      <Modal open={deleting !== null} onClose={() => setDeleting(null)}>
+        <h2 className="text-lg font-semibold text-ink">{dict.confirmDeleteTitle}</h2>
+        <p className="mt-1 text-sm text-ink-muted">
+          {deleting?.title ? `${deleting.title} — ` : ""}
+          {dict.confirmDeleteBody}
+        </p>
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setDeleting(null)}>{dict.cancel}</Button>
+          <Button className="bg-red-600 hover:bg-red-500" onClick={confirmDelete}>{dict.delete}</Button>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -103,7 +103,7 @@
 - **Day 37** ✅ — Add/Edit movie form; **TMDB auto-fill** (IMDB/TMDB ID → title/overview/cast/runtime/genres/artwork/age rating).
 - **Day 38** ✅ — **Video upload to R2** (multipart presigned) with progress; store `videoKey`; generate token playback URL; replace-video flow.
 - **Day 39** ✅ — Poster/backdrop/thumbnail upload to R2; **subtitle (.vtt) upload per language**; trailer URL field.
-- **Day 40** — Featured/pinned/coming-soon toggles; bilingual (en/fr) title+description; delete-with-confirm; publish/unpublish.
+- **Day 40** ✅ — Featured/pinned/coming-soon toggles; bilingual (en/fr) title+description; delete-with-confirm; publish/unpublish.
 - **Day 41** — Web user catalog (home rows, browse, detail, search) — mirrors Android.
 - **Day 42** — Catalog parity QA; week review.
 
