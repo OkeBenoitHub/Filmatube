@@ -31,6 +31,15 @@
     <string name="detail_reminder_set">Rappel activé</string>
     <string name="action_retry_desc">Réessayer</string>
 
+    <!-- Player -->
+    <string name="player_play">Lecture</string>
+    <string name="player_pause">Pause</string>
+    <string name="player_rewind">Reculer de 10 secondes</string>
+    <string name="player_forward">Avancer de 10 secondes</string>
+    <string name="player_fullscreen">Plein écran</string>
+    <string name="player_lock">Verrouiller les commandes</string>
+    <string name="player_unlock">Déverrouiller les commandes</string>
+
     <!-- Aperçus des sections -->
     <string name="search_subtitle">Trouvez n\'importe quel film en quelques secondes — par titre, genre, année ou note.</string>
     <string name="theater_subtitle">Des séances programmées et des premières en direct, regardées ensemble en synchro.</string>

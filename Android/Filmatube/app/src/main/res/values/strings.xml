@@ -31,6 +31,15 @@
     <string name="detail_reminder_set">Reminder set</string>
     <string name="action_retry_desc">Retry</string>
 
+    <!-- Player -->
+    <string name="player_play">Play</string>
+    <string name="player_pause">Pause</string>
+    <string name="player_rewind">Rewind 10 seconds</string>
+    <string name="player_forward">Forward 10 seconds</string>
+    <string name="player_fullscreen">Toggle fullscreen</string>
+    <string name="player_lock">Lock controls</string>
+    <string name="player_unlock">Unlock controls</string>
+
     <!-- Feature previews -->
     <string name="search_subtitle">Find any movie in seconds — by title, genre, year or rating.</string>
     <string name="theater_subtitle">Scheduled showtimes and live premieres, watched together in sync.</string>

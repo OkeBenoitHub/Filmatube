@@ -111,7 +111,7 @@
 
 ### Week 7 — Android Player Core (Days 43–49) (A)
 - **Day 43** ✅ — Media3/ExoPlayer screen; fetch **expiring token R2 URL**; progressive MP4 playback; `KEEP_SCREEN_ON`.
-- **Day 44** — Custom overlay (`useController=false`): play/pause, rewind/FF (10s), seek bar with thumbnails, fullscreen (immersive sticky).
+- **Day 44** ✅ — Custom overlay (`useController=false`): play/pause, rewind/FF (10s), seek bar with thumbnails, fullscreen (immersive sticky).
 - **Day 45** — Swipe gestures: horizontal = seek, vertical-left = brightness, vertical-right = volume, double-tap = ±10s; lock-screen overlay.
 - **Day 46** — PiP (`onUserLeaveHint`/`onPipModeChanged` hide controls); orientation handling; resize modes (fit/fill/zoom).
 - **Day 47** — Save watch position to Firestore every ~10s; mark watched at 90%; `watchProgress` update.
