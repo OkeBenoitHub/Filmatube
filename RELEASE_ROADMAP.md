@@ -116,7 +116,7 @@
 - **Day 46** ✅ — PiP (`onUserLeaveHint`/`onPipModeChanged` hide controls); orientation handling; resize modes (fit/fill/zoom).
 - **Day 47** ✅ — Save watch position to Firestore every ~10s; mark watched at 90%; `watchProgress` update.
 - **Day 48** ✅ — Continue Watching row wired; resume prompt on re-open.
-- **Day 49** — Buffering/error UX; retry; analytics (play/pause/complete); week review.
+- **Day 49** ✅ — Buffering/error UX; retry; analytics (play/pause/complete); week review.
 
 ### Week 8 — Web Player Core + Cross-Device (Days 50–56) (W)
 - **Day 50** — HTML5 `<video>` page; expiring token R2 source.

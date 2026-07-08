@@ -186,6 +186,14 @@ fun PlayerScreen(
                 PlayerUiState.Ready -> Unit
             }
 
+            // Mid-playback buffering (distinct from initial load).
+            if (uiState == PlayerUiState.Ready && controlState.isBuffering) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.White,
+                )
+            }
+
             resumePrompt?.let { positionMs ->
                 LaunchedEffect(positionMs) {
                     kotlinx.coroutines.delay(6000)

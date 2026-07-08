@@ -8,6 +8,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.filmatube.app.data.analytics.PlaybackAnalytics
 import com.filmatube.app.data.playback.PlaybackRepository
 import com.filmatube.app.data.playback.WatchProgressRepository
 import com.filmatube.app.domain.util.AppError
@@ -31,6 +32,7 @@ class PlayerViewModel @Inject constructor(
     @ApplicationContext context: Context,
     private val playbackRepository: PlaybackRepository,
     private val watchProgressRepository: WatchProgressRepository,
+    private val analytics: PlaybackAnalytics,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -51,11 +53,19 @@ class PlayerViewModel @Inject constructor(
             }
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {
-                if (!isPlaying) persistProgress() // save on pause/background
+                if (isPlaying) {
+                    analytics.play(movieId)
+                } else {
+                    analytics.pause(movieId)
+                    persistProgress() // save on pause/background
+                }
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
-                if (playbackState == Player.STATE_ENDED) persistProgress()
+                if (playbackState == Player.STATE_ENDED) {
+                    analytics.complete(movieId)
+                    persistProgress()
+                }
             }
         })
     }

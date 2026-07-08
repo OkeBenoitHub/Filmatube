@@ -60,6 +60,7 @@ private const val SEEK_STEP_MS = 10_000L
 /** Observable snapshot of playback progress, driven by a [Player.Listener] + polling. */
 class PlayerControlState {
     var isPlaying by mutableStateOf(false)
+    var isBuffering by mutableStateOf(false)
     var isEnded by mutableStateOf(false)
     var position by mutableLongStateOf(0L)
     var duration by mutableLongStateOf(0L)
@@ -79,6 +80,7 @@ fun rememberPlayerControlState(player: Player): PlayerControlState {
 
             override fun onPlaybackStateChanged(playbackState: Int) {
                 state.isEnded = playbackState == Player.STATE_ENDED
+                state.isBuffering = playbackState == Player.STATE_BUFFERING
                 if (playbackState == Player.STATE_READY) {
                     state.duration = player.duration.coerceAtLeast(0L)
                 }
