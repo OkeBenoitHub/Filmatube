@@ -33,8 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
@@ -72,6 +74,7 @@ fun PlayerGestureBox(
 ) {
     val context = LocalContext.current
     val view = LocalView.current
+    val haptics = LocalHapticFeedback.current
     val audioManager = remember { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
     val window = remember(view) { view.context.playerActivity()?.window }
     val maxVolume = remember { audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1) }
@@ -97,6 +100,7 @@ fun PlayerGestureBox(
                         val duration = player.duration.coerceAtLeast(0L)
                         val max = if (duration > 0) duration else Long.MAX_VALUE
                         player.seekTo((player.currentPosition + delta).coerceIn(0L, max))
+                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                         flash(GestureIndicator.Seek(if (forward) "+10s" else "-10s", forward))
                     },
                 )
@@ -109,9 +113,12 @@ fun PlayerGestureBox(
                 var startBrightness = 0.5f
                 var startVolume = 0
                 var leftHalf = false
+                var ignore = false
 
                 detectDragGestures(
                     onDragStart = { offset ->
+                        // Ignore drags that begin in the status-bar / control-bar zones.
+                        ignore = offset.y < size.height * 0.08f || offset.y > size.height * 0.85f
                         mode = DragMode.UNDECIDED
                         totalX = 0f
                         totalY = 0f
@@ -129,6 +136,7 @@ fun PlayerGestureBox(
                         hideJob?.cancel()
                     },
                     onDrag = { change, drag ->
+                        if (ignore) return@detectDragGestures
                         change.consume()
                         totalX += drag.x
                         totalY += drag.y

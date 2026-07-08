@@ -1,10 +1,13 @@
 package com.filmatube.app.ui.player
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
@@ -95,8 +98,20 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch { preferencesRepository.setSubtitleStyle(style) }
     }
 
+    private val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
+
     val player: ExoPlayer = ExoPlayer.Builder(context).build().apply {
         playWhenReady = true
+        // Request audio focus (duck/pause on interruptions) + pause when headphones unplug.
+        setAudioAttributes(
+            AudioAttributes.Builder()
+                .setUsage(C.USAGE_MEDIA)
+                .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                .build(),
+            /* handleAudioFocus = */ true,
+        )
+        setHandleAudioBecomingNoisy(true)
         addListener(object : Player.Listener {
             override fun onPlayerError(error: PlaybackException) {
                 _uiState.value = PlayerUiState.Error(error.toAppError())
@@ -115,6 +130,10 @@ class PlayerViewModel @Inject constructor(
                 if (playbackState == Player.STATE_ENDED) {
                     analytics.complete(movieId)
                     persistProgress()
+                }
+                // Recovered after a network drop / retry.
+                if (playbackState == Player.STATE_READY && _uiState.value is PlayerUiState.Error) {
+                    _uiState.value = PlayerUiState.Ready
                 }
             }
 
@@ -139,6 +158,7 @@ class PlayerViewModel @Inject constructor(
 
     init {
         load()
+        registerNetworkCallback()
         // Periodically checkpoint the watch position while playing.
         viewModelScope.launch {
             while (true) {
@@ -146,6 +166,22 @@ class PlayerViewModel @Inject constructor(
                 if (player.isPlaying) persistProgress()
             }
         }
+    }
+
+    /** Retry playback from the last position when the network comes back after a drop. */
+    private fun registerNetworkCallback() {
+        val callback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                viewModelScope.launch {
+                    if (player.playerError != null) {
+                        player.prepare()
+                        player.play()
+                    }
+                }
+            }
+        }
+        networkCallback = callback
+        runCatching { connectivityManager?.registerDefaultNetworkCallback(callback) }
     }
 
     fun load() {
@@ -260,6 +296,7 @@ class PlayerViewModel @Inject constructor(
 
     override fun onCleared() {
         sleepJob?.cancel()
+        networkCallback?.let { cb -> runCatching { connectivityManager?.unregisterNetworkCallback(cb) } }
         player.release()
     }
 
