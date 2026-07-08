@@ -7,6 +7,12 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
+import com.filmatube.app.domain.model.SubtitleBackground
+import com.filmatube.app.domain.model.SubtitleEdge
+import com.filmatube.app.domain.model.SubtitlePosition
+import com.filmatube.app.domain.model.SubtitleSize
+import com.filmatube.app.domain.model.SubtitleStyle
+import com.filmatube.app.domain.model.SubtitleTextColor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -27,6 +33,11 @@ class UserPreferencesRepository @Inject constructor(
         val ACTIVE_PROFILE_ID = stringPreferencesKey("active_profile_id")
         val RECENT_SEARCHES = stringPreferencesKey("recent_searches")
         val REMINDERS = stringSetPreferencesKey("coming_soon_reminders")
+        val SUB_SIZE = stringPreferencesKey("subtitle_size")
+        val SUB_TEXT_COLOR = stringPreferencesKey("subtitle_text_color")
+        val SUB_BACKGROUND = stringPreferencesKey("subtitle_background")
+        val SUB_EDGE = stringPreferencesKey("subtitle_edge")
+        val SUB_POSITION = stringPreferencesKey("subtitle_position")
     }
 
     private companion object {
@@ -84,4 +95,28 @@ class UserPreferencesRepository @Inject constructor(
             prefs[Keys.REMINDERS] = if (movieId in current) current - movieId else current + movieId
         }
     }
+
+    /** Subtitle appearance, applied by the player's SubtitleView. */
+    val subtitleStyle: Flow<SubtitleStyle> = preferences.map { prefs ->
+        SubtitleStyle(
+            size = prefs[Keys.SUB_SIZE].toEnum(SubtitleSize.MEDIUM) { SubtitleSize.valueOf(it) },
+            textColor = prefs[Keys.SUB_TEXT_COLOR].toEnum(SubtitleTextColor.WHITE) { SubtitleTextColor.valueOf(it) },
+            background = prefs[Keys.SUB_BACKGROUND].toEnum(SubtitleBackground.NONE) { SubtitleBackground.valueOf(it) },
+            edge = prefs[Keys.SUB_EDGE].toEnum(SubtitleEdge.SHADOW) { SubtitleEdge.valueOf(it) },
+            position = prefs[Keys.SUB_POSITION].toEnum(SubtitlePosition.NORMAL) { SubtitlePosition.valueOf(it) },
+        )
+    }
+
+    suspend fun setSubtitleStyle(style: SubtitleStyle) {
+        dataStore.edit { prefs ->
+            prefs[Keys.SUB_SIZE] = style.size.name
+            prefs[Keys.SUB_TEXT_COLOR] = style.textColor.name
+            prefs[Keys.SUB_BACKGROUND] = style.background.name
+            prefs[Keys.SUB_EDGE] = style.edge.name
+            prefs[Keys.SUB_POSITION] = style.position.name
+        }
+    }
+
+    private fun <T> String?.toEnum(default: T, parse: (String) -> T): T =
+        this?.let { runCatching { parse(it) }.getOrNull() } ?: default
 }

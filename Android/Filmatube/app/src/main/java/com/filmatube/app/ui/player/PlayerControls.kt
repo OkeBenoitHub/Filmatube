@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Replay10
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -126,6 +127,7 @@ fun PlayerControls(
     subtitleLanguages: List<String>,
     selectedSubtitle: String?,
     onSelectSubtitle: (String?) -> Unit,
+    onOpenSubtitleStyle: () -> Unit,
     onInteract: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -241,6 +243,7 @@ fun PlayerControls(
                     languages = subtitleLanguages,
                     selected = selectedSubtitle,
                     onSelect = { onInteract(); onSelectSubtitle(it) },
+                    onOpenStyle = { onInteract(); onOpenSubtitleStyle() },
                 )
             }
             IconButton(onClick = { onInteract(); onCycleResize() }) {
@@ -273,6 +276,7 @@ private fun SubtitleMenu(
     languages: List<String>,
     selected: String?,
     onSelect: (String?) -> Unit,
+    onOpenStyle: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     Box {
@@ -294,6 +298,11 @@ private fun SubtitleMenu(
                     onClick = { expanded = false; onSelect(lang) },
                 )
             }
+            HorizontalDivider()
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.player_subtitle_style)) },
+                onClick = { expanded = false; onOpenStyle() },
+            )
         }
     }
 }

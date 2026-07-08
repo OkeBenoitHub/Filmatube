@@ -46,6 +46,27 @@
     <string name="player_start_over">Recommencer</string>
     <string name="player_subtitles">Sous-titres</string>
     <string name="player_subtitles_off">Désactivés</string>
+    <string name="player_subtitle_style">Style des sous-titres</string>
+    <string name="sub_size">Taille</string>
+    <string name="sub_color">Couleur</string>
+    <string name="sub_background">Fond</string>
+    <string name="sub_edge">Bordure</string>
+    <string name="sub_position">Position</string>
+    <string name="sub_small">Petit</string>
+    <string name="sub_medium">Moyen</string>
+    <string name="sub_large">Grand</string>
+    <string name="sub_white">Blanc</string>
+    <string name="sub_yellow">Jaune</string>
+    <string name="sub_cyan">Cyan</string>
+    <string name="sub_bg_none">Aucun</string>
+    <string name="sub_bg_dim">Sombre</string>
+    <string name="sub_bg_solid">Plein</string>
+    <string name="sub_edge_none">Aucune</string>
+    <string name="sub_edge_shadow">Ombre</string>
+    <string name="sub_edge_outline">Contour</string>
+    <string name="sub_pos_low">Bas</string>
+    <string name="sub_pos_normal">Normal</string>
+    <string name="sub_pos_high">Haut</string>
 
     <!-- Aperçus des sections -->
     <string name="search_subtitle">Trouvez n\'importe quel film en quelques secondes — par titre, genre, année ou note.</string>

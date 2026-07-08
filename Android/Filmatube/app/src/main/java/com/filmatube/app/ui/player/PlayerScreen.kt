@@ -62,6 +62,7 @@ fun PlayerScreen(
     val resumePrompt by viewModel.resumePrompt.collectAsStateWithLifecycle()
     val subtitleLanguages by viewModel.subtitleLanguages.collectAsStateWithLifecycle()
     val selectedSubtitle by viewModel.selectedSubtitle.collectAsStateWithLifecycle()
+    val subtitleStyle by viewModel.subtitleStyle.collectAsStateWithLifecycle()
     val player = viewModel.player
     val controlState = rememberPlayerControlState(player)
     val activity = LocalContext.current.findComponentActivity()
@@ -71,6 +72,7 @@ fun PlayerScreen(
     var immersive by remember { mutableStateOf(true) }
     var locked by remember { mutableStateOf(false) }
     var resizeMode by remember { mutableIntStateOf(AspectRatioFrameLayout.RESIZE_MODE_FIT) }
+    var showSubtitleStyle by remember { mutableStateOf(false) }
     var interaction by remember { mutableIntStateOf(0) }
 
     ImmersiveFullscreen(immersive && !isInPip)
@@ -114,7 +116,10 @@ fun PlayerScreen(
                     setBackgroundColor(android.graphics.Color.BLACK)
                 }
             },
-            update = { it.resizeMode = resizeMode },
+            update = {
+                it.resizeMode = resizeMode
+                applySubtitleStyle(it, subtitleStyle)
+            },
             modifier = Modifier.fillMaxSize(),
         )
 
@@ -176,6 +181,7 @@ fun PlayerScreen(
                     subtitleLanguages = subtitleLanguages,
                     selectedSubtitle = selectedSubtitle,
                     onSelectSubtitle = viewModel::selectSubtitle,
+                    onOpenSubtitleStyle = { showSubtitleStyle = true },
                     onInteract = { interaction++ },
                 )
             }
@@ -214,6 +220,14 @@ fun PlayerScreen(
                 )
             }
         }
+    }
+
+    if (showSubtitleStyle) {
+        SubtitleSettingsSheet(
+            style = subtitleStyle,
+            onStyleChange = viewModel::setSubtitleStyle,
+            onDismiss = { showSubtitleStyle = false },
+        )
     }
 }
 

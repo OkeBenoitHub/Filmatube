@@ -14,6 +14,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.filmatube.app.data.analytics.PlaybackAnalytics
 import com.filmatube.app.data.playback.PlaybackRepository
 import com.filmatube.app.data.playback.WatchProgressRepository
+import com.filmatube.app.data.preferences.UserPreferencesRepository
+import com.filmatube.app.domain.model.SubtitleStyle
 import com.filmatube.app.domain.repository.MovieRepository
 import com.filmatube.app.domain.util.AppError
 import com.filmatube.app.domain.util.toAppError
@@ -21,8 +23,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -37,6 +41,7 @@ class PlayerViewModel @Inject constructor(
     private val playbackRepository: PlaybackRepository,
     private val watchProgressRepository: WatchProgressRepository,
     private val movieRepository: MovieRepository,
+    private val preferencesRepository: UserPreferencesRepository,
     private val analytics: PlaybackAnalytics,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -55,6 +60,14 @@ class PlayerViewModel @Inject constructor(
     val subtitleLanguages: StateFlow<List<String>> = _subtitleLanguages.asStateFlow()
     private val _selectedSubtitle = MutableStateFlow<String?>(null)
     val selectedSubtitle: StateFlow<String?> = _selectedSubtitle.asStateFlow()
+
+    /** Persisted subtitle appearance, applied by the player's SubtitleView. */
+    val subtitleStyle: StateFlow<SubtitleStyle> = preferencesRepository.subtitleStyle
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SubtitleStyle())
+
+    fun setSubtitleStyle(style: SubtitleStyle) {
+        viewModelScope.launch { preferencesRepository.setSubtitleStyle(style) }
+    }
 
     val player: ExoPlayer = ExoPlayer.Builder(context).build().apply {
         playWhenReady = true
