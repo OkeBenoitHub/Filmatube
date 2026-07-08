@@ -30,4 +30,6 @@ data class Movie(
     val isFeatured: Boolean,
     val isComingSoon: Boolean,
     val subtitleTracks: List<SubtitleTrack> = emptyList(),
+    val introStartSec: Int = 0, // admin skip-intro markers (0 = none)
+    val introEndSec: Int = 0,
 )

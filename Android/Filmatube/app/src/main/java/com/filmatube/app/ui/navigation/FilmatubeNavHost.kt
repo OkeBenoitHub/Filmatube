@@ -73,7 +73,14 @@ fun FilmatubeNavHost(
             arguments = listOf(navArgument("movieId") { type = NavType.StringType }),
             deepLinks = listOf(navDeepLink { uriPattern = "filmatube://watch/{movieId}" }),
         ) {
-            PlayerScreen(onBack = { navController.popBackStack() })
+            PlayerScreen(
+                onBack = { navController.popBackStack() },
+                onPlayNext = { nextId ->
+                    navController.navigate(playerRoute(nextId)) {
+                        popUpTo(ROUTE_PLAYER) { inclusive = true }
+                    }
+                },
+            )
         }
         composable(
             route = ROUTE_ACTOR,

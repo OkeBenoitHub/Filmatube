@@ -51,6 +51,11 @@
     <string name="player_sleep_timer">Sleep timer</string>
     <string name="sleep_minutes">%1$d min</string>
     <string name="sleep_end_of_movie">End of movie</string>
+    <string name="player_up_next">Up next</string>
+    <string name="player_play_now">Play now</string>
+    <string name="player_dismiss">Dismiss</string>
+    <string name="player_playing_in">Playing in %1$ds</string>
+    <string name="player_skip_intro">Skip intro</string>
     <string name="player_subtitle_style">Subtitle style</string>
     <string name="sub_size">Size</string>
     <string name="sub_color">Color</string>

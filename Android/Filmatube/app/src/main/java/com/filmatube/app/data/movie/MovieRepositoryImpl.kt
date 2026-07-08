@@ -145,6 +145,8 @@ class MovieRepositoryImpl @Inject constructor(
                     if (lang.isNullOrBlank() || url.isNullOrBlank()) null else SubtitleTrack(lang, url)
                 }
             } ?: emptyList(),
+            introStartSec = (getLong("introStart") ?: 0L).toInt(),
+            introEndSec = (getLong("introEnd") ?: 0L).toInt(),
         )
     }
 }

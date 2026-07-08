@@ -51,6 +51,11 @@
     <string name="player_sleep_timer">Minuteur de veille</string>
     <string name="sleep_minutes">%1$d min</string>
     <string name="sleep_end_of_movie">Fin du film</string>
+    <string name="player_up_next">À suivre</string>
+    <string name="player_play_now">Lire maintenant</string>
+    <string name="player_dismiss">Ignorer</string>
+    <string name="player_playing_in">Lecture dans %1$ds</string>
+    <string name="player_skip_intro">Passer l\'intro</string>
     <string name="player_subtitle_style">Style des sous-titres</string>
     <string name="sub_size">Taille</string>
     <string name="sub_color">Couleur</string>

@@ -16,6 +16,7 @@ import com.filmatube.app.data.analytics.PlaybackAnalytics
 import com.filmatube.app.data.playback.PlaybackRepository
 import com.filmatube.app.data.playback.WatchProgressRepository
 import com.filmatube.app.data.preferences.UserPreferencesRepository
+import com.filmatube.app.domain.model.Movie
 import com.filmatube.app.domain.model.SubtitleStyle
 import com.filmatube.app.domain.repository.MovieRepository
 import com.filmatube.app.domain.util.AppError
@@ -77,6 +78,14 @@ class PlayerViewModel @Inject constructor(
     val sleepOption: StateFlow<SleepTimerOption?> = _sleepOption.asStateFlow()
     private val _sleepRemainingMs = MutableStateFlow<Long?>(null)
     val sleepRemainingMs: StateFlow<Long?> = _sleepRemainingMs.asStateFlow()
+
+    /** Recommended next movie (autoplay "Up Next") + admin skip-intro markers (ms). */
+    private val _upNext = MutableStateFlow<Movie?>(null)
+    val upNext: StateFlow<Movie?> = _upNext.asStateFlow()
+    private val _introStartMs = MutableStateFlow(0L)
+    val introStartMs: StateFlow<Long> = _introStartMs.asStateFlow()
+    private val _introEndMs = MutableStateFlow(0L)
+    val introEndMs: StateFlow<Long> = _introEndMs.asStateFlow()
 
     /** Persisted subtitle appearance, applied by the player's SubtitleView. */
     val subtitleStyle: StateFlow<SubtitleStyle> = preferencesRepository.subtitleStyle
@@ -144,11 +153,13 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching {
                 val url = playbackRepository.streamUrl(movieId)
-                val subtitles = runCatching { movieRepository.getMovie(movieId)?.subtitleTracks }
-                    .getOrNull().orEmpty()
-                url to subtitles
+                val movie = runCatching { movieRepository.getMovie(movieId) }.getOrNull()
+                val next = movie?.let { m -> movieRepository.getRelated(movieId, m.genres).firstOrNull() }
+                    ?: movieRepository.getNewReleases().firstOrNull { it.id != movieId }
+                Triple(url, movie, next)
             }
-                .onSuccess { (url, subtitles) ->
+                .onSuccess { (url, movie, next) ->
+                    val subtitles = movie?.subtitleTracks.orEmpty()
                     val mediaItem = MediaItem.Builder()
                         .setUri(url)
                         .setSubtitleConfigurations(
@@ -167,6 +178,9 @@ class PlayerViewModel @Inject constructor(
                         .build()
                     player.prepare()
                     _subtitleLanguages.value = subtitles.map { it.lang }
+                    _upNext.value = next
+                    _introStartMs.value = (movie?.introStartSec ?: 0) * 1000L
+                    _introEndMs.value = (movie?.introEndSec ?: 0) * 1000L
                     val resumeMs = watchProgressRepository.resumePosition(movieId)
                     if (resumeMs > 0L) {
                         player.seekTo(resumeMs)

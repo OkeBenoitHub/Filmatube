@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,6 +57,7 @@ import com.filmatube.app.ui.theme.FilmatubeSpacing
 @Composable
 fun PlayerScreen(
     onBack: () -> Unit,
+    onPlayNext: (String) -> Unit,
     viewModel: PlayerViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -67,7 +69,11 @@ fun PlayerScreen(
     val playbackSpeed by viewModel.playbackSpeed.collectAsStateWithLifecycle()
     val sleepOption by viewModel.sleepOption.collectAsStateWithLifecycle()
     val sleepRemainingMs by viewModel.sleepRemainingMs.collectAsStateWithLifecycle()
+    val upNext by viewModel.upNext.collectAsStateWithLifecycle()
+    val introStartMs by viewModel.introStartMs.collectAsStateWithLifecycle()
+    val introEndMs by viewModel.introEndMs.collectAsStateWithLifecycle()
     val player = viewModel.player
+    var upNextDismissed by remember { mutableStateOf(false) }
     val controlState = rememberPlayerControlState(player)
     val activity = LocalContext.current.findComponentActivity()
     val isInPip = rememberIsInPipMode()
@@ -103,6 +109,12 @@ fun PlayerScreen(
             kotlinx.coroutines.delay(3500)
             controlsVisible = false
         }
+    }
+
+    // Autoplay the "Up Next" movie when the current one ends (unless dismissed).
+    LaunchedEffect(controlState.isEnded) {
+        val next = upNext
+        if (controlState.isEnded && next != null && !upNextDismissed) onPlayNext(next.id)
     }
 
     Box(
@@ -228,6 +240,35 @@ fun PlayerScreen(
                         .align(Alignment.TopCenter)
                         .windowInsetsPadding(WindowInsets.systemBars)
                         .padding(top = 64.dp),
+                )
+            }
+
+            // Skip intro (admin markers).
+            if (!locked && introEndMs > introStartMs && controlState.position in introStartMs until introEndMs) {
+                Button(
+                    onClick = { player.seekTo(introEndMs) },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .windowInsetsPadding(WindowInsets.systemBars)
+                        .padding(bottom = 96.dp, end = FilmatubeSpacing.lg),
+                ) {
+                    Text(stringResource(R.string.player_skip_intro))
+                }
+            }
+
+            // Up Next card in the last 30s.
+            val next = upNext
+            val remaining = controlState.duration - controlState.position
+            if (!locked && next != null && controlState.duration > 0 && !upNextDismissed && remaining in 1..30_000) {
+                UpNextCard(
+                    movie = next,
+                    secondsLeft = ((remaining + 999) / 1000).toInt().coerceAtLeast(0),
+                    onPlayNow = { onPlayNext(next.id) },
+                    onDismiss = { upNextDismissed = true },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .windowInsetsPadding(WindowInsets.systemBars)
+                        .padding(bottom = 96.dp, end = FilmatubeSpacing.lg),
                 )
             }
         }
