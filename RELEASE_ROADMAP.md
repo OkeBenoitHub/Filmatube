@@ -120,7 +120,7 @@
 
 ### Week 8 — Web Player Core + Cross-Device (Days 50–56) (W)
 - **Day 50** ✅ — HTML5 `<video>` page; expiring token R2 source.
-- **Day 51** — Custom controls: play/pause/seek/volume/fullscreen; keyboard shortcuts.
+- **Day 51** ✅ — Custom controls: play/pause/seek/volume/fullscreen; keyboard shortcuts.
 - **Day 52** — Watch-progress write/read; **Continue Watching synced with Android** via Firestore.
 - **Day 53** — Resume prompt; mark-watched parity (90%).
 - **Day 54** — Mini-player (keep browsing while watching); PiP (web).
