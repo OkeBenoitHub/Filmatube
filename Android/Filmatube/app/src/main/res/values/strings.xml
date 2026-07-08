@@ -48,6 +48,9 @@
     <string name="player_subtitles_off">Off</string>
     <string name="player_audio">Audio</string>
     <string name="player_speed">Speed</string>
+    <string name="player_sleep_timer">Sleep timer</string>
+    <string name="sleep_minutes">%1$d min</string>
+    <string name="sleep_end_of_movie">End of movie</string>
     <string name="player_subtitle_style">Subtitle style</string>
     <string name="sub_size">Size</string>
     <string name="sub_color">Color</string>

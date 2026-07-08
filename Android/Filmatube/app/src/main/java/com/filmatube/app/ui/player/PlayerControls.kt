@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.Audiotrack
+import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.ClosedCaptionOff
 import androidx.compose.material.icons.filled.Forward10
@@ -136,6 +137,9 @@ fun PlayerControls(
     onSelectAudio: (String) -> Unit,
     playbackSpeed: Float,
     onSelectSpeed: (Float) -> Unit,
+    sleepOption: SleepTimerOption?,
+    sleepRemainingMs: Long?,
+    onSetSleepTimer: (SleepTimerOption?) -> Unit,
     onInteract: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -253,6 +257,11 @@ fun PlayerControls(
                 )
             }
             SpeedMenu(speed = playbackSpeed, onSelect = { onInteract(); onSelectSpeed(it) })
+            SleepMenu(
+                option = sleepOption,
+                remainingMs = sleepRemainingMs,
+                onSelect = { onInteract(); onSetSleepTimer(it) },
+            )
             if (subtitleLanguages.isNotEmpty()) {
                 SubtitleMenu(
                     languages = subtitleLanguages,
@@ -333,6 +342,56 @@ private fun SpeedMenu(speed: Float, onSelect: (Float) -> Unit) {
                 DropdownMenuItem(
                     text = { Text(formatSpeed(option)) },
                     onClick = { expanded = false; onSelect(option) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SleepMenu(
+    option: SleepTimerOption?,
+    remainingMs: Long?,
+    onSelect: (SleepTimerOption?) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .clickable { expanded = true }
+                .padding(horizontal = FilmatubeSpacing.sm, vertical = FilmatubeSpacing.xs),
+        ) {
+            Icon(
+                Icons.Filled.Bedtime,
+                contentDescription = stringResource(R.string.player_sleep_timer),
+                tint = if (option != null) MaterialTheme.colorScheme.primary else Color.White,
+                modifier = Modifier.size(20.dp),
+            )
+            if (remainingMs != null) {
+                Text(
+                    text = formatTime(remainingMs),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(start = 4.dp),
+                )
+            }
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.player_subtitles_off)) },
+                onClick = { expanded = false; onSelect(null) },
+            )
+            SleepTimerOption.entries.forEach { opt ->
+                val label = if (opt == SleepTimerOption.END_OF_MOVIE) {
+                    stringResource(R.string.sleep_end_of_movie)
+                } else {
+                    stringResource(R.string.sleep_minutes, opt.minutes.toInt())
+                }
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = { expanded = false; onSelect(opt) },
                 )
             }
         }

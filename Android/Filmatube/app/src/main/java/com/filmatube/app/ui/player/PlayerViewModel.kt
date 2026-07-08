@@ -22,6 +22,7 @@ import com.filmatube.app.domain.util.AppError
 import com.filmatube.app.domain.util.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -69,6 +70,13 @@ class PlayerViewModel @Inject constructor(
     val selectedAudio: StateFlow<String?> = _selectedAudio.asStateFlow()
     private val _playbackSpeed = MutableStateFlow(1f)
     val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
+
+    /** Sleep timer: selected option + remaining ms (null when off / end-of-movie). */
+    private var sleepJob: Job? = null
+    private val _sleepOption = MutableStateFlow<SleepTimerOption?>(null)
+    val sleepOption: StateFlow<SleepTimerOption?> = _sleepOption.asStateFlow()
+    private val _sleepRemainingMs = MutableStateFlow<Long?>(null)
+    val sleepRemainingMs: StateFlow<Long?> = _sleepRemainingMs.asStateFlow()
 
     /** Persisted subtitle appearance, applied by the player's SubtitleView. */
     val subtitleStyle: StateFlow<SubtitleStyle> = preferencesRepository.subtitleStyle
@@ -184,6 +192,29 @@ class PlayerViewModel @Inject constructor(
         player.setPlaybackSpeed(speed)
     }
 
+    /** Arm/cancel the sleep timer. Timed options count down then pause; null = off. */
+    fun setSleepTimer(option: SleepTimerOption?) {
+        sleepJob?.cancel()
+        _sleepOption.value = option
+        if (option == null || option == SleepTimerOption.END_OF_MOVIE) {
+            _sleepRemainingMs.value = null
+            return
+        }
+        val totalMs = option.minutes * 60_000L
+        _sleepRemainingMs.value = totalMs
+        sleepJob = viewModelScope.launch {
+            var remaining = totalMs
+            while (remaining > 0) {
+                delay(1000)
+                remaining -= 1000
+                _sleepRemainingMs.value = remaining
+            }
+            player.pause()
+            _sleepOption.value = null
+            _sleepRemainingMs.value = null
+        }
+    }
+
     /** Select a subtitle language (null = off). */
     fun selectSubtitle(lang: String?) {
         _selectedSubtitle.value = lang
@@ -214,6 +245,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     override fun onCleared() {
+        sleepJob?.cancel()
         player.release()
     }
 
@@ -230,3 +262,8 @@ sealed interface PlayerUiState {
 
 /** A selectable embedded audio track. */
 data class AudioTrackOption(val language: String, val label: String)
+
+/** Sleep-timer choices. Timed options auto-pause after [minutes]; END_OF_MOVIE has none. */
+enum class SleepTimerOption(val minutes: Long) {
+    MIN_15(15), MIN_30(30), MIN_45(45), MIN_60(60), END_OF_MOVIE(0)
+}

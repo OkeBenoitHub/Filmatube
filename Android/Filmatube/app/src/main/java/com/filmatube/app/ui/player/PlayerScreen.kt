@@ -65,6 +65,8 @@ fun PlayerScreen(
     val subtitleStyle by viewModel.subtitleStyle.collectAsStateWithLifecycle()
     val audioTracks by viewModel.audioTracks.collectAsStateWithLifecycle()
     val playbackSpeed by viewModel.playbackSpeed.collectAsStateWithLifecycle()
+    val sleepOption by viewModel.sleepOption.collectAsStateWithLifecycle()
+    val sleepRemainingMs by viewModel.sleepRemainingMs.collectAsStateWithLifecycle()
     val player = viewModel.player
     val controlState = rememberPlayerControlState(player)
     val activity = LocalContext.current.findComponentActivity()
@@ -188,6 +190,9 @@ fun PlayerScreen(
                     onSelectAudio = viewModel::selectAudio,
                     playbackSpeed = playbackSpeed,
                     onSelectSpeed = viewModel::setPlaybackSpeed,
+                    sleepOption = sleepOption,
+                    sleepRemainingMs = sleepRemainingMs,
+                    onSetSleepTimer = viewModel::setSleepTimer,
                     onInteract = { interaction++ },
                 )
             }
