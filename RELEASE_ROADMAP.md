@@ -123,7 +123,7 @@
 - **Day 51** ✅ — Custom controls: play/pause/seek/volume/fullscreen; keyboard shortcuts.
 - **Day 52** ✅ — Watch-progress write/read; **Continue Watching synced with Android** via Firestore.
 - **Day 53** ✅ — Resume prompt; mark-watched parity (90%).
-- **Day 54** — Mini-player (keep browsing while watching); PiP (web).
+- **Day 54** ✅ — Mini-player (keep browsing while watching); PiP (web).
 - **Day 55** — "Continue on Web / Open in App" deep links; share movie links (Open Graph cards).
 - **Day 56** — Cross-device playback QA; week review.
 

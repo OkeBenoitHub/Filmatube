@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { LocaleProvider } from "@/components/providers/LocaleProvider";
+import { MiniPlayerProvider } from "@/components/player/MiniPlayerProvider";
 import { ToastProvider } from "@/components/ui/Toast";
-import { getLocale } from "@/lib/i18n/server";
+import { getDict, getLocale } from "@/lib/i18n/server";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  const locale = await getLocale();
+  const [locale, dict] = await Promise.all([getLocale(), getDict()]);
 
   // `dark` class enables Tailwind's class-based dark mode app-wide (forced dark).
   return (
@@ -24,7 +25,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body>
         <LocaleProvider initialLocale={locale}>
           <AuthProvider>
-            <ToastProvider>{children}</ToastProvider>
+            <MiniPlayerProvider dict={dict.player}>
+              <ToastProvider>{children}</ToastProvider>
+            </MiniPlayerProvider>
           </AuthProvider>
         </LocaleProvider>
       </body>
