@@ -111,10 +111,15 @@ fun PlayerScreen(
         }
     }
 
-    // Autoplay the "Up Next" movie when the current one ends (unless dismissed).
+    // Reveal controls + autoplay the "Up Next" movie when the current one ends.
     LaunchedEffect(controlState.isEnded) {
+        if (!controlState.isEnded) return@LaunchedEffect
+        controlsVisible = true
         val next = upNext
-        if (controlState.isEnded && next != null && !upNextDismissed) onPlayNext(next.id)
+        if (next != null && !upNextDismissed) {
+            viewModel.logFeature("up_next")
+            onPlayNext(next.id)
+        }
     }
 
     Box(
@@ -246,7 +251,7 @@ fun PlayerScreen(
             // Skip intro (admin markers).
             if (!locked && introEndMs > introStartMs && controlState.position in introStartMs until introEndMs) {
                 Button(
-                    onClick = { player.seekTo(introEndMs) },
+                    onClick = { viewModel.logFeature("skip_intro"); player.seekTo(introEndMs) },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .windowInsetsPadding(WindowInsets.systemBars)
@@ -263,7 +268,7 @@ fun PlayerScreen(
                 UpNextCard(
                     movie = next,
                     secondsLeft = ((remaining + 999) / 1000).toInt().coerceAtLeast(0),
-                    onPlayNow = { onPlayNext(next.id) },
+                    onPlayNow = { viewModel.logFeature("up_next"); onPlayNext(next.id) },
                     onDismiss = { upNextDismissed = true },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)

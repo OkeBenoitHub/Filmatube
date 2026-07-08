@@ -136,7 +136,7 @@
 - **Day 60** ✅ — **Sleep timer** dialog (15/30/45/60 + end-of-movie); badge countdown; auto-pause.
 - **Day 61** ✅ — **"Up Next" recommended-movie** autoplay (last 30s → 10s countdown, cancelable); optional **skip-intro** (admin markers).
 - **Day 62** ✅ — Background-audio handling; network-loss resume; gesture refinement.
-- **Day 63** — Player polish + analytics; week review.
+- **Day 63** ✅ — Player polish + analytics; week review.
 
 ### Week 10 — Web Player Advanced + Admin Media Tracks (Days 64–70) (W)
 - **Day 64** — Plyr-style web controls (settings gear, quality menu placeholder, speed, captions toggle).

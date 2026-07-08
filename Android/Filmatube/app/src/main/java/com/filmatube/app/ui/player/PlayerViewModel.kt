@@ -234,18 +234,24 @@ class PlayerViewModel @Inject constructor(
         player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
             .setPreferredAudioLanguage(language)
             .build()
+        analytics.feature(movieId, "audio")
     }
 
     /** Set playback speed (0.5x–2x). */
     fun setPlaybackSpeed(speed: Float) {
         _playbackSpeed.value = speed
         player.setPlaybackSpeed(speed)
+        if (speed != 1f) analytics.feature(movieId, "speed")
     }
+
+    /** Log engagement with a player feature (skip_intro, up_next, …). */
+    fun logFeature(name: String) = analytics.feature(movieId, name)
 
     /** Arm/cancel the sleep timer. Timed options count down then pause; null = off. */
     fun setSleepTimer(option: SleepTimerOption?) {
         sleepJob?.cancel()
         _sleepOption.value = option
+        if (option != null) analytics.feature(movieId, "sleep_timer")
         if (option == null || option == SleepTimerOption.END_OF_MOVIE) {
             _sleepRemainingMs.value = null
             return
@@ -276,6 +282,7 @@ class PlayerViewModel @Inject constructor(
                 setPreferredTextLanguage(lang)
             }
         }.build()
+        if (lang != null) analytics.feature(movieId, "subtitle")
     }
 
     fun startOver() {

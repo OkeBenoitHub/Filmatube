@@ -14,6 +14,17 @@ class PlaybackAnalytics @Inject constructor(
     fun pause(movieId: String) = log(EVENT_PAUSE, movieId)
     fun complete(movieId: String) = log(EVENT_COMPLETE, movieId)
 
+    /** Engagement with an advanced feature (subtitle/audio/speed/sleep_timer/skip_intro/up_next). */
+    fun feature(movieId: String, name: String) {
+        analytics.logEvent(
+            EVENT_FEATURE,
+            Bundle().apply {
+                putString(PARAM_MOVIE_ID, movieId)
+                putString(PARAM_FEATURE, name)
+            },
+        )
+    }
+
     private fun log(event: String, movieId: String) {
         analytics.logEvent(event, Bundle().apply { putString(PARAM_MOVIE_ID, movieId) })
     }
@@ -22,6 +33,8 @@ class PlaybackAnalytics @Inject constructor(
         const val EVENT_PLAY = "video_play"
         const val EVENT_PAUSE = "video_pause"
         const val EVENT_COMPLETE = "video_complete"
+        const val EVENT_FEATURE = "video_feature"
         const val PARAM_MOVIE_ID = "movie_id"
+        const val PARAM_FEATURE = "feature"
     }
 }
