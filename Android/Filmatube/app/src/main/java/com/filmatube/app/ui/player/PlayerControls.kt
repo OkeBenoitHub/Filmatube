@@ -300,7 +300,7 @@ private fun Context.findActivity(): Activity? {
     return null
 }
 
-private fun formatTime(ms: Long): String {
+internal fun formatTime(ms: Long): String {
     val totalSeconds = (ms.coerceAtLeast(0L)) / 1000
     val hours = totalSeconds / 3600
     val minutes = (totalSeconds % 3600) / 60

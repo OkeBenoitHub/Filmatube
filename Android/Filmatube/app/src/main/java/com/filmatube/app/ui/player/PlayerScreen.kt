@@ -9,12 +9,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -26,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
@@ -53,6 +59,7 @@ fun PlayerScreen(
     viewModel: PlayerViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val resumePrompt by viewModel.resumePrompt.collectAsStateWithLifecycle()
     val player = viewModel.player
     val controlState = rememberPlayerControlState(player)
     val activity = LocalContext.current.findComponentActivity()
@@ -178,6 +185,44 @@ fun PlayerScreen(
                 is PlayerUiState.Error -> ErrorView(error = state.error, onRetry = viewModel::load)
                 PlayerUiState.Ready -> Unit
             }
+
+            resumePrompt?.let { positionMs ->
+                LaunchedEffect(positionMs) {
+                    kotlinx.coroutines.delay(6000)
+                    viewModel.dismissResumePrompt()
+                }
+                ResumeBar(
+                    positionMs = positionMs,
+                    onStartOver = { viewModel.startOver() },
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .windowInsetsPadding(WindowInsets.systemBars)
+                        .padding(top = 64.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ResumeBar(
+    positionMs: Long,
+    onStartOver: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(24.dp))
+            .padding(start = FilmatubeSpacing.lg, end = FilmatubeSpacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.player_resuming_from, formatTime(positionMs)),
+            color = Color.White,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        TextButton(onClick = onStartOver) {
+            Text(stringResource(R.string.player_start_over), color = MaterialTheme.colorScheme.primary)
         }
     }
 }

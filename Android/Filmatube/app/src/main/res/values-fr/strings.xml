@@ -14,6 +14,7 @@
     <string name="home_hero_kicker">Votre cinéma, ensemble</string>
     <string name="home_hero_title">Regarder. Partager. Discuter.</string>
     <string name="home_hero_tagline">Regardez des films avec des gens qui partagent vos goûts.</string>
+    <string name="row_continue_watching">Reprendre</string>
     <string name="row_trending">Tendances</string>
     <string name="row_new_releases">Nouveautés</string>
     <string name="row_top_rated">Les mieux notés</string>
@@ -41,6 +42,8 @@
     <string name="player_unlock">Déverrouiller les commandes</string>
     <string name="player_resize">Mode d\'affichage</string>
     <string name="player_pip">Image dans l\'image</string>
+    <string name="player_resuming_from">Reprise à %1$s</string>
+    <string name="player_start_over">Recommencer</string>
 
     <!-- Aperçus des sections -->
     <string name="search_subtitle">Trouvez n\'importe quel film en quelques secondes — par titre, genre, année ou note.</string>

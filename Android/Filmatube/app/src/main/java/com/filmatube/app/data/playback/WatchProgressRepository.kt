@@ -4,6 +4,7 @@ import com.filmatube.app.di.IoDispatcher
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.tasks.await
@@ -50,7 +51,36 @@ class WatchProgressRepository @Inject constructor(
         }.getOrDefault(0L)
     }
 
+    /** In-progress (not completed) items, most-recently-watched first — for Continue Watching. */
+    suspend fun getContinueWatching(limit: Int = 20): List<WatchProgressEntry> = withContext(ioDispatcher) {
+        val uid = auth.currentUser?.uid ?: return@withContext emptyList()
+        runCatching {
+            firestore.collection("watchProgress").document(uid).collection("items")
+                .orderBy("updatedAt", Query.Direction.DESCENDING)
+                .limit(limit.toLong())
+                .get().await()
+                .documents
+                .mapNotNull { d ->
+                    if (d.getBoolean("completed") == true) return@mapNotNull null
+                    WatchProgressEntry(
+                        movieId = d.getString("movieId") ?: d.id,
+                        positionMs = d.getLong("positionMs") ?: 0L,
+                        durationMs = d.getLong("durationMs") ?: 0L,
+                        progress = (d.getDouble("progress") ?: 0.0).toFloat(),
+                    )
+                }
+        }.getOrDefault(emptyList())
+    }
+
     companion object {
         private const val COMPLETE_THRESHOLD = 0.9 // watched ≥ 90% ⇒ completed
     }
 }
+
+/** A saved watch-progress row. */
+data class WatchProgressEntry(
+    val movieId: String,
+    val positionMs: Long,
+    val durationMs: Long,
+    val progress: Float,
+)

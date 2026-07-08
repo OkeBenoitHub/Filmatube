@@ -2,6 +2,7 @@ package com.filmatube.app.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.filmatube.app.data.playback.WatchProgressRepository
 import com.filmatube.app.domain.model.Movie
 import com.filmatube.app.domain.repository.AuthRepository
 import com.filmatube.app.domain.repository.MovieRepository
@@ -17,8 +18,11 @@ import javax.inject.Inject
 
 data class GenreRow(val genreKey: String, val movies: List<Movie>)
 
+data class ContinueWatchingItem(val movie: Movie, val progress: Float)
+
 data class HomeUiState(
     val isLoading: Boolean = true,
+    val continueWatching: List<ContinueWatchingItem> = emptyList(),
     val featured: List<Movie> = emptyList(),
     val trending: List<Movie> = emptyList(),
     val newReleases: List<Movie> = emptyList(),
@@ -28,6 +32,7 @@ data class HomeUiState(
 ) {
     val isEmpty: Boolean
         get() = !isLoading && error == null &&
+            continueWatching.isEmpty() &&
             featured.isEmpty() && trending.isEmpty() && newReleases.isEmpty() &&
             comingSoon.isEmpty() && genreRows.isEmpty()
 }
@@ -39,6 +44,7 @@ class HomeViewModel @Inject constructor(
     private val movieRepository: MovieRepository,
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
+    private val watchProgressRepository: WatchProgressRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeUiState())
@@ -68,8 +74,17 @@ class HomeViewModel @Inject constructor(
                     .map { genre -> GenreRow(genre, movieRepository.getByGenre(genre)) }
                     .filter { it.movies.isNotEmpty() }
 
+                val continueWatching = watchProgressRepository.getContinueWatching()
+                    .mapNotNull { entry ->
+                        movieRepository.getMovie(entry.movieId)?.let { movie ->
+                            ContinueWatchingItem(movie, entry.progress)
+                        }
+                    }
+                    .take(12)
+
                 HomeUiState(
                     isLoading = false,
+                    continueWatching = continueWatching,
                     featured = featured,
                     trending = trending,
                     newReleases = newReleases,

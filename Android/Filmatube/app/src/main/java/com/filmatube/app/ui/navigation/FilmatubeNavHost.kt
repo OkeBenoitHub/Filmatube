@@ -53,6 +53,7 @@ fun FilmatubeNavHost(
             HomeScreen(
                 onMovieClick = { navController.navigate(movieRoute(it)) },
                 onBrowse = { genre -> navController.navigate(browseRoute(genre)) },
+                onPlay = { navController.navigate(playerRoute(it)) },
             )
         }
         composable(ROUTE_MOVIE) {

@@ -39,6 +39,10 @@ class PlayerViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<PlayerUiState>(PlayerUiState.Loading)
     val uiState: StateFlow<PlayerUiState> = _uiState.asStateFlow()
 
+    /** Non-null (resume position in ms) briefly after re-opening a partially-watched movie. */
+    private val _resumePrompt = MutableStateFlow<Long?>(null)
+    val resumePrompt: StateFlow<Long?> = _resumePrompt.asStateFlow()
+
     val player: ExoPlayer = ExoPlayer.Builder(context).build().apply {
         playWhenReady = true
         addListener(object : Player.Listener {
@@ -75,11 +79,23 @@ class PlayerViewModel @Inject constructor(
                     player.setMediaItem(MediaItem.fromUri(url))
                     player.prepare()
                     val resumeMs = watchProgressRepository.resumePosition(movieId)
-                    if (resumeMs > 0L) player.seekTo(resumeMs)
+                    if (resumeMs > 0L) {
+                        player.seekTo(resumeMs)
+                        _resumePrompt.value = resumeMs
+                    }
                     _uiState.value = PlayerUiState.Ready
                 }
                 .onFailure { _uiState.value = PlayerUiState.Error(it.toAppError()) }
         }
+    }
+
+    fun startOver() {
+        player.seekTo(0L)
+        _resumePrompt.value = null
+    }
+
+    fun dismissResumePrompt() {
+        _resumePrompt.value = null
     }
 
     private fun persistProgress() {
