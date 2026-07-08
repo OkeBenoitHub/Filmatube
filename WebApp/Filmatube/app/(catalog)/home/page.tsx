@@ -1,9 +1,11 @@
 import { Hero } from "@/components/catalog/Hero";
 import { MovieRow } from "@/components/catalog/MovieRow";
+import { ContinueWatchingRow } from "@/components/catalog/ContinueWatchingRow";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getDict, getLocale } from "@/lib/i18n/server";
 import { getUserProfile } from "@/lib/user";
 import {
+  getContinueWatching,
   getPublishedMovies,
   pickByGenre,
   pickComingSoon,
@@ -35,10 +37,13 @@ export default async function CatalogHomePage() {
     .map((key) => ({ key, movies: pickByGenre(movies, key) }))
     .filter((row) => row.movies.length > 0);
 
+  const continueWatching = user ? await getContinueWatching(user.uid) : [];
+
   return (
     <div>
       <Hero movie={hero} locale={locale} dict={c} />
       <div className="mx-auto max-w-6xl space-y-8 py-8">
+        <ContinueWatchingRow title={c.continueWatching} items={continueWatching} locale={locale} />
         <MovieRow title={c.trending} movies={pickTrending(movies)} locale={locale} />
         <MovieRow title={c.newReleases} movies={pickNewReleases(movies)} locale={locale} />
         {genreRows.map((row) => (

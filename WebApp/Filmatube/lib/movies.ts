@@ -81,6 +81,43 @@ export async function getPublishedMovies(): Promise<CatalogMovie[]> {
   return snap.docs.map((d) => mapDoc(d.id, d.data())).sort((a, b) => b.addedAtMs - a.addedAtMs);
 }
 
+export interface ContinueWatchingItem {
+  movie: CatalogMovie;
+  progress: number;
+}
+
+/**
+ * In-progress movies for the Continue Watching row, read from the same
+ * `watchProgress/{uid}/items` collection the Android player writes to — so
+ * progress syncs across platforms. Index-safe (orderBy updatedAt only).
+ */
+export async function getContinueWatching(uid: string, limit = 12): Promise<ContinueWatchingItem[]> {
+  const snap = await getAdminDb()
+    .collection("watchProgress")
+    .doc(uid)
+    .collection("items")
+    .orderBy("updatedAt", "desc")
+    .limit(20)
+    .get();
+
+  const entries = snap.docs
+    .map((d) => ({
+      movieId: (d.get("movieId") as string) ?? d.id,
+      progress: (d.get("progress") as number) ?? 0,
+      completed: (d.get("completed") as boolean) ?? false,
+    }))
+    .filter((e) => !e.completed)
+    .slice(0, limit);
+
+  const items = await Promise.all(
+    entries.map(async (e) => {
+      const movie = await getMovie(e.movieId);
+      return movie ? { movie, progress: Number(e.progress) } : null;
+    }),
+  );
+  return items.filter((x): x is ContinueWatchingItem => x !== null);
+}
+
 /** A single published movie, or null (draft/missing movies stay hidden). */
 export async function getMovie(id: string): Promise<CatalogMovie | null> {
   const snap = await getAdminDb().collection("movies").doc(id).get();
