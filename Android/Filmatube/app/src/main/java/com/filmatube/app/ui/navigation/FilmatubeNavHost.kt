@@ -7,6 +7,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import android.net.Uri
 import com.filmatube.app.ui.browse.BrowseScreen
 import com.filmatube.app.ui.community.CommunityScreen
@@ -56,7 +57,10 @@ fun FilmatubeNavHost(
                 onPlay = { navController.navigate(playerRoute(it)) },
             )
         }
-        composable(ROUTE_MOVIE) {
+        composable(
+            route = ROUTE_MOVIE,
+            deepLinks = listOf(navDeepLink { uriPattern = "filmatube://movie/{movieId}" }),
+        ) {
             MovieDetailScreen(
                 onBack = { navController.popBackStack() },
                 onPlay = { navController.navigate(playerRoute(it)) },
@@ -67,6 +71,7 @@ fun FilmatubeNavHost(
         composable(
             route = ROUTE_PLAYER,
             arguments = listOf(navArgument("movieId") { type = NavType.StringType }),
+            deepLinks = listOf(navDeepLink { uriPattern = "filmatube://watch/{movieId}" }),
         ) {
             PlayerScreen(onBack = { navController.popBackStack() })
         }

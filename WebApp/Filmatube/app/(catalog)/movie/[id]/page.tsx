@@ -1,9 +1,37 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Play, Film } from "lucide-react";
 import { MovieRow } from "@/components/catalog/MovieRow";
+import { ShareBar } from "@/components/catalog/ShareBar";
 import { getDict, getLocale } from "@/lib/i18n/server";
 import { getMovie, getPublishedMovies, localized, pickRelated } from "@/lib/movies";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const [locale, movie] = await Promise.all([getLocale(), getMovie(id)]);
+  if (!movie) return {};
+  const title = localized(movie.title, locale);
+  const description = localized(movie.description, locale).slice(0, 200);
+  const image = movie.backdropUrl || movie.posterUrl;
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `/movie/${id}`,
+      type: "website",
+      images: image ? [{ url: image }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: image ? [image] : [],
+    },
+  };
+}
 
 export default async function MovieDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -85,6 +113,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
                   {c.trailer}
                 </a>
               )}
+              <ShareBar movieId={movie.id} title={title} dict={c} />
             </div>
 
             {localized(movie.description, locale) && (

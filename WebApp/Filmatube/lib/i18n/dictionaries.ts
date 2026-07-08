@@ -218,6 +218,9 @@ const en = {
     noResults: "No results.",
     searchHint: "Search movies…",
     searchTrending: "Trending",
+    share: "Share",
+    copied: "Link copied",
+    openInApp: "Open in app",
   },
   player: {
     back: "Back",
@@ -452,6 +455,9 @@ const fr: Dictionary = {
     noResults: "Aucun résultat.",
     searchHint: "Rechercher des films…",
     searchTrending: "Tendances",
+    share: "Partager",
+    copied: "Lien copié",
+    openInApp: "Ouvrir dans l'app",
   },
   player: {
     back: "Retour",

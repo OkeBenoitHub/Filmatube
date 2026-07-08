@@ -8,6 +8,7 @@ import { getDict, getLocale } from "@/lib/i18n/server";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://filmatube.app"),
   title: {
     default: "Filmatube — Watch. Share. Discuss.",
     template: "%s · Filmatube",
