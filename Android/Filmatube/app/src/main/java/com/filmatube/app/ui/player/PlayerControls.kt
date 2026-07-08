@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -15,9 +16,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.ClosedCaptionOff
 import androidx.compose.material.icons.filled.Forward10
@@ -128,6 +132,10 @@ fun PlayerControls(
     selectedSubtitle: String?,
     onSelectSubtitle: (String?) -> Unit,
     onOpenSubtitleStyle: () -> Unit,
+    audioTracks: List<AudioTrackOption>,
+    onSelectAudio: (String) -> Unit,
+    playbackSpeed: Float,
+    onSelectSpeed: (Float) -> Unit,
     onInteract: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -238,6 +246,13 @@ fun PlayerControls(
                 modifier = Modifier.weight(1f),
             )
             Text(formatTime(state.duration), color = Color.White, style = MaterialTheme.typography.labelMedium)
+            if (audioTracks.size > 1) {
+                AudioMenu(
+                    tracks = audioTracks,
+                    onSelect = { onInteract(); onSelectAudio(it) },
+                )
+            }
+            SpeedMenu(speed = playbackSpeed, onSelect = { onInteract(); onSelectSpeed(it) })
             if (subtitleLanguages.isNotEmpty()) {
                 SubtitleMenu(
                     languages = subtitleLanguages,
@@ -265,6 +280,59 @@ fun PlayerControls(
                     if (immersive) Icons.Filled.FullscreenExit else Icons.Filled.Fullscreen,
                     contentDescription = stringResource(R.string.player_fullscreen),
                     tint = Color.White,
+                )
+            }
+        }
+    }
+}
+
+private val PLAYBACK_SPEEDS = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
+
+private fun formatSpeed(speed: Float): String {
+    val n = if (speed % 1f == 0f) speed.toInt().toString() else speed.toString()
+    return "${n}x"
+}
+
+@Composable
+private fun AudioMenu(tracks: List<AudioTrackOption>, onSelect: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                Icons.Filled.Audiotrack,
+                contentDescription = stringResource(R.string.player_audio),
+                tint = Color.White,
+            )
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            tracks.forEach { track ->
+                DropdownMenuItem(
+                    text = { Text(track.label) },
+                    onClick = { expanded = false; onSelect(track.language) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SpeedMenu(speed: Float, onSelect: (Float) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        Text(
+            text = formatSpeed(speed),
+            color = Color.White,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .clickable { expanded = true }
+                .padding(horizontal = FilmatubeSpacing.sm, vertical = FilmatubeSpacing.xs),
+        )
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            PLAYBACK_SPEEDS.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(formatSpeed(option)) },
+                    onClick = { expanded = false; onSelect(option) },
                 )
             }
         }

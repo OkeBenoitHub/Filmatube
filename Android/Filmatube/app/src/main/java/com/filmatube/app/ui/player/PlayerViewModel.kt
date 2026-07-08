@@ -10,6 +10,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.Tracks
 import androidx.media3.exoplayer.ExoPlayer
 import com.filmatube.app.data.analytics.PlaybackAnalytics
 import com.filmatube.app.data.playback.PlaybackRepository
@@ -61,6 +62,14 @@ class PlayerViewModel @Inject constructor(
     private val _selectedSubtitle = MutableStateFlow<String?>(null)
     val selectedSubtitle: StateFlow<String?> = _selectedSubtitle.asStateFlow()
 
+    /** Embedded audio tracks (multi-language) + current selection + playback speed. */
+    private val _audioTracks = MutableStateFlow<List<AudioTrackOption>>(emptyList())
+    val audioTracks: StateFlow<List<AudioTrackOption>> = _audioTracks.asStateFlow()
+    private val _selectedAudio = MutableStateFlow<String?>(null)
+    val selectedAudio: StateFlow<String?> = _selectedAudio.asStateFlow()
+    private val _playbackSpeed = MutableStateFlow(1f)
+    val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
+
     /** Persisted subtitle appearance, applied by the player's SubtitleView. */
     val subtitleStyle: StateFlow<SubtitleStyle> = preferencesRepository.subtitleStyle
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SubtitleStyle())
@@ -90,6 +99,23 @@ class PlayerViewModel @Inject constructor(
                     analytics.complete(movieId)
                     persistProgress()
                 }
+            }
+
+            override fun onTracksChanged(tracks: Tracks) {
+                val options = mutableListOf<AudioTrackOption>()
+                var selected: String? = null
+                for (group in tracks.groups) {
+                    if (group.type != C.TRACK_TYPE_AUDIO) continue
+                    for (i in 0 until group.length) {
+                        val language = group.getTrackFormat(i).language ?: continue
+                        if (options.none { it.language == language }) {
+                            options.add(AudioTrackOption(language, group.getTrackFormat(i).label ?: language))
+                        }
+                        if (group.isTrackSelected(i)) selected = language
+                    }
+                }
+                _audioTracks.value = options
+                _selectedAudio.value = selected
             }
         })
     }
@@ -144,6 +170,20 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    /** Select an embedded audio language. */
+    fun selectAudio(language: String) {
+        _selectedAudio.value = language
+        player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
+            .setPreferredAudioLanguage(language)
+            .build()
+    }
+
+    /** Set playback speed (0.5x–2x). */
+    fun setPlaybackSpeed(speed: Float) {
+        _playbackSpeed.value = speed
+        player.setPlaybackSpeed(speed)
+    }
+
     /** Select a subtitle language (null = off). */
     fun selectSubtitle(lang: String?) {
         _selectedSubtitle.value = lang
@@ -187,3 +227,6 @@ sealed interface PlayerUiState {
     data object Ready : PlayerUiState
     data class Error(val error: AppError) : PlayerUiState
 }
+
+/** A selectable embedded audio track. */
+data class AudioTrackOption(val language: String, val label: String)

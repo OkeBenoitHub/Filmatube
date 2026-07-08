@@ -63,6 +63,8 @@ fun PlayerScreen(
     val subtitleLanguages by viewModel.subtitleLanguages.collectAsStateWithLifecycle()
     val selectedSubtitle by viewModel.selectedSubtitle.collectAsStateWithLifecycle()
     val subtitleStyle by viewModel.subtitleStyle.collectAsStateWithLifecycle()
+    val audioTracks by viewModel.audioTracks.collectAsStateWithLifecycle()
+    val playbackSpeed by viewModel.playbackSpeed.collectAsStateWithLifecycle()
     val player = viewModel.player
     val controlState = rememberPlayerControlState(player)
     val activity = LocalContext.current.findComponentActivity()
@@ -182,6 +184,10 @@ fun PlayerScreen(
                     selectedSubtitle = selectedSubtitle,
                     onSelectSubtitle = viewModel::selectSubtitle,
                     onOpenSubtitleStyle = { showSubtitleStyle = true },
+                    audioTracks = audioTracks,
+                    onSelectAudio = viewModel::selectAudio,
+                    playbackSpeed = playbackSpeed,
+                    onSelectSpeed = viewModel::setPlaybackSpeed,
                     onInteract = { interaction++ },
                 )
             }

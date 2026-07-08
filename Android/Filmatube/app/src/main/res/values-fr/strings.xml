@@ -46,6 +46,8 @@
     <string name="player_start_over">Recommencer</string>
     <string name="player_subtitles">Sous-titres</string>
     <string name="player_subtitles_off">Désactivés</string>
+    <string name="player_audio">Audio</string>
+    <string name="player_speed">Vitesse</string>
     <string name="player_subtitle_style">Style des sous-titres</string>
     <string name="sub_size">Taille</string>
     <string name="sub_color">Couleur</string>

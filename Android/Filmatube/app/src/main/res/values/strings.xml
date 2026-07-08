@@ -46,6 +46,8 @@
     <string name="player_start_over">Start over</string>
     <string name="player_subtitles">Subtitles</string>
     <string name="player_subtitles_off">Off</string>
+    <string name="player_audio">Audio</string>
+    <string name="player_speed">Speed</string>
     <string name="player_subtitle_style">Subtitle style</string>
     <string name="sub_size">Size</string>
     <string name="sub_color">Color</string>
