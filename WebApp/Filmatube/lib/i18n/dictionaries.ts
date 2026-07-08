@@ -218,6 +218,19 @@ const en = {
     searchHint: "Search movies…",
     searchTrending: "Trending",
   },
+  player: {
+    back: "Back",
+    loading: "Loading…",
+    error: "This video couldn't be loaded.",
+    retry: "Retry",
+    play: "Play",
+    pause: "Pause",
+    mute: "Mute",
+    unmute: "Unmute",
+    fullscreen: "Fullscreen",
+    resumeFrom: "Resume from",
+    startOver: "Start over",
+  },
 };
 
 export type Dictionary = typeof en;
@@ -432,6 +445,19 @@ const fr: Dictionary = {
     noResults: "Aucun résultat.",
     searchHint: "Rechercher des films…",
     searchTrending: "Tendances",
+  },
+  player: {
+    back: "Retour",
+    loading: "Chargement…",
+    error: "Impossible de charger cette vidéo.",
+    retry: "Réessayer",
+    play: "Lecture",
+    pause: "Pause",
+    mute: "Muet",
+    unmute: "Activer le son",
+    fullscreen: "Plein écran",
+    resumeFrom: "Reprendre à",
+    startOver: "Recommencer",
   },
 };
 
