@@ -3,6 +3,7 @@ package com.filmatube.app.data.movie
 import com.filmatube.app.domain.model.CastMember
 import com.filmatube.app.domain.model.LocalizedText
 import com.filmatube.app.domain.model.Movie
+import com.filmatube.app.domain.model.SubtitleTrack
 import com.filmatube.app.domain.repository.MovieRepository
 import com.filmatube.app.domain.repository.MovieSort
 import com.google.firebase.firestore.DocumentSnapshot
@@ -137,6 +138,13 @@ class MovieRepositoryImpl @Inject constructor(
             viewsCount = getLong("viewsCount") ?: 0L,
             isFeatured = getBoolean("isFeatured") ?: false,
             isComingSoon = getBoolean("isComingSoon") ?: false,
+            subtitleTracks = (get("subtitleTracks") as? List<*>)?.mapNotNull { item ->
+                (item as? Map<*, *>)?.let {
+                    val lang = it["lang"] as? String
+                    val url = it["url"] as? String
+                    if (lang.isNullOrBlank() || url.isNullOrBlank()) null else SubtitleTrack(lang, url)
+                }
+            } ?: emptyList(),
         )
     }
 }

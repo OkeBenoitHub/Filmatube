@@ -60,6 +60,8 @@ fun PlayerScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val resumePrompt by viewModel.resumePrompt.collectAsStateWithLifecycle()
+    val subtitleLanguages by viewModel.subtitleLanguages.collectAsStateWithLifecycle()
+    val selectedSubtitle by viewModel.selectedSubtitle.collectAsStateWithLifecycle()
     val player = viewModel.player
     val controlState = rememberPlayerControlState(player)
     val activity = LocalContext.current.findComponentActivity()
@@ -171,6 +173,9 @@ fun PlayerScreen(
                         }
                     },
                     onEnterPip = { activity?.enterPip() },
+                    subtitleLanguages = subtitleLanguages,
+                    selectedSubtitle = selectedSubtitle,
+                    onSelectSubtitle = viewModel::selectSubtitle,
                     onInteract = { interaction++ },
                 )
             }

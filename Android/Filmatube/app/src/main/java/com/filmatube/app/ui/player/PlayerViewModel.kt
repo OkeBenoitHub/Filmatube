@@ -1,16 +1,20 @@
 package com.filmatube.app.ui.player
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.filmatube.app.data.analytics.PlaybackAnalytics
 import com.filmatube.app.data.playback.PlaybackRepository
 import com.filmatube.app.data.playback.WatchProgressRepository
+import com.filmatube.app.domain.repository.MovieRepository
 import com.filmatube.app.domain.util.AppError
 import com.filmatube.app.domain.util.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,6 +36,7 @@ class PlayerViewModel @Inject constructor(
     @ApplicationContext context: Context,
     private val playbackRepository: PlaybackRepository,
     private val watchProgressRepository: WatchProgressRepository,
+    private val movieRepository: MovieRepository,
     private val analytics: PlaybackAnalytics,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -44,6 +49,12 @@ class PlayerViewModel @Inject constructor(
     /** Non-null (resume position in ms) briefly after re-opening a partially-watched movie. */
     private val _resumePrompt = MutableStateFlow<Long?>(null)
     val resumePrompt: StateFlow<Long?> = _resumePrompt.asStateFlow()
+
+    /** Available subtitle language codes and the current selection (null = off). */
+    private val _subtitleLanguages = MutableStateFlow<List<String>>(emptyList())
+    val subtitleLanguages: StateFlow<List<String>> = _subtitleLanguages.asStateFlow()
+    private val _selectedSubtitle = MutableStateFlow<String?>(null)
+    val selectedSubtitle: StateFlow<String?> = _selectedSubtitle.asStateFlow()
 
     val player: ExoPlayer = ExoPlayer.Builder(context).build().apply {
         playWhenReady = true
@@ -84,10 +95,31 @@ class PlayerViewModel @Inject constructor(
     fun load() {
         _uiState.value = PlayerUiState.Loading
         viewModelScope.launch {
-            runCatching { playbackRepository.streamUrl(movieId) }
-                .onSuccess { url ->
-                    player.setMediaItem(MediaItem.fromUri(url))
+            runCatching {
+                val url = playbackRepository.streamUrl(movieId)
+                val subtitles = runCatching { movieRepository.getMovie(movieId)?.subtitleTracks }
+                    .getOrNull().orEmpty()
+                url to subtitles
+            }
+                .onSuccess { (url, subtitles) ->
+                    val mediaItem = MediaItem.Builder()
+                        .setUri(url)
+                        .setSubtitleConfigurations(
+                            subtitles.map { track ->
+                                MediaItem.SubtitleConfiguration.Builder(Uri.parse(track.url))
+                                    .setMimeType(MimeTypes.TEXT_VTT)
+                                    .setLanguage(track.lang)
+                                    .build()
+                            },
+                        )
+                        .build()
+                    player.setMediaItem(mediaItem)
+                    // Subtitles off until the viewer picks a language.
+                    player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
+                        .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
+                        .build()
                     player.prepare()
+                    _subtitleLanguages.value = subtitles.map { it.lang }
                     val resumeMs = watchProgressRepository.resumePosition(movieId)
                     if (resumeMs > 0L) {
                         player.seekTo(resumeMs)
@@ -97,6 +129,19 @@ class PlayerViewModel @Inject constructor(
                 }
                 .onFailure { _uiState.value = PlayerUiState.Error(it.toAppError()) }
         }
+    }
+
+    /** Select a subtitle language (null = off). */
+    fun selectSubtitle(lang: String?) {
+        _selectedSubtitle.value = lang
+        player.trackSelectionParameters = player.trackSelectionParameters.buildUpon().apply {
+            if (lang == null) {
+                setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
+            } else {
+                setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
+                setPreferredTextLanguage(lang)
+            }
+        }.build()
     }
 
     fun startOver() {

@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.ClosedCaption
+import androidx.compose.material.icons.filled.ClosedCaptionOff
 import androidx.compose.material.icons.filled.Forward10
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
@@ -27,6 +29,8 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Replay10
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -119,6 +123,9 @@ fun PlayerControls(
     onLock: () -> Unit,
     onCycleResize: () -> Unit,
     onEnterPip: () -> Unit,
+    subtitleLanguages: List<String>,
+    selectedSubtitle: String?,
+    onSelectSubtitle: (String?) -> Unit,
     onInteract: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -229,6 +236,13 @@ fun PlayerControls(
                 modifier = Modifier.weight(1f),
             )
             Text(formatTime(state.duration), color = Color.White, style = MaterialTheme.typography.labelMedium)
+            if (subtitleLanguages.isNotEmpty()) {
+                SubtitleMenu(
+                    languages = subtitleLanguages,
+                    selected = selectedSubtitle,
+                    onSelect = { onInteract(); onSelectSubtitle(it) },
+                )
+            }
             IconButton(onClick = { onInteract(); onCycleResize() }) {
                 Icon(
                     Icons.Filled.AspectRatio,
@@ -248,6 +262,36 @@ fun PlayerControls(
                     if (immersive) Icons.Filled.FullscreenExit else Icons.Filled.Fullscreen,
                     contentDescription = stringResource(R.string.player_fullscreen),
                     tint = Color.White,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SubtitleMenu(
+    languages: List<String>,
+    selected: String?,
+    onSelect: (String?) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                if (selected == null) Icons.Filled.ClosedCaptionOff else Icons.Filled.ClosedCaption,
+                contentDescription = stringResource(R.string.player_subtitles),
+                tint = Color.White,
+            )
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.player_subtitles_off)) },
+                onClick = { expanded = false; onSelect(null) },
+            )
+            languages.forEach { lang ->
+                DropdownMenuItem(
+                    text = { Text(lang.uppercase()) },
+                    onClick = { expanded = false; onSelect(lang) },
                 )
             }
         }

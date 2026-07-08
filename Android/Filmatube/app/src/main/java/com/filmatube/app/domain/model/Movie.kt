@@ -6,6 +6,9 @@ data class LocalizedText(val en: String = "", val fr: String = "") {
         if (language == "fr" && fr.isNotBlank()) fr else en.ifBlank { fr }
 }
 
+/** A subtitle track (.vtt in R2), keyed by BCP-47 language code (en, fr). */
+data class SubtitleTrack(val lang: String, val url: String)
+
 /** A movie from the `movies` collection (UI-facing subset). */
 data class Movie(
     val id: String,
@@ -26,4 +29,5 @@ data class Movie(
     val viewsCount: Long,
     val isFeatured: Boolean,
     val isComingSoon: Boolean,
+    val subtitleTracks: List<SubtitleTrack> = emptyList(),
 )

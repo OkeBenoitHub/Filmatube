@@ -44,6 +44,8 @@
     <string name="player_pip">Image dans l\'image</string>
     <string name="player_resuming_from">Reprise à %1$s</string>
     <string name="player_start_over">Recommencer</string>
+    <string name="player_subtitles">Sous-titres</string>
+    <string name="player_subtitles_off">Désactivés</string>
 
     <!-- Aperçus des sections -->
     <string name="search_subtitle">Trouvez n\'importe quel film en quelques secondes — par titre, genre, année ou note.</string>

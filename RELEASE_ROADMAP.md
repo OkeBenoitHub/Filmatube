@@ -130,7 +130,7 @@
 ## PHASE 5 — Playback Advanced (Days 57–70)
 
 ### Week 9 — Android Player Advanced (Days 57–63) (A)
-- **Day 57** — Subtitles: fetch `.vtt` from R2; ExoPlayer text-track injection; **subtitle language selector**.
+- **Day 57** ✅ — Subtitles: fetch `.vtt` from R2; ExoPlayer text-track injection; **subtitle language selector**.
 - **Day 58** — **Subtitle style settings** (size/color/background/edge/position); persist via DataStore.
 - **Day 59** — **Audio-track selector** (EN/FR multi-audio); playback-speed control.
 - **Day 60** — **Sleep timer** dialog (15/30/45/60 + end-of-movie); badge countdown; auto-pause.

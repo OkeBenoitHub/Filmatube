@@ -44,6 +44,8 @@
     <string name="player_pip">Picture in picture</string>
     <string name="player_resuming_from">Resuming from %1$s</string>
     <string name="player_start_over">Start over</string>
+    <string name="player_subtitles">Subtitles</string>
+    <string name="player_subtitles_off">Off</string>
 
     <!-- Feature previews -->
     <string name="search_subtitle">Find any movie in seconds — by title, genre, year or rating.</string>
