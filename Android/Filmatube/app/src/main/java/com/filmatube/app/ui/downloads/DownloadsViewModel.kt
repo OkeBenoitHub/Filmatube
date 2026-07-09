@@ -7,6 +7,7 @@ import com.filmatube.app.data.download.DownloadItem
 import com.filmatube.app.data.download.DownloadRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,6 +20,11 @@ class DownloadsViewModel @Inject constructor(
 
     val items = downloadRepository.items()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<DownloadItem>())
+
+    /** Total bytes on disk, recomputed whenever the queue changes. */
+    val storageUsed = items
+        .map { downloadRepository.storageUsedBytes() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0L)
 
     fun pause(movieId: String) = downloadRepository.pause(movieId)
     fun resume(movieId: String) = downloadRepository.resume(movieId)

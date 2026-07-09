@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -47,6 +48,8 @@ fun DownloadsScreen(
     viewModel: DownloadsViewModel = hiltViewModel(),
 ) {
     val items by viewModel.items.collectAsStateWithLifecycle()
+    val storageUsed by viewModel.storageUsed.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -58,7 +61,19 @@ fun DownloadsScreen(
             IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.settings_back))
             }
-            Text(stringResource(R.string.downloads_title), style = MaterialTheme.typography.titleLarge)
+            Column {
+                Text(stringResource(R.string.downloads_title), style = MaterialTheme.typography.titleLarge)
+                if (items.isNotEmpty()) {
+                    Text(
+                        stringResource(
+                            R.string.downloads_storage_used,
+                            android.text.format.Formatter.formatShortFileSize(context, storageUsed),
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
         }
 
         if (items.isEmpty()) {

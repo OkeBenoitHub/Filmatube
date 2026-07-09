@@ -102,6 +102,10 @@ class DownloadRepository @Inject constructor(
         downloadManager.downloadIndex.getDownload(movieId)?.state == Download.STATE_COMPLETED
     }
 
+    /** Total bytes used by downloaded content on disk. */
+    fun storageUsedBytes(): Long =
+        runCatching { DownloadUtil.getDownloadCache(context).cacheSpace }.getOrDefault(0L)
+
     val downloadedMovies: Flow<List<DownloadedMovie>> = dao.observeAll()
 
     /** The live queue: Media3 download state joined with persisted display metadata. */
