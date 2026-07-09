@@ -159,7 +159,7 @@
 - **Day 77** ✅ — Watch Later + My Library (Android) wiring; week review.
 
 ### Week 12 — Web Library & Collections (Days 78–84) (W)
-- **Day 78** — Watch Later (web); My Library page.
+- **Day 78** ✅ — Watch Later (web); My Library page.
 - **Day 79** — Collections: create/edit; cover → R2; add movies.
 - **Day 80** — Share collections (public link + OG cards); save others' public collections.
 - **Day 81** — Collection detail + reorder; "My Stuff" hub (watchlist + collections + continue watching).
