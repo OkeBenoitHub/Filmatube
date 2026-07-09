@@ -29,6 +29,9 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.DownloadDone
+import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
@@ -80,6 +83,7 @@ fun MovieDetailScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val reminderSet by viewModel.reminderSet.collectAsStateWithLifecycle()
+    val downloadState by viewModel.downloadState.collectAsStateWithLifecycle()
     val language = LocaleController.currentTag()
     val context = LocalContext.current
 
@@ -93,6 +97,8 @@ fun MovieDetailScreen(
                 related = state.related,
                 language = language,
                 reminderSet = reminderSet,
+                downloadState = downloadState,
+                onToggleDownload = viewModel::toggleDownload,
                 onPlay = onPlay,
                 onToggleReminder = viewModel::toggleReminder,
                 onOpenTrailer = { url ->
@@ -125,6 +131,8 @@ private fun DetailContent(
     related: List<Movie>,
     language: String,
     reminderSet: Boolean,
+    downloadState: DownloadUiState,
+    onToggleDownload: (String) -> Unit,
     onPlay: (String) -> Unit,
     onToggleReminder: () -> Unit,
     onOpenTrailer: (String) -> Unit,
@@ -222,6 +230,24 @@ private fun DetailContent(
                     text = stringResource(R.string.detail_trailer),
                     onClick = { onOpenTrailer(movie.trailerUrl) },
                     leadingIcon = Icons.Outlined.PlayCircle,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            if (!movie.isComingSoon) {
+                FilmatubeSecondaryButton(
+                    text = stringResource(
+                        when (downloadState) {
+                            DownloadUiState.DOWNLOADED -> R.string.detail_downloaded
+                            DownloadUiState.DOWNLOADING -> R.string.detail_downloading
+                            DownloadUiState.NONE -> R.string.detail_download
+                        },
+                    ),
+                    onClick = { onToggleDownload(movie.title.get(language)) },
+                    leadingIcon = when (downloadState) {
+                        DownloadUiState.DOWNLOADED -> Icons.Filled.DownloadDone
+                        DownloadUiState.DOWNLOADING -> Icons.Filled.Downloading
+                        DownloadUiState.NONE -> Icons.Filled.Download
+                    },
                     modifier = Modifier.fillMaxWidth(),
                 )
             }

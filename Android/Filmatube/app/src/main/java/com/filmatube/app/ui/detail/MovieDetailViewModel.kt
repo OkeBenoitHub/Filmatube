@@ -3,6 +3,9 @@ package com.filmatube.app.ui.detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.offline.Download
+import com.filmatube.app.data.download.DownloadRepository
 import com.filmatube.app.data.preferences.UserPreferencesRepository
 import com.filmatube.app.domain.model.Movie
 import com.filmatube.app.domain.repository.MovieRepository
@@ -23,10 +26,15 @@ data class DetailUiState(
     val related: List<Movie> = emptyList(),
 )
 
+/** Simplified download state for the detail screen's download button. */
+enum class DownloadUiState { NONE, DOWNLOADING, DOWNLOADED }
+
+@UnstableApi
 @HiltViewModel
 class MovieDetailViewModel @Inject constructor(
     private val movieRepository: MovieRepository,
     private val preferences: UserPreferencesRepository,
+    private val downloadRepository: DownloadRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -39,8 +47,28 @@ class MovieDetailViewModel @Inject constructor(
         .map { movieId in it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
+    val downloadState = downloadRepository.downloads()
+        .map { downloads ->
+            when (downloads.firstOrNull { it.request.id == movieId }?.state) {
+                Download.STATE_COMPLETED -> DownloadUiState.DOWNLOADED
+                Download.STATE_DOWNLOADING, Download.STATE_QUEUED, Download.STATE_RESTARTING -> DownloadUiState.DOWNLOADING
+                else -> DownloadUiState.NONE
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DownloadUiState.NONE)
+
     fun toggleReminder() {
         viewModelScope.launch { preferences.toggleReminder(movieId) }
+    }
+
+    fun toggleDownload(title: String) {
+        viewModelScope.launch {
+            if (downloadState.value == DownloadUiState.NONE) {
+                runCatching { downloadRepository.download(movieId, title) }
+            } else {
+                downloadRepository.remove(movieId)
+            }
+        }
     }
 
     init {

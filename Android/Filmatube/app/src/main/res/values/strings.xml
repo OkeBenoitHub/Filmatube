@@ -30,6 +30,17 @@
     <string name="detail_trailer">Trailer</string>
     <string name="detail_remind">Remind me</string>
     <string name="detail_reminder_set">Reminder set</string>
+    <string name="detail_download">Download</string>
+    <string name="detail_downloading">Downloading…</string>
+    <string name="detail_downloaded">Downloaded</string>
+    <string name="detail_download_remove">Remove download</string>
+
+    <!-- Downloads -->
+    <string name="downloads_channel_name">Downloads</string>
+    <string name="download_quality">Download quality</string>
+    <string name="download_quality_low">Data saver</string>
+    <string name="download_quality_standard">Standard</string>
+    <string name="download_quality_high">High</string>
     <string name="action_retry_desc">Retry</string>
 
     <!-- Player -->

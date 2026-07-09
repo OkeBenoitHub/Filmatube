@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
+import com.filmatube.app.domain.model.DownloadQuality
 import com.filmatube.app.domain.model.SubtitleBackground
 import com.filmatube.app.domain.model.SubtitleEdge
 import com.filmatube.app.domain.model.SubtitlePosition
@@ -38,6 +39,7 @@ class UserPreferencesRepository @Inject constructor(
         val SUB_BACKGROUND = stringPreferencesKey("subtitle_background")
         val SUB_EDGE = stringPreferencesKey("subtitle_edge")
         val SUB_POSITION = stringPreferencesKey("subtitle_position")
+        val DOWNLOAD_QUALITY = stringPreferencesKey("download_quality")
     }
 
     private companion object {
@@ -115,6 +117,15 @@ class UserPreferencesRepository @Inject constructor(
             prefs[Keys.SUB_EDGE] = style.edge.name
             prefs[Keys.SUB_POSITION] = style.position.name
         }
+    }
+
+    /** Preferred download quality. */
+    val downloadQuality: Flow<DownloadQuality> = preferences.map { prefs ->
+        prefs[Keys.DOWNLOAD_QUALITY].toEnum(DownloadQuality.STANDARD) { DownloadQuality.valueOf(it) }
+    }
+
+    suspend fun setDownloadQuality(quality: DownloadQuality) {
+        dataStore.edit { prefs -> prefs[Keys.DOWNLOAD_QUALITY] = quality.name }
     }
 
     private fun <T> String?.toEnum(default: T, parse: (String) -> T): T =

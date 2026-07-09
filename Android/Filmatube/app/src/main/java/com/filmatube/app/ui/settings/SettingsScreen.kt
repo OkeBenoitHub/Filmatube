@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.filmatube.app.R
+import com.filmatube.app.domain.model.DownloadQuality
 import com.filmatube.app.ui.components.FilmatubeFilterChip
 import com.filmatube.app.ui.components.FilmatubeSecondaryButton
 import com.filmatube.app.ui.theme.FilmatubeSpacing
@@ -37,6 +38,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val language by viewModel.language.collectAsStateWithLifecycle()
+    val downloadQuality by viewModel.downloadQuality.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -68,6 +70,25 @@ fun SettingsScreen(
                     label = stringResource(R.string.lang_french),
                     selected = language == "fr",
                     onClick = { viewModel.setLanguage("fr") },
+                )
+            }
+
+            Text(stringResource(R.string.download_quality), style = MaterialTheme.typography.titleMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {
+                FilmatubeFilterChip(
+                    label = stringResource(R.string.download_quality_low),
+                    selected = downloadQuality == DownloadQuality.LOW,
+                    onClick = { viewModel.setDownloadQuality(DownloadQuality.LOW) },
+                )
+                FilmatubeFilterChip(
+                    label = stringResource(R.string.download_quality_standard),
+                    selected = downloadQuality == DownloadQuality.STANDARD,
+                    onClick = { viewModel.setDownloadQuality(DownloadQuality.STANDARD) },
+                )
+                FilmatubeFilterChip(
+                    label = stringResource(R.string.download_quality_high),
+                    selected = downloadQuality == DownloadQuality.HIGH,
+                    onClick = { viewModel.setDownloadQuality(DownloadQuality.HIGH) },
                 )
             }
 

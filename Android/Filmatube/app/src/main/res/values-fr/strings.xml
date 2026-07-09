@@ -30,6 +30,17 @@
     <string name="detail_trailer">Bande-annonce</string>
     <string name="detail_remind">Me rappeler</string>
     <string name="detail_reminder_set">Rappel activé</string>
+    <string name="detail_download">Télécharger</string>
+    <string name="detail_downloading">Téléchargement…</string>
+    <string name="detail_downloaded">Téléchargé</string>
+    <string name="detail_download_remove">Supprimer le téléchargement</string>
+
+    <!-- Downloads -->
+    <string name="downloads_channel_name">Téléchargements</string>
+    <string name="download_quality">Qualité de téléchargement</string>
+    <string name="download_quality_low">Économie de données</string>
+    <string name="download_quality_standard">Standard</string>
+    <string name="download_quality_high">Haute</string>
     <string name="action_retry_desc">Réessayer</string>
 
     <!-- Player -->

@@ -150,7 +150,7 @@
 ## PHASE 6 — Downloads, Offline & Library (Days 71–84)
 
 ### Week 11 — Android Downloads & Offline (Days 71–77) (A)
-- **Day 71** — Media3 `DownloadManager` → R2 MP4 to local; download-quality preference.
+- **Day 71** ✅ — Media3 `DownloadManager` → R2 MP4 to local; download-quality preference.
 - **Day 72** — Download queue UI: progress, pause/resume/cancel; Room persistence; WorkManager (Wi-Fi-only constraint).
 - **Day 73** — My Downloads screen; downloaded-movie tracker; storage-usage indicator.
 - **Day 74** — Offline playback from local file + offline subtitles; offline watch-progress (sync on reconnect).
