@@ -41,6 +41,7 @@ class UserPreferencesRepository @Inject constructor(
         val SUB_POSITION = stringPreferencesKey("subtitle_position")
         val DOWNLOAD_QUALITY = stringPreferencesKey("download_quality")
         val DOWNLOAD_WIFI_ONLY = booleanPreferencesKey("download_wifi_only")
+        val DOWNLOAD_AUTO_DELETE_WATCHED = booleanPreferencesKey("download_auto_delete_watched")
     }
 
     private companion object {
@@ -134,6 +135,14 @@ class UserPreferencesRepository @Inject constructor(
 
     suspend fun setDownloadWifiOnly(enabled: Boolean) {
         dataStore.edit { prefs -> prefs[Keys.DOWNLOAD_WIFI_ONLY] = enabled }
+    }
+
+    /** Auto-remove a download once the movie has been watched (≥90%). */
+    val downloadAutoDeleteWatched: Flow<Boolean> =
+        preferences.map { prefs -> prefs[Keys.DOWNLOAD_AUTO_DELETE_WATCHED] ?: false }
+
+    suspend fun setDownloadAutoDeleteWatched(enabled: Boolean) {
+        dataStore.edit { prefs -> prefs[Keys.DOWNLOAD_AUTO_DELETE_WATCHED] = enabled }
     }
 
     private fun <T> String?.toEnum(default: T, parse: (String) -> T): T =

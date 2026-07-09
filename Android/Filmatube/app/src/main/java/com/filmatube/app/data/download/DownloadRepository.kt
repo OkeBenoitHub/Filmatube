@@ -40,6 +40,7 @@ data class DownloadItem(
     val state: Int,
     val percent: Float,
     val bytesDownloaded: Long,
+    val expiresAt: Long,
 ) {
     val isComplete: Boolean get() = state == Download.STATE_COMPLETED
     val isPaused: Boolean get() = state == Download.STATE_STOPPED
@@ -81,6 +82,7 @@ class DownloadRepository @Inject constructor(
                 durationMin = movie.duration,
                 subtitlesJson = json.encodeToString(localSubtitles),
                 addedAt = System.currentTimeMillis(),
+                expiresAt = System.currentTimeMillis() + LICENSE_WINDOW_MS,
             ),
         )
         val request = DownloadRequest.Builder(movie.id, Uri.parse(url))
@@ -103,6 +105,17 @@ class DownloadRepository @Inject constructor(
     suspend fun cancel(movieId: String) = withContext(ioDispatcher) {
         DownloadService.sendRemoveDownload(context, FilmatubeDownloadService::class.java, movieId, false)
         dao.delete(movieId)
+    }
+
+    suspend fun cancelAll() = withContext(ioDispatcher) {
+        DownloadService.sendRemoveAllDownloads(context, FilmatubeDownloadService::class.java, false)
+        dao.deleteAll()
+    }
+
+    /** True if a downloaded movie's license window has elapsed. */
+    suspend fun isExpired(movieId: String): Boolean = withContext(ioDispatcher) {
+        val meta = dao.get(movieId) ?: return@withContext false
+        meta.expiresAt in 1 until System.currentTimeMillis()
     }
 
     /** Wi-Fi-only vs any-network for downloads. */
@@ -138,6 +151,7 @@ class DownloadRepository @Inject constructor(
                 state = d.state,
                 percent = d.percentDownloaded,
                 bytesDownloaded = d.bytesDownloaded,
+                expiresAt = meta?.expiresAt ?: 0L,
             )
         }
     }
@@ -167,5 +181,6 @@ class DownloadRepository @Inject constructor(
 
     private companion object {
         const val STOP_REASON_PAUSED = 1
+        const val LICENSE_WINDOW_MS = 30L * 24 * 60 * 60 * 1000 // 30 days
     }
 }

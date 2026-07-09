@@ -49,6 +49,9 @@
     <string name="download_cancel">Annuler</string>
     <string name="downloads_empty">Aucun téléchargement.</string>
     <string name="downloads_storage_used">%1$s utilisés</string>
+    <string name="download_delete_all">Tout supprimer</string>
+    <string name="download_auto_delete_watched">Supprimer automatiquement les visionnés</string>
+    <string name="download_expires_in">Expire dans %1$d jours</string>
     <string name="action_retry_desc">Réessayer</string>
 
     <!-- Player -->

@@ -31,4 +31,8 @@ class DownloadsViewModel @Inject constructor(
     fun cancel(movieId: String) {
         viewModelScope.launch { downloadRepository.cancel(movieId) }
     }
+
+    fun cancelAll() {
+        viewModelScope.launch { downloadRepository.cancelAll() }
+    }
 }

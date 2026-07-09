@@ -43,6 +43,7 @@ fun SettingsScreen(
     val language by viewModel.language.collectAsStateWithLifecycle()
     val downloadQuality by viewModel.downloadQuality.collectAsStateWithLifecycle()
     val downloadWifiOnly by viewModel.downloadWifiOnly.collectAsStateWithLifecycle()
+    val autoDeleteWatched by viewModel.downloadAutoDeleteWatched.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -103,6 +104,15 @@ fun SettingsScreen(
                 Text(stringResource(R.string.download_wifi_only), style = MaterialTheme.typography.bodyLarge)
                 Spacer(Modifier.weight(1f))
                 Switch(checked = downloadWifiOnly, onCheckedChange = viewModel::setDownloadWifiOnly)
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(stringResource(R.string.download_auto_delete_watched), style = MaterialTheme.typography.bodyLarge)
+                Spacer(Modifier.weight(1f))
+                Switch(checked = autoDeleteWatched, onCheckedChange = viewModel::setDownloadAutoDeleteWatched)
             }
 
             Row(

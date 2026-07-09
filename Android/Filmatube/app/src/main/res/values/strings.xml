@@ -49,6 +49,9 @@
     <string name="download_cancel">Cancel</string>
     <string name="downloads_empty">No downloads yet.</string>
     <string name="downloads_storage_used">%1$s used</string>
+    <string name="download_delete_all">Delete all</string>
+    <string name="download_auto_delete_watched">Delete watched automatically</string>
+    <string name="download_expires_in">Expires in %1$d days</string>
     <string name="action_retry_desc">Retry</string>
 
     <!-- Player -->

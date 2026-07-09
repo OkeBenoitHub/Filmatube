@@ -61,7 +61,7 @@ fun DownloadsScreen(
             IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.settings_back))
             }
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(stringResource(R.string.downloads_title), style = MaterialTheme.typography.titleLarge)
                 if (items.isNotEmpty()) {
                     Text(
@@ -72,6 +72,11 @@ fun DownloadsScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+            }
+            if (items.isNotEmpty()) {
+                androidx.compose.material3.TextButton(onClick = viewModel::cancelAll) {
+                    Text(stringResource(R.string.download_delete_all))
                 }
             }
         }
@@ -159,8 +164,11 @@ private fun DownloadRow(
 
 @OptIn(UnstableApi::class)
 @Composable
-private fun statusLabel(item: DownloadItem): String = when (item.state) {
-    Download.STATE_COMPLETED -> stringResource(R.string.detail_downloaded)
-    Download.STATE_STOPPED -> stringResource(R.string.download_pause)
+private fun statusLabel(item: DownloadItem): String = when {
+    item.isComplete && item.expiresAt > 0L -> {
+        val days = ((item.expiresAt - System.currentTimeMillis()) / 86_400_000L).toInt().coerceAtLeast(0)
+        stringResource(R.string.download_expires_in, days)
+    }
+    item.state == Download.STATE_STOPPED -> stringResource(R.string.download_pause)
     else -> "${item.percent.coerceAtLeast(0f).toInt()}%"
 }

@@ -19,6 +19,7 @@ data class DownloadedMovie(
     val durationMin: Int,
     val subtitlesJson: String, // JSON array of {lang,url}
     val addedAt: Long,
+    val expiresAt: Long, // license window end (epoch ms)
 )
 
 @Dao
@@ -34,4 +35,7 @@ interface DownloadedMovieDao {
 
     @Query("DELETE FROM downloaded_movies WHERE movieId = :movieId")
     suspend fun delete(movieId: String)
+
+    @Query("DELETE FROM downloaded_movies")
+    suspend fun deleteAll()
 }

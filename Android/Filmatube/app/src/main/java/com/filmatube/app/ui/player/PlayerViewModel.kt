@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -143,6 +144,7 @@ class PlayerViewModel @Inject constructor(
                 if (playbackState == Player.STATE_ENDED) {
                     analytics.complete(movieId)
                     persistProgress()
+                    maybeAutoDeleteWatched()
                 }
                 // Recovered after a network drop / retry.
                 if (playbackState == Player.STATE_READY && _uiState.value is PlayerUiState.Error) {
@@ -202,6 +204,8 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching {
                 val movie = runCatching { movieRepository.getMovie(movieId) }.getOrNull()
+                // Expired downloads are removed and fall back to streaming.
+                if (downloadRepository.isExpired(movieId)) downloadRepository.cancel(movieId)
                 // Play from the local download when available (works offline); else stream.
                 val download = downloadRepository.getDownload(movieId)?.takeIf { it.state == Download.STATE_COMPLETED }
                 val uri = download?.request?.uri ?: Uri.parse(playbackRepository.streamUrl(movieId))
@@ -313,6 +317,14 @@ class PlayerViewModel @Inject constructor(
 
     fun dismissResumePrompt() {
         _resumePrompt.value = null
+    }
+
+    private fun maybeAutoDeleteWatched() {
+        viewModelScope.launch {
+            if (preferencesRepository.downloadAutoDeleteWatched.first() && downloadRepository.isDownloaded(movieId)) {
+                downloadRepository.cancel(movieId)
+            }
+        }
     }
 
     private fun persistProgress() {

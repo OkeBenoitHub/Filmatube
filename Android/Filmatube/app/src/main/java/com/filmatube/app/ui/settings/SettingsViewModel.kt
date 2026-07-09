@@ -38,6 +38,9 @@ class SettingsViewModel @Inject constructor(
     val downloadWifiOnly = preferences.downloadWifiOnly
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
+    val downloadAutoDeleteWatched = preferences.downloadAutoDeleteWatched
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
     init {
         viewModelScope.launch { downloadRepository.setWifiOnly(preferences.downloadWifiOnly.first()) }
     }
@@ -51,6 +54,10 @@ class SettingsViewModel @Inject constructor(
             preferences.setDownloadWifiOnly(enabled)
             downloadRepository.setWifiOnly(enabled)
         }
+    }
+
+    fun setDownloadAutoDeleteWatched(enabled: Boolean) {
+        viewModelScope.launch { preferences.setDownloadAutoDeleteWatched(enabled) }
     }
 
     fun setLanguage(tag: String) {
