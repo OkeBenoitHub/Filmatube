@@ -25,6 +25,37 @@ import { cn } from "@/lib/utils";
 const COMPLETE_THRESHOLD = 0.9;
 const PLAYBACK_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
+const CAPTION_SIZES = { small: "3vh", normal: "4.2vh", large: "5.8vh" } as const;
+const CAPTION_COLORS = { white: "#ffffff", yellow: "#ffeb3b", cyan: "#00e5ff" } as const;
+const CAPTION_BACKGROUNDS = { off: "transparent", dim: "rgba(0,0,0,0.5)", solid: "#000000" } as const;
+
+interface CaptionStyle {
+  size: keyof typeof CAPTION_SIZES;
+  color: keyof typeof CAPTION_COLORS;
+  bg: keyof typeof CAPTION_BACKGROUNDS;
+}
+
+const DEFAULT_CAPTION_STYLE: CaptionStyle = { size: "normal", color: "white", bg: "dim" };
+const CAPTION_STYLE_KEY = "filmatube_caption_style";
+
+interface AudioOption {
+  id: string;
+  label: string;
+}
+
+// Minimal shape of the (Safari-only) HTMLVideoElement.audioTracks list.
+interface AudioTrackLike {
+  id: string;
+  label: string;
+  language: string;
+  enabled: boolean;
+}
+interface AudioTrackListLike {
+  readonly length: number;
+  [index: number]: AudioTrackLike;
+}
+type VideoWithAudio = HTMLVideoElement & { audioTracks?: AudioTrackListLike };
+
 function formatTime(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds < 0) seconds = 0;
   const h = Math.floor(seconds / 3600);
@@ -75,6 +106,60 @@ export function PersistentPlayer({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [rate, setRate] = useState(1);
   const [captionsLang, setCaptionsLang] = useState<string | null>(null);
+  const [captionStyle, setCaptionStyle] = useState<CaptionStyle>(DEFAULT_CAPTION_STYLE);
+  const [audioOptions, setAudioOptions] = useState<AudioOption[]>([]);
+  const [audioTrack, setAudioTrack] = useState<string | null>(null);
+
+  // Load/persist caption style in localStorage.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(CAPTION_STYLE_KEY);
+      if (saved) setCaptionStyle({ ...DEFAULT_CAPTION_STYLE, ...JSON.parse(saved) });
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const updateCaptionStyle = useCallback((patch: Partial<CaptionStyle>) => {
+    setCaptionStyle((prev) => {
+      const next = { ...prev, ...patch };
+      try {
+        localStorage.setItem(CAPTION_STYLE_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
+
+  // Read embedded audio tracks (Safari-only in practice).
+  const readAudioTracks = useCallback(() => {
+    const el = videoRef.current as VideoWithAudio | null;
+    const tracks = el?.audioTracks;
+    if (!tracks || tracks.length <= 1) {
+      setAudioOptions([]);
+      return;
+    }
+    const list: AudioOption[] = [];
+    let selected: string | null = null;
+    for (let i = 0; i < tracks.length; i++) {
+      const t = tracks[i];
+      const id = t.id || String(i);
+      list.push({ id, label: t.label || t.language || `Track ${i + 1}` });
+      if (t.enabled) selected = id;
+    }
+    setAudioOptions(list);
+    setAudioTrack(selected);
+  }, []);
+
+  const selectAudio = useCallback((id: string) => {
+    const el = videoRef.current as VideoWithAudio | null;
+    const tracks = el?.audioTracks;
+    if (!tracks) return;
+    for (let i = 0; i < tracks.length; i++) {
+      tracks[i].enabled = (tracks[i].id || String(i)) === id;
+    }
+    setAudioTrack(id);
+  }, []);
 
   // Apply playback speed.
   useEffect(() => {
@@ -290,7 +375,7 @@ export function PersistentPlayer({
           src={src}
           poster={active.poster || undefined}
           autoPlay
-          className="h-full w-full object-contain"
+          className="filmatube-cue h-full w-full object-contain"
           onClick={minimized ? () => router.push(`/watch/${movieId}`) : togglePlay}
           onPlay={() => setPlaying(true)}
           onPause={() => {
@@ -307,6 +392,7 @@ export function PersistentPlayer({
           onLoadedMetadata={(e) => {
             setDuration(e.currentTarget.duration || 0);
             applyResume();
+            readAudioTracks();
           }}
           onDurationChange={(e) => setDuration(e.currentTarget.duration || 0)}
           onVolumeChange={(e) => {
@@ -342,6 +428,11 @@ export function PersistentPlayer({
       {src && buffering && (
         <Loader2 className="pointer-events-none absolute h-10 w-10 animate-spin text-white" aria-hidden />
       )}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `.filmatube-cue::cue{font-size:${CAPTION_SIZES[captionStyle.size]};color:${CAPTION_COLORS[captionStyle.color]};background:${CAPTION_BACKGROUNDS[captionStyle.bg]};}`,
+        }}
+      />
     </>
   );
 
@@ -476,6 +567,34 @@ export function PersistentPlayer({
                           onClick={() => setCaptionsLang(t.lang)}
                         >
                           {t.lang.toUpperCase()}
+                        </SettingChip>
+                      ))}
+                    </SettingSection>
+                  )}
+                  {active.subtitles.length > 0 && captionsLang && (
+                    <>
+                      <SettingSection label={dict.size}>
+                        <SettingChip active={captionStyle.size === "small"} onClick={() => updateCaptionStyle({ size: "small" })}>A-</SettingChip>
+                        <SettingChip active={captionStyle.size === "normal"} onClick={() => updateCaptionStyle({ size: "normal" })}>A</SettingChip>
+                        <SettingChip active={captionStyle.size === "large"} onClick={() => updateCaptionStyle({ size: "large" })}>A+</SettingChip>
+                      </SettingSection>
+                      <SettingSection label={dict.color}>
+                        <SettingChip active={captionStyle.color === "white"} onClick={() => updateCaptionStyle({ color: "white" })}>{dict.white}</SettingChip>
+                        <SettingChip active={captionStyle.color === "yellow"} onClick={() => updateCaptionStyle({ color: "yellow" })}>{dict.yellow}</SettingChip>
+                        <SettingChip active={captionStyle.color === "cyan"} onClick={() => updateCaptionStyle({ color: "cyan" })}>{dict.cyan}</SettingChip>
+                      </SettingSection>
+                      <SettingSection label={dict.background}>
+                        <SettingChip active={captionStyle.bg === "off"} onClick={() => updateCaptionStyle({ bg: "off" })}>{dict.off}</SettingChip>
+                        <SettingChip active={captionStyle.bg === "dim"} onClick={() => updateCaptionStyle({ bg: "dim" })}>{dict.dim}</SettingChip>
+                        <SettingChip active={captionStyle.bg === "solid"} onClick={() => updateCaptionStyle({ bg: "solid" })}>{dict.solid}</SettingChip>
+                      </SettingSection>
+                    </>
+                  )}
+                  {audioOptions.length > 0 && (
+                    <SettingSection label={dict.audio}>
+                      {audioOptions.map((a) => (
+                        <SettingChip key={a.id} active={audioTrack === a.id} onClick={() => selectAudio(a.id)}>
+                          {a.label}
                         </SettingChip>
                       ))}
                     </SettingSection>

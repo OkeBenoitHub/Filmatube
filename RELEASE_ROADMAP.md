@@ -140,7 +140,7 @@
 
 ### Week 10 — Web Player Advanced + Admin Media Tracks (Days 64–70) (W)
 - **Day 64** ✅ — Plyr-style web controls (settings gear, quality menu placeholder, speed, captions toggle).
-- **Day 65** — Web subtitles (.vtt) + style options; audio-track switching.
+- **Day 65** ✅ — Web subtitles (.vtt) + style options; audio-track switching.
 - **Day 66** — Web sleep timer / autoplay "Up Next".
 - **Day 67** — Admin: manage **subtitle tracks** per movie (add/remove languages) + **audio tracks**; **intro-markers editor**.
 - **Day 68** — Admin: replace/re-upload video; R2 object management + orphan cleanup tool.

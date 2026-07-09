@@ -253,6 +253,14 @@ const en = {
     upNext: "Up next",
     playNow: "Play now",
     playingIn: "Playing in",
+    size: "Size",
+    color: "Color",
+    background: "Background",
+    white: "White",
+    yellow: "Yellow",
+    cyan: "Cyan",
+    dim: "Dim",
+    solid: "Solid",
   },
 };
 
@@ -504,6 +512,14 @@ const fr: Dictionary = {
     upNext: "À suivre",
     playNow: "Lire maintenant",
     playingIn: "Lecture dans",
+    size: "Taille",
+    color: "Couleur",
+    background: "Fond",
+    white: "Blanc",
+    yellow: "Jaune",
+    cyan: "Cyan",
+    dim: "Sombre",
+    solid: "Plein",
   },
 };
 
