@@ -29,6 +29,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.material.icons.filled.Downloading
@@ -83,6 +85,7 @@ fun MovieDetailScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val reminderSet by viewModel.reminderSet.collectAsStateWithLifecycle()
+    val savedForLater by viewModel.savedForLater.collectAsStateWithLifecycle()
     val downloadState by viewModel.downloadState.collectAsStateWithLifecycle()
     val language = LocaleController.currentTag()
     val context = LocalContext.current
@@ -97,6 +100,8 @@ fun MovieDetailScreen(
                 related = state.related,
                 language = language,
                 reminderSet = reminderSet,
+                savedForLater = savedForLater,
+                onToggleSaved = viewModel::toggleSaved,
                 downloadState = downloadState,
                 onToggleDownload = viewModel::toggleDownload,
                 onPlay = onPlay,
@@ -131,6 +136,8 @@ private fun DetailContent(
     related: List<Movie>,
     language: String,
     reminderSet: Boolean,
+    savedForLater: Boolean,
+    onToggleSaved: () -> Unit,
     downloadState: DownloadUiState,
     onToggleDownload: () -> Unit,
     onPlay: (String) -> Unit,
@@ -251,6 +258,12 @@ private fun DetailContent(
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
+            FilmatubeSecondaryButton(
+                text = stringResource(if (savedForLater) R.string.detail_saved else R.string.detail_watch_later),
+                onClick = onToggleSaved,
+                leadingIcon = if (savedForLater) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
+                modifier = Modifier.fillMaxWidth(),
+            )
 
             if (movie.genres.isNotEmpty()) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {

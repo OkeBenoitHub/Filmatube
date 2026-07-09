@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
 import com.filmatube.app.data.download.DownloadRepository
+import com.filmatube.app.data.library.WatchlistRepository
 import com.filmatube.app.data.preferences.UserPreferencesRepository
 import com.filmatube.app.domain.model.Movie
 import com.filmatube.app.domain.repository.MovieRepository
@@ -34,6 +35,7 @@ class MovieDetailViewModel @Inject constructor(
     private val movieRepository: MovieRepository,
     private val preferences: UserPreferencesRepository,
     private val downloadRepository: DownloadRepository,
+    private val watchlistRepository: WatchlistRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -45,6 +47,14 @@ class MovieDetailViewModel @Inject constructor(
     val reminderSet = preferences.reminders
         .map { movieId in it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    val savedForLater = watchlistRepository.observeSavedIds()
+        .map { movieId in it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    fun toggleSaved() {
+        viewModelScope.launch { watchlistRepository.toggle(movieId) }
+    }
 
     val downloadState = downloadRepository.items()
         .map { items ->

@@ -30,6 +30,10 @@
     <string name="detail_trailer">Trailer</string>
     <string name="detail_remind">Remind me</string>
     <string name="detail_reminder_set">Reminder set</string>
+    <string name="detail_watch_later">Watch Later</string>
+    <string name="detail_saved">Saved</string>
+    <string name="my_library">My Library</string>
+    <string name="library_empty">Your library is empty.</string>
     <string name="detail_download">Download</string>
     <string name="detail_downloading">Downloading…</string>
     <string name="detail_downloaded">Downloaded</string>

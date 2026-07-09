@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material3.Icon
@@ -37,6 +38,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onManageProfiles: () -> Unit,
     onOpenDownloads: () -> Unit,
+    onOpenLibrary: () -> Unit,
     onSignedOut: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -113,6 +115,20 @@ fun SettingsScreen(
                 Text(stringResource(R.string.download_auto_delete_watched), style = MaterialTheme.typography.bodyLarge)
                 Spacer(Modifier.weight(1f))
                 Switch(checked = autoDeleteWatched, onCheckedChange = viewModel::setDownloadAutoDeleteWatched)
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onOpenLibrary)
+                    .padding(vertical = FilmatubeSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Outlined.Bookmark, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.padding(horizontal = FilmatubeSpacing.sm))
+                Text(stringResource(R.string.my_library), style = MaterialTheme.typography.bodyLarge)
+                Spacer(Modifier.weight(1f))
+                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
 
             Row(

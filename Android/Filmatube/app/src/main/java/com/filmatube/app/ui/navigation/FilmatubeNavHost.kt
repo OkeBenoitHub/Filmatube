@@ -15,6 +15,7 @@ import com.filmatube.app.ui.detail.ActorScreen
 import com.filmatube.app.ui.detail.MovieDetailScreen
 import com.filmatube.app.ui.downloads.DownloadsScreen
 import com.filmatube.app.ui.home.HomeScreen
+import com.filmatube.app.ui.library.LibraryScreen
 import com.filmatube.app.ui.player.PlayerScreen
 import com.filmatube.app.ui.profile.EditProfileScreen
 import com.filmatube.app.ui.profile.ProfileScreen
@@ -27,6 +28,7 @@ private const val ROUTE_PROFILE_EDIT = "profile/edit"
 private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_PROFILES = "settings/profiles"
 private const val ROUTE_DOWNLOADS = "downloads"
+private const val ROUTE_LIBRARY = "library"
 private const val ROUTE_MOVIE = "movie/{movieId}"
 private const val ROUTE_PLAYER = "player/{movieId}"
 private const val ROUTE_BROWSE = "browse?genre={genre}"
@@ -121,6 +123,7 @@ fun FilmatubeNavHost(
                 onBack = { navController.popBackStack() },
                 onManageProfiles = { navController.navigate(ROUTE_PROFILES) },
                 onOpenDownloads = { navController.navigate(ROUTE_DOWNLOADS) },
+                onOpenLibrary = { navController.navigate(ROUTE_LIBRARY) },
                 onSignedOut = onSignedOut,
             )
         }
@@ -129,6 +132,12 @@ fun FilmatubeNavHost(
         }
         composable(ROUTE_DOWNLOADS) {
             DownloadsScreen(onBack = { navController.popBackStack() })
+        }
+        composable(ROUTE_LIBRARY) {
+            LibraryScreen(
+                onBack = { navController.popBackStack() },
+                onMovieClick = { navController.navigate(movieRoute(it)) },
+            )
         }
     }
 }
