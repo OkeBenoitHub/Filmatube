@@ -8,17 +8,21 @@ import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
+import androidx.media3.datasource.cache.CacheKeyFactory
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.exoplayer.offline.DefaultDownloadIndex
+import androidx.media3.exoplayer.offline.DefaultDownloaderFactory
 import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.offline.DownloadNotificationHelper
 import java.io.File
 import java.util.concurrent.Executors
 
 /**
- * Process-wide singletons for offline downloads. The [FilmatubeDownloadService] is created by
- * the system (not Hilt), so the shared [Cache]/[DownloadManager] live here — Media3's
- * recommended pattern. Only one [SimpleCache] may exist per directory.
+ * Process-wide singletons for offline downloads (Media3's recommended pattern — the
+ * [FilmatubeDownloadService] is created by the system, not Hilt). The cache is keyed by
+ * the object path *without* the query string, so a movie's presigned R2 URL resolves to
+ * the same cached content even after the signature expires.
  */
 @UnstableApi
 object DownloadUtil {
@@ -29,6 +33,11 @@ object DownloadUtil {
     private var downloadCache: Cache? = null
     private var downloadManager: DownloadManager? = null
     private var notificationHelper: DownloadNotificationHelper? = null
+
+    /** Stable per-movie cache key: the URL path, ignoring the expiring signature query. */
+    private val cacheKeyFactory = CacheKeyFactory { dataSpec ->
+        dataSpec.key ?: dataSpec.uri.buildUpon().clearQuery().build().toString()
+    }
 
     @Synchronized
     fun getDatabaseProvider(context: Context): DatabaseProvider =
@@ -44,16 +53,29 @@ object DownloadUtil {
         }
     }
 
+    private fun cacheDataSourceFactory(context: Context, writable: Boolean): CacheDataSource.Factory {
+        val app = context.applicationContext
+        val upstream = DefaultDataSource.Factory(app, DefaultHttpDataSource.Factory())
+        return CacheDataSource.Factory()
+            .setCache(getDownloadCache(app))
+            .setUpstreamDataSourceFactory(upstream)
+            .setCacheKeyFactory(cacheKeyFactory)
+            .apply {
+                if (!writable) {
+                    setCacheWriteDataSinkFactory(null)
+                    setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+                }
+            }
+    }
+
     @Synchronized
     fun getDownloadManager(context: Context): DownloadManager {
         return downloadManager ?: run {
             val app = context.applicationContext
             DownloadManager(
                 app,
-                getDatabaseProvider(app),
-                getDownloadCache(app),
-                DefaultHttpDataSource.Factory(),
-                Executors.newFixedThreadPool(3),
+                DefaultDownloadIndex(getDatabaseProvider(app)),
+                DefaultDownloaderFactory(cacheDataSourceFactory(app, writable = true), Executors.newFixedThreadPool(3)),
             ).also { downloadManager = it }
         }
     }
@@ -65,14 +87,7 @@ object DownloadUtil {
             DOWNLOAD_NOTIFICATION_CHANNEL_ID,
         ).also { notificationHelper = it }
 
-    /** Read-through cache source so the player can play a downloaded movie offline. */
-    fun getCacheDataSourceFactory(context: Context): CacheDataSource.Factory {
-        val app = context.applicationContext
-        val upstream = DefaultDataSource.Factory(app, DefaultHttpDataSource.Factory())
-        return CacheDataSource.Factory()
-            .setCache(getDownloadCache(app))
-            .setUpstreamDataSourceFactory(upstream)
-            .setCacheWriteDataSinkFactory(null) // read-only during playback
-            .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
-    }
+    /** Read-only cache source so the player streams online *and* plays downloads offline. */
+    fun getCacheDataSourceFactory(context: Context): CacheDataSource.Factory =
+        cacheDataSourceFactory(context, writable = false)
 }

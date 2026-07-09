@@ -14,8 +14,13 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Tracks
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.offline.Download
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.filmatube.app.data.analytics.PlaybackAnalytics
+import com.filmatube.app.data.download.DownloadRepository
+import com.filmatube.app.data.download.DownloadUtil
 import com.filmatube.app.data.playback.PlaybackRepository
 import com.filmatube.app.data.playback.WatchProgressRepository
 import com.filmatube.app.data.preferences.UserPreferencesRepository
@@ -41,6 +46,7 @@ import javax.inject.Inject
  * [PlaybackRepository], prepares progressive MP4 playback, and releases the player
  * on [onCleared] so it survives configuration changes but never leaks.
  */
+@UnstableApi
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     @ApplicationContext context: Context,
@@ -48,6 +54,7 @@ class PlayerViewModel @Inject constructor(
     private val watchProgressRepository: WatchProgressRepository,
     private val movieRepository: MovieRepository,
     private val preferencesRepository: UserPreferencesRepository,
+    private val downloadRepository: DownloadRepository,
     private val analytics: PlaybackAnalytics,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -101,7 +108,13 @@ class PlayerViewModel @Inject constructor(
     private val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
-    val player: ExoPlayer = ExoPlayer.Builder(context).build().apply {
+    // Cache-backed source: streams online, and plays downloaded movies from the local cache offline.
+    private val mediaSourceFactory = DefaultMediaSourceFactory(context)
+        .setDataSourceFactory(DownloadUtil.getCacheDataSourceFactory(context))
+
+    val player: ExoPlayer = ExoPlayer.Builder(context)
+        .setMediaSourceFactory(mediaSourceFactory)
+        .build().apply {
         playWhenReady = true
         // Request audio focus (duck/pause on interruptions) + pause when headphones unplug.
         setAudioAttributes(
@@ -188,21 +201,29 @@ class PlayerViewModel @Inject constructor(
         _uiState.value = PlayerUiState.Loading
         viewModelScope.launch {
             runCatching {
-                val url = playbackRepository.streamUrl(movieId)
                 val movie = runCatching { movieRepository.getMovie(movieId) }.getOrNull()
-                val next = movie?.let { m -> movieRepository.getRelated(movieId, m.genres).firstOrNull() }
-                    ?: movieRepository.getNewReleases().firstOrNull { it.id != movieId }
-                Triple(url, movie, next)
+                // Play from the local download when available (works offline); else stream.
+                val download = downloadRepository.getDownload(movieId)?.takeIf { it.state == Download.STATE_COMPLETED }
+                val uri = download?.request?.uri ?: Uri.parse(playbackRepository.streamUrl(movieId))
+                val subtitles = if (download != null) {
+                    downloadRepository.subtitlesFor(movieId).map { it.lang to it.url }
+                } else {
+                    movie?.subtitleTracks.orEmpty().map { it.lang to it.url }
+                }
+                val next = runCatching {
+                    movie?.let { m -> movieRepository.getRelated(movieId, m.genres).firstOrNull() }
+                        ?: movieRepository.getNewReleases().firstOrNull { it.id != movieId }
+                }.getOrNull()
+                LoadedMedia(uri, subtitles, movie, next)
             }
-                .onSuccess { (url, movie, next) ->
-                    val subtitles = movie?.subtitleTracks.orEmpty()
+                .onSuccess { media ->
                     val mediaItem = MediaItem.Builder()
-                        .setUri(url)
+                        .setUri(media.uri)
                         .setSubtitleConfigurations(
-                            subtitles.map { track ->
-                                MediaItem.SubtitleConfiguration.Builder(Uri.parse(track.url))
+                            media.subtitles.map { (lang, url) ->
+                                MediaItem.SubtitleConfiguration.Builder(Uri.parse(url))
                                     .setMimeType(MimeTypes.TEXT_VTT)
-                                    .setLanguage(track.lang)
+                                    .setLanguage(lang)
                                     .build()
                             },
                         )
@@ -213,10 +234,10 @@ class PlayerViewModel @Inject constructor(
                         .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
                         .build()
                     player.prepare()
-                    _subtitleLanguages.value = subtitles.map { it.lang }
-                    _upNext.value = next
-                    _introStartMs.value = (movie?.introStartSec ?: 0) * 1000L
-                    _introEndMs.value = (movie?.introEndSec ?: 0) * 1000L
+                    _subtitleLanguages.value = media.subtitles.map { it.first }
+                    _upNext.value = media.next
+                    _introStartMs.value = (media.movie?.introStartSec ?: 0) * 1000L
+                    _introEndMs.value = (media.movie?.introEndSec ?: 0) * 1000L
                     val resumeMs = watchProgressRepository.resumePosition(movieId)
                     if (resumeMs > 0L) {
                         player.seekTo(resumeMs)
@@ -320,6 +341,14 @@ sealed interface PlayerUiState {
 
 /** A selectable embedded audio track. */
 data class AudioTrackOption(val language: String, val label: String)
+
+/** Resolved media for playback: video uri + (lang,url) subtitles + movie + up-next. */
+private data class LoadedMedia(
+    val uri: Uri,
+    val subtitles: List<Pair<String, String>>,
+    val movie: Movie?,
+    val next: Movie?,
+)
 
 /** Sleep-timer choices. Timed options auto-pause after [minutes]; END_OF_MOVIE has none. */
 enum class SleepTimerOption(val minutes: Long) {

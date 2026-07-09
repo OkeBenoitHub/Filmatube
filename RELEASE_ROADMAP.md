@@ -153,7 +153,7 @@
 - **Day 71** ✅ — Media3 `DownloadManager` → R2 MP4 to local; download-quality preference.
 - **Day 72** ✅ — Download queue UI: progress, pause/resume/cancel; Room persistence; WorkManager (Wi-Fi-only constraint).
 - **Day 73** ✅ — My Downloads screen; downloaded-movie tracker; storage-usage indicator.
-- **Day 74** — Offline playback from local file + offline subtitles; offline watch-progress (sync on reconnect).
+- **Day 74** ✅ — Offline playback from local file + offline subtitles; offline watch-progress (sync on reconnect).
 - **Day 75** — Delete individual/all; auto-delete-watched toggle; download expiry/license window.
 - **Day 76** — **Download encryption** (encrypt offline files; key in Android Keystore).
 - **Day 77** — Watch Later + My Library (Android) wiring; week review.

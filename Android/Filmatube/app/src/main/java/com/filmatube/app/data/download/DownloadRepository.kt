@@ -22,6 +22,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -50,13 +53,24 @@ class DownloadRepository @Inject constructor(
     private val playbackRepository: PlaybackRepository,
     private val dao: DownloadedMovieDao,
     private val json: Json,
+    private val okHttpClient: OkHttpClient,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
     private val downloadManager: DownloadManager get() = DownloadUtil.getDownloadManager(context)
 
-    /** Resolve the token-protected R2 URL, persist display metadata, and enqueue the download. */
+    /** Resolve the token-protected R2 URL, cache subtitles locally, persist metadata, and enqueue. */
     suspend fun download(movie: Movie) = withContext(ioDispatcher) {
         val url = playbackRepository.streamUrl(movie.id)
+        val localSubtitles = movie.subtitleTracks.mapNotNull { track ->
+            runCatching {
+                val bytes = okHttpClient.newCall(Request.Builder().url(track.url).build())
+                    .execute().use { it.body?.bytes() } ?: return@mapNotNull null
+                val dir = File(context.filesDir, "subs").apply { mkdirs() }
+                val file = File(dir, "${movie.id}_${track.lang}.vtt")
+                file.writeBytes(bytes)
+                SubtitleDto(track.lang, Uri.fromFile(file).toString())
+            }.getOrNull()
+        }
         dao.upsert(
             DownloadedMovie(
                 movieId = movie.id,
@@ -65,7 +79,7 @@ class DownloadRepository @Inject constructor(
                 posterUrl = movie.posterUrl,
                 backdropUrl = movie.backdropUrl,
                 durationMin = movie.duration,
-                subtitlesJson = json.encodeToString(movie.subtitleTracks.map { SubtitleDto(it.lang, it.url) }),
+                subtitlesJson = json.encodeToString(localSubtitles),
                 addedAt = System.currentTimeMillis(),
             ),
         )
@@ -73,6 +87,11 @@ class DownloadRepository @Inject constructor(
             .setData(movie.title.en.toByteArray())
             .build()
         DownloadService.sendAddDownload(context, FilmatubeDownloadService::class.java, request, false)
+    }
+
+    /** The stored download for a movie (null if not downloaded). */
+    suspend fun getDownload(movieId: String): Download? = withContext(ioDispatcher) {
+        runCatching { downloadManager.downloadIndex.getDownload(movieId) }.getOrNull()
     }
 
     fun pause(movieId: String) =
