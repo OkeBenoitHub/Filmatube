@@ -41,6 +41,14 @@
     <string name="download_quality_low">Économie de données</string>
     <string name="download_quality_standard">Standard</string>
     <string name="download_quality_high">Haute</string>
+    <string name="download_wifi_only">Télécharger via Wi-Fi uniquement</string>
+    <string name="my_downloads">Mes téléchargements</string>
+    <string name="downloads_title">Téléchargements</string>
+    <string name="download_pause">Pause</string>
+    <string name="download_resume">Reprendre</string>
+    <string name="download_cancel">Annuler</string>
+    <string name="downloads_empty">Aucun téléchargement.</string>
+    <string name="downloads_storage_used">%1$s utilisés</string>
     <string name="action_retry_desc">Réessayer</string>
 
     <!-- Player -->

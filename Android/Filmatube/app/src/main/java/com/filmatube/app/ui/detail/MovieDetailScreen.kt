@@ -132,7 +132,7 @@ private fun DetailContent(
     language: String,
     reminderSet: Boolean,
     downloadState: DownloadUiState,
-    onToggleDownload: (String) -> Unit,
+    onToggleDownload: () -> Unit,
     onPlay: (String) -> Unit,
     onToggleReminder: () -> Unit,
     onOpenTrailer: (String) -> Unit,
@@ -242,7 +242,7 @@ private fun DetailContent(
                             DownloadUiState.NONE -> R.string.detail_download
                         },
                     ),
-                    onClick = { onToggleDownload(movie.title.get(language)) },
+                    onClick = onToggleDownload,
                     leadingIcon = when (downloadState) {
                         DownloadUiState.DOWNLOADED -> Icons.Filled.DownloadDone
                         DownloadUiState.DOWNLOADING -> Icons.Filled.Downloading

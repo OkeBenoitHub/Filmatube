@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,11 +36,13 @@ import com.filmatube.app.ui.theme.FilmatubeSpacing
 fun SettingsScreen(
     onBack: () -> Unit,
     onManageProfiles: () -> Unit,
+    onOpenDownloads: () -> Unit,
     onSignedOut: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val language by viewModel.language.collectAsStateWithLifecycle()
     val downloadQuality by viewModel.downloadQuality.collectAsStateWithLifecycle()
+    val downloadWifiOnly by viewModel.downloadWifiOnly.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -90,6 +94,29 @@ fun SettingsScreen(
                     selected = downloadQuality == DownloadQuality.HIGH,
                     onClick = { viewModel.setDownloadQuality(DownloadQuality.HIGH) },
                 )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(stringResource(R.string.download_wifi_only), style = MaterialTheme.typography.bodyLarge)
+                Spacer(Modifier.weight(1f))
+                Switch(checked = downloadWifiOnly, onCheckedChange = viewModel::setDownloadWifiOnly)
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onOpenDownloads)
+                    .padding(vertical = FilmatubeSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Outlined.Download, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.padding(horizontal = FilmatubeSpacing.sm))
+                Text(stringResource(R.string.my_downloads), style = MaterialTheme.typography.bodyLarge)
+                Spacer(Modifier.weight(1f))
+                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
 
             Row(

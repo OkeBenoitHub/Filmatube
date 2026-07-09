@@ -13,6 +13,7 @@ import com.filmatube.app.ui.browse.BrowseScreen
 import com.filmatube.app.ui.community.CommunityScreen
 import com.filmatube.app.ui.detail.ActorScreen
 import com.filmatube.app.ui.detail.MovieDetailScreen
+import com.filmatube.app.ui.downloads.DownloadsScreen
 import com.filmatube.app.ui.home.HomeScreen
 import com.filmatube.app.ui.player.PlayerScreen
 import com.filmatube.app.ui.profile.EditProfileScreen
@@ -25,6 +26,7 @@ import com.filmatube.app.ui.theater.TheaterScreen
 private const val ROUTE_PROFILE_EDIT = "profile/edit"
 private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_PROFILES = "settings/profiles"
+private const val ROUTE_DOWNLOADS = "downloads"
 private const val ROUTE_MOVIE = "movie/{movieId}"
 private const val ROUTE_PLAYER = "player/{movieId}"
 private const val ROUTE_BROWSE = "browse?genre={genre}"
@@ -118,11 +120,15 @@ fun FilmatubeNavHost(
             SettingsScreen(
                 onBack = { navController.popBackStack() },
                 onManageProfiles = { navController.navigate(ROUTE_PROFILES) },
+                onOpenDownloads = { navController.navigate(ROUTE_DOWNLOADS) },
                 onSignedOut = onSignedOut,
             )
         }
         composable(ROUTE_PROFILES) {
             ProfilesScreen(onBack = { navController.popBackStack() })
+        }
+        composable(ROUTE_DOWNLOADS) {
+            DownloadsScreen(onBack = { navController.popBackStack() })
         }
     }
 }

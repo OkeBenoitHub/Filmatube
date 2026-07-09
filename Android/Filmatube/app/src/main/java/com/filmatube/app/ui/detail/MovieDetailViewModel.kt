@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import com.filmatube.app.data.download.DownloadRepository
 import com.filmatube.app.data.preferences.UserPreferencesRepository
 import com.filmatube.app.domain.model.Movie
@@ -47,12 +46,13 @@ class MovieDetailViewModel @Inject constructor(
         .map { movieId in it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
-    val downloadState = downloadRepository.downloads()
-        .map { downloads ->
-            when (downloads.firstOrNull { it.request.id == movieId }?.state) {
-                Download.STATE_COMPLETED -> DownloadUiState.DOWNLOADED
-                Download.STATE_DOWNLOADING, Download.STATE_QUEUED, Download.STATE_RESTARTING -> DownloadUiState.DOWNLOADING
-                else -> DownloadUiState.NONE
+    val downloadState = downloadRepository.items()
+        .map { items ->
+            val item = items.firstOrNull { it.movieId == movieId }
+            when {
+                item == null -> DownloadUiState.NONE
+                item.isComplete -> DownloadUiState.DOWNLOADED
+                else -> DownloadUiState.DOWNLOADING
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DownloadUiState.NONE)
@@ -61,12 +61,13 @@ class MovieDetailViewModel @Inject constructor(
         viewModelScope.launch { preferences.toggleReminder(movieId) }
     }
 
-    fun toggleDownload(title: String) {
+    fun toggleDownload() {
+        val movie = (state.value.movie as? DataState.Success)?.data ?: return
         viewModelScope.launch {
             if (downloadState.value == DownloadUiState.NONE) {
-                runCatching { downloadRepository.download(movieId, title) }
+                runCatching { downloadRepository.download(movie) }
             } else {
-                downloadRepository.remove(movieId)
+                downloadRepository.cancel(movie.id)
             }
         }
     }

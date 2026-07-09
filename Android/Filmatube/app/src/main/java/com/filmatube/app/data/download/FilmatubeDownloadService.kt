@@ -6,6 +6,7 @@ import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.scheduler.Scheduler
+import androidx.media3.exoplayer.workmanager.WorkManagerScheduler
 import com.filmatube.app.R
 
 /** Foreground service that runs offline downloads with a progress notification. */
@@ -19,7 +20,8 @@ class FilmatubeDownloadService : DownloadService(
 ) {
     override fun getDownloadManager(): DownloadManager = DownloadUtil.getDownloadManager(this)
 
-    override fun getScheduler(): Scheduler? = null
+    // Reschedules downloads (respecting the Wi-Fi-only requirement) via WorkManager.
+    override fun getScheduler(): Scheduler = WorkManagerScheduler(this, WORK_NAME)
 
     override fun getForegroundNotification(
         downloads: MutableList<Download>,
@@ -36,5 +38,6 @@ class FilmatubeDownloadService : DownloadService(
 
     private companion object {
         const val FOREGROUND_NOTIFICATION_ID = 1
+        const val WORK_NAME = "filmatube_downloads"
     }
 }

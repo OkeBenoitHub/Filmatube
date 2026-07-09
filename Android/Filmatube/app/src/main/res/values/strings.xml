@@ -41,6 +41,14 @@
     <string name="download_quality_low">Data saver</string>
     <string name="download_quality_standard">Standard</string>
     <string name="download_quality_high">High</string>
+    <string name="download_wifi_only">Download over Wi-Fi only</string>
+    <string name="my_downloads">My downloads</string>
+    <string name="downloads_title">Downloads</string>
+    <string name="download_pause">Pause</string>
+    <string name="download_resume">Resume</string>
+    <string name="download_cancel">Cancel</string>
+    <string name="downloads_empty">No downloads yet.</string>
+    <string name="downloads_storage_used">%1$s used</string>
     <string name="action_retry_desc">Retry</string>
 
     <!-- Player -->
