@@ -160,7 +160,7 @@
 
 ### Week 12 — Web Library & Collections (Days 78–84) (W)
 - **Day 78** ✅ — Watch Later (web); My Library page.
-- **Day 79** — Collections: create/edit; cover → R2; add movies.
+- **Day 79** ✅ — Collections: create/edit; cover → R2; add movies.
 - **Day 80** — Share collections (public link + OG cards); save others' public collections.
 - **Day 81** — Collection detail + reorder; "My Stuff" hub (watchlist + collections + continue watching).
 - **Day 82** — PWA "save for later" (service-worker cache, best-effort); downloads info page.
