@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { logPlayerEvent } from "@/lib/analytics";
 import { useAuth } from "@/components/providers/AuthProvider";
 import type { ActiveMovie } from "@/components/player/MiniPlayerProvider";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -205,6 +206,11 @@ export function PersistentPlayer({
     }
   }, [captionsLang, src]);
 
+  const logFeature = useCallback(
+    (feature: string) => logPlayerEvent("video_feature", { movie_id: movieId, feature }),
+    [movieId],
+  );
+
   // --- stream source ---
   const load = useCallback(async () => {
     setError(false);
@@ -222,6 +228,15 @@ export function PersistentPlayer({
   useEffect(() => {
     load();
   }, [load]);
+
+  // Auto-retry (fresh URL) when the network comes back after an error.
+  useEffect(() => {
+    const onOnline = () => {
+      if (error) load();
+    };
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [error, load]);
 
   // --- watch-progress sync (same watchProgress/{uid}/items/{movieId} as Android) ---
   const progressRef = useCallback(
@@ -398,7 +413,7 @@ export function PersistentPlayer({
 
   const video = (
     <>
-      {src ? (
+      {src && !error ? (
         // eslint-disable-next-line jsx-a11y/media-has-caption
         <video
           ref={videoRef}
@@ -407,18 +422,25 @@ export function PersistentPlayer({
           autoPlay
           className="filmatube-cue h-full w-full object-contain"
           onClick={minimized ? () => router.push(`/watch/${movieId}`) : togglePlay}
-          onPlay={() => setPlaying(true)}
+          onPlay={() => {
+            setPlaying(true);
+            logPlayerEvent("video_play", { movie_id: movieId });
+          }}
           onPause={() => {
             setPlaying(false);
             saveProgress();
+            logPlayerEvent("video_pause", { movie_id: movieId });
           }}
           onEnded={() => {
             setPlaying(false);
             saveProgress();
+            logPlayerEvent("video_complete", { movie_id: movieId });
             if (active.upNext && !upNextDismissed && sleepOption !== "end") {
+              logFeature("up_next");
               router.push(`/watch/${active.upNext.id}`);
             }
           }}
+          onError={() => setError(true)}
           onWaiting={() => setBuffering(true)}
           onPlaying={() => setBuffering(false)}
           onTimeUpdate={(e) => setCurrent(e.currentTarget.currentTime)}
@@ -551,7 +573,10 @@ export function PersistentPlayer({
             <div className="mt-1.5 flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => router.push(`/watch/${active.upNext!.id}`)}
+                onClick={() => {
+                  logFeature("up_next");
+                  router.push(`/watch/${active.upNext!.id}`);
+                }}
                 className="rounded-lg bg-brand-500 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-600"
               >
                 {dict.playNow}
@@ -614,7 +639,14 @@ export function PersistentPlayer({
                 <div className="absolute bottom-full right-0 mb-3 w-56 rounded-lg border border-surface-border bg-surface/95 p-3 text-sm text-ink shadow-xl backdrop-blur">
                   <SettingSection label={dict.speed}>
                     {PLAYBACK_SPEEDS.map((s) => (
-                      <SettingChip key={s} active={rate === s} onClick={() => setRate(s)}>
+                      <SettingChip
+                        key={s}
+                        active={rate === s}
+                        onClick={() => {
+                          setRate(s);
+                          if (s !== 1) logFeature("speed");
+                        }}
+                      >
                         {s === 1 ? "1x" : `${s}x`}
                       </SettingChip>
                     ))}
@@ -633,7 +665,10 @@ export function PersistentPlayer({
                         <SettingChip
                           key={t.lang}
                           active={captionsLang === t.lang}
-                          onClick={() => setCaptionsLang(t.lang)}
+                          onClick={() => {
+                            setCaptionsLang(t.lang);
+                            logFeature("subtitle");
+                          }}
                         >
                           {t.lang.toUpperCase()}
                         </SettingChip>
@@ -662,7 +697,14 @@ export function PersistentPlayer({
                   {audioOptions.length > 0 && (
                     <SettingSection label={dict.audio}>
                       {audioOptions.map((a) => (
-                        <SettingChip key={a.id} active={audioTrack === a.id} onClick={() => selectAudio(a.id)}>
+                        <SettingChip
+                          key={a.id}
+                          active={audioTrack === a.id}
+                          onClick={() => {
+                            selectAudio(a.id);
+                            logFeature("audio");
+                          }}
+                        >
                           {a.label}
                         </SettingChip>
                       ))}
@@ -673,11 +715,24 @@ export function PersistentPlayer({
                       {dict.off}
                     </SettingChip>
                     {[15, 30, 45, 60].map((m) => (
-                      <SettingChip key={m} active={sleepOption === m} onClick={() => setSleepTimer(m)}>
+                      <SettingChip
+                        key={m}
+                        active={sleepOption === m}
+                        onClick={() => {
+                          setSleepTimer(m);
+                          logFeature("sleep_timer");
+                        }}
+                      >
                         {m} {dict.minutes}
                       </SettingChip>
                     ))}
-                    <SettingChip active={sleepOption === "end"} onClick={() => setSleepTimer("end")}>
+                    <SettingChip
+                      active={sleepOption === "end"}
+                      onClick={() => {
+                        setSleepTimer("end");
+                        logFeature("sleep_timer");
+                      }}
+                    >
                       {dict.endOfMovie}
                     </SettingChip>
                   </SettingSection>
