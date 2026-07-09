@@ -4,9 +4,15 @@ import android.content.Context
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.DatabaseProvider
 import androidx.media3.database.StandaloneDatabaseProvider
+import androidx.media3.datasource.AesCipherDataSink
+import androidx.media3.datasource.AesCipherDataSource
+import androidx.media3.datasource.DataSink
+import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.FileDataSource
 import androidx.media3.datasource.cache.Cache
+import androidx.media3.datasource.cache.CacheDataSink
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.CacheKeyFactory
 import androidx.media3.datasource.cache.NoOpCacheEvictor
@@ -55,13 +61,24 @@ object DownloadUtil {
 
     private fun cacheDataSourceFactory(context: Context, writable: Boolean): CacheDataSource.Factory {
         val app = context.applicationContext
+        val cache = getDownloadCache(app)
+        val key = DownloadEncryption.contentKey(app)
         val upstream = DefaultDataSource.Factory(app, DefaultHttpDataSource.Factory())
+        // Cached bytes are AES-encrypted at rest: encrypt on write, decrypt on read.
+        val readFactory = DataSource.Factory { AesCipherDataSource(key, FileDataSource()) }
         return CacheDataSource.Factory()
-            .setCache(getDownloadCache(app))
+            .setCache(cache)
             .setUpstreamDataSourceFactory(upstream)
             .setCacheKeyFactory(cacheKeyFactory)
+            .setCacheReadDataSourceFactory(readFactory)
             .apply {
-                if (!writable) {
+                if (writable) {
+                    setCacheWriteDataSinkFactory(
+                        DataSink.Factory {
+                            AesCipherDataSink(key, CacheDataSink.Factory().setCache(cache).createDataSink())
+                        },
+                    )
+                } else {
                     setCacheWriteDataSinkFactory(null)
                     setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
                 }

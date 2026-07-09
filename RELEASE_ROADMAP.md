@@ -155,7 +155,7 @@
 - **Day 73** ✅ — My Downloads screen; downloaded-movie tracker; storage-usage indicator.
 - **Day 74** ✅ — Offline playback from local file + offline subtitles; offline watch-progress (sync on reconnect).
 - **Day 75** ✅ — Delete individual/all; auto-delete-watched toggle; download expiry/license window.
-- **Day 76** — **Download encryption** (encrypt offline files; key in Android Keystore).
+- **Day 76** ✅ — **Download encryption** (encrypt offline files; key in Android Keystore).
 - **Day 77** — Watch Later + My Library (Android) wiring; week review.
 
 ### Week 12 — Web Library & Collections (Days 78–84) (W)
