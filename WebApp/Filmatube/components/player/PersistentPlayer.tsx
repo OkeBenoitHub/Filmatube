@@ -109,6 +109,36 @@ export function PersistentPlayer({
   const [captionStyle, setCaptionStyle] = useState<CaptionStyle>(DEFAULT_CAPTION_STYLE);
   const [audioOptions, setAudioOptions] = useState<AudioOption[]>([]);
   const [audioTrack, setAudioTrack] = useState<string | null>(null);
+  const [sleepOption, setSleepOption] = useState<number | "end" | null>(null);
+  const [sleepRemainingMs, setSleepRemainingMs] = useState<number | null>(null);
+  const [upNextDismissed, setUpNextDismissed] = useState(false);
+  const sleepInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const setSleepTimer = useCallback((option: number | "end" | null) => {
+    if (sleepInterval.current) clearInterval(sleepInterval.current);
+    setSleepOption(option);
+    if (option === null || option === "end") {
+      setSleepRemainingMs(null);
+      return;
+    }
+    let remaining = option * 60_000;
+    setSleepRemainingMs(remaining);
+    sleepInterval.current = setInterval(() => {
+      remaining -= 1000;
+      if (remaining <= 0) {
+        if (sleepInterval.current) clearInterval(sleepInterval.current);
+        videoRef.current?.pause();
+        setSleepOption(null);
+        setSleepRemainingMs(null);
+      } else {
+        setSleepRemainingMs(remaining);
+      }
+    }, 1000);
+  }, []);
+
+  useEffect(() => () => {
+    if (sleepInterval.current) clearInterval(sleepInterval.current);
+  }, []);
 
   // Load/persist caption style in localStorage.
   useEffect(() => {
@@ -385,6 +415,9 @@ export function PersistentPlayer({
           onEnded={() => {
             setPlaying(false);
             saveProgress();
+            if (active.upNext && !upNextDismissed && sleepOption !== "end") {
+              router.push(`/watch/${active.upNext.id}`);
+            }
           }}
           onWaiting={() => setBuffering(true)}
           onPlaying={() => setBuffering(false)}
@@ -499,6 +532,42 @@ export function PersistentPlayer({
         </div>
       )}
 
+      {sleepRemainingMs != null && (
+        <div className="absolute right-4 top-6 z-20 rounded-full bg-black/70 px-3 py-1.5 text-sm text-brand-400 backdrop-blur">
+          {formatTime(sleepRemainingMs / 1000)}
+        </div>
+      )}
+
+      {active.upNext && duration > 0 && !upNextDismissed && duration - current > 0 && duration - current <= 30 && (
+        <div className="absolute bottom-24 right-4 z-20 flex w-72 gap-3 rounded-xl border border-surface-border bg-black/85 p-3 backdrop-blur">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={active.upNext.poster} alt="" className="h-20 w-14 shrink-0 rounded object-cover" />
+          <div className="min-w-0">
+            <p className="text-xs text-ink-faint">{dict.upNext}</p>
+            <p className="truncate text-sm font-semibold text-white">{active.upNext.title}</p>
+            <p className="text-xs text-brand-400">
+              {dict.playingIn} {Math.ceil(duration - current)}s
+            </p>
+            <div className="mt-1.5 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => router.push(`/watch/${active.upNext!.id}`)}
+                className="rounded-lg bg-brand-500 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-600"
+              >
+                {dict.playNow}
+              </button>
+              <button
+                type="button"
+                onClick={() => setUpNextDismissed(true)}
+                className="text-xs text-ink-muted hover:text-ink"
+              >
+                {dict.close}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {src && (
         <div
           className={cn(
@@ -599,6 +668,19 @@ export function PersistentPlayer({
                       ))}
                     </SettingSection>
                   )}
+                  <SettingSection label={dict.sleepTimer}>
+                    <SettingChip active={sleepOption === null} onClick={() => setSleepTimer(null)}>
+                      {dict.off}
+                    </SettingChip>
+                    {[15, 30, 45, 60].map((m) => (
+                      <SettingChip key={m} active={sleepOption === m} onClick={() => setSleepTimer(m)}>
+                        {m} {dict.minutes}
+                      </SettingChip>
+                    ))}
+                    <SettingChip active={sleepOption === "end"} onClick={() => setSleepTimer("end")}>
+                      {dict.endOfMovie}
+                    </SettingChip>
+                  </SettingSection>
                 </div>
               )}
             </div>
