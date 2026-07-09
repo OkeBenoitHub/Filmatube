@@ -12,6 +12,7 @@ import { Chip } from "@/components/account/Chip";
 import { ErrorBanner } from "@/components/auth/AuthBits";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { SubtitleTracks } from "@/components/admin/SubtitleTracks";
+import { AudioTracks } from "@/components/admin/AudioTracks";
 import { VideoUpload } from "@/components/admin/VideoUpload";
 
 export function MovieForm({
@@ -176,6 +177,29 @@ export function MovieForm({
         onChange={(subtitleTracks) => set({ subtitleTracks })}
         dict={dict}
       />
+
+      <AudioTracks
+        tracks={values.audioTracks}
+        onChange={(audioTracks) => set({ audioTracks })}
+        dict={dict}
+      />
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label={dict.introStart}>
+          <Input
+            type="number"
+            value={values.introStart}
+            onChange={(e) => set({ introStart: Number(e.target.value) })}
+          />
+        </Field>
+        <Field label={dict.introEnd}>
+          <Input
+            type="number"
+            value={values.introEnd}
+            onChange={(e) => set({ introEnd: Number(e.target.value) })}
+          />
+        </Field>
+      </div>
 
       {/* Flags + status */}
       <div className="flex flex-wrap items-center gap-4">

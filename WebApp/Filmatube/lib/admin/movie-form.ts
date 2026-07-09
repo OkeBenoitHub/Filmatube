@@ -9,6 +9,11 @@ export interface SubtitleTrack {
   url: string;
 }
 
+export interface AudioTrackEntry {
+  lang: string;
+  label: string;
+}
+
 /** Flat editable movie fields used by the admin form + save action. */
 export interface MovieFormValues {
   imdbId: string;
@@ -28,6 +33,9 @@ export interface MovieFormValues {
   trailerUrl: string;
   videoKey: string;
   subtitleTracks: SubtitleTrack[];
+  audioTracks: AudioTrackEntry[];
+  introStart: number;
+  introEnd: number;
   status: "draft" | "published";
   isFeatured: boolean;
   isPinned: boolean;
@@ -52,6 +60,9 @@ export const emptyMovie: MovieFormValues = {
   trailerUrl: "",
   videoKey: "",
   subtitleTracks: [],
+  audioTracks: [],
+  introStart: 0,
+  introEnd: 0,
   status: "draft",
   isFeatured: false,
   isPinned: false,

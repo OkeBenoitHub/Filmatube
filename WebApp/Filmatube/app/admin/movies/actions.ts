@@ -24,6 +24,9 @@ function toDoc(v: MovieFormValues) {
     trailerUrl: v.trailerUrl,
     videoKey: v.videoKey,
     subtitleTracks: v.subtitleTracks,
+    audioTracks: v.audioTracks,
+    introStart: Number(v.introStart) || 0,
+    introEnd: Number(v.introEnd) || 0,
     genres: v.genres,
     year: Number(v.year) || 0,
     duration: Number(v.duration) || 0,
@@ -53,7 +56,6 @@ export async function upsertMovie(id: string | null, values: MovieFormValues): P
 
   const ref = await db.collection("movies").add({
     ...doc,
-    audioTracks: [],
     averageRating: 0,
     ratingsCount: 0,
     likesCount: 0,
