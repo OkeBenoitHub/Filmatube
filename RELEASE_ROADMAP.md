@@ -145,7 +145,7 @@
 - **Day 67** ✅ — Admin: manage **subtitle tracks** per movie (add/remove languages) + **audio tracks**; **intro-markers editor**.
 - **Day 68** ✅ — Admin: replace/re-upload video; R2 object management + orphan cleanup tool.
 - **Day 69** ✅ — Web player resume/network resilience; analytics events.
-- **Day 70** — Player parity QA (subtitles/audio/progress Android↔web); phase review.
+- **Day 70** ✅ — Player parity QA (subtitles/audio/progress Android↔web); phase review.
 
 ## PHASE 6 — Downloads, Offline & Library (Days 71–84)
 
