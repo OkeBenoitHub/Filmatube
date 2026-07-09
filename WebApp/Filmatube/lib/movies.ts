@@ -9,6 +9,11 @@ export interface CatalogCast {
   photoUrl: string;
 }
 
+export interface CatalogSubtitle {
+  lang: string;
+  url: string;
+}
+
 export interface CatalogMovie {
   id: string;
   title: { en: string; fr: string };
@@ -28,6 +33,7 @@ export interface CatalogMovie {
   isFeatured: boolean;
   isComingSoon: boolean;
   hasVideo: boolean;
+  subtitleTracks: CatalogSubtitle[];
   addedAtMs: number;
 }
 
@@ -64,6 +70,9 @@ function mapDoc(id: string, x: Record<string, unknown>): CatalogMovie {
     isFeatured: !!x.isFeatured,
     isComingSoon: !!x.isComingSoon,
     hasVideo: Boolean(x.videoKey),
+    subtitleTracks: ((x.subtitleTracks as CatalogSubtitle[]) ?? [])
+      .filter((t) => t?.lang && t?.url)
+      .map((t) => ({ lang: t.lang, url: t.url })),
     addedAtMs:
       (x.addedAt as { toMillis?: () => number })?.toMillis?.() ??
       (x.updatedAt as { toMillis?: () => number })?.toMillis?.() ??

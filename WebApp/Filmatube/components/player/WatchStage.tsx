@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useMiniPlayer } from "@/components/player/MiniPlayerProvider";
+import { useMiniPlayer, type ActiveSubtitle, type UpNextMovie } from "@/components/player/MiniPlayerProvider";
 
 /**
  * Registers the movie as the active player on mount; the PersistentPlayer (root
@@ -12,16 +12,20 @@ export function WatchStage({
   movieId,
   poster,
   title,
+  subtitles,
+  upNext,
 }: {
   movieId: string;
   poster: string;
   title: string;
+  subtitles: ActiveSubtitle[];
+  upNext: UpNextMovie | null;
 }) {
   const { open } = useMiniPlayer();
 
   useEffect(() => {
-    open({ id: movieId, poster, title });
-  }, [open, movieId, poster, title]);
+    open({ id: movieId, poster, title, subtitles, upNext });
+  }, [open, movieId, poster, title, subtitles, upNext]);
 
   return <div className="min-h-screen bg-black" />;
 }

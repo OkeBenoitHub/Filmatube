@@ -5,10 +5,23 @@ import { usePathname } from "next/navigation";
 import { PersistentPlayer } from "@/components/player/PersistentPlayer";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
+export interface ActiveSubtitle {
+  lang: string;
+  url: string;
+}
+
+export interface UpNextMovie {
+  id: string;
+  poster: string;
+  title: string;
+}
+
 export interface ActiveMovie {
   id: string;
   poster: string;
   title: string;
+  subtitles: ActiveSubtitle[];
+  upNext: UpNextMovie | null;
 }
 
 interface MiniPlayerContext {

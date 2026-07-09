@@ -13,6 +13,7 @@ import {
   PictureInPicture2,
   ArrowLeft,
   X,
+  Settings,
 } from "lucide-react";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -22,6 +23,7 @@ import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { cn } from "@/lib/utils";
 
 const COMPLETE_THRESHOLD = 0.9;
+const PLAYBACK_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
 function formatTime(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds < 0) seconds = 0;
@@ -70,6 +72,23 @@ export function PersistentPlayer({
   const [fullscreen, setFullscreen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [resumeMs, setResumeMs] = useState<number | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [rate, setRate] = useState(1);
+  const [captionsLang, setCaptionsLang] = useState<string | null>(null);
+
+  // Apply playback speed.
+  useEffect(() => {
+    if (videoRef.current) videoRef.current.playbackRate = rate;
+  }, [rate, src]);
+
+  // Show the selected caption track (or hide all).
+  useEffect(() => {
+    const tracks = videoRef.current?.textTracks;
+    if (!tracks) return;
+    for (let i = 0; i < tracks.length; i++) {
+      tracks[i].mode = tracks[i].language === captionsLang ? "showing" : "disabled";
+    }
+  }, [captionsLang, src]);
 
   // --- stream source ---
   const load = useCallback(async () => {
@@ -294,7 +313,17 @@ export function PersistentPlayer({
             setVolume(e.currentTarget.volume);
             setMuted(e.currentTarget.muted);
           }}
-        />
+        >
+          {active.subtitles.map((track) => (
+            <track
+              key={track.lang}
+              kind="subtitles"
+              srcLang={track.lang}
+              label={track.lang.toUpperCase()}
+              src={`/api/subtitle?url=${encodeURIComponent(track.url)}`}
+            />
+          ))}
+        </video>
       ) : error ? (
         <div className="flex h-full items-center justify-center">
           <button
@@ -417,6 +446,43 @@ export function PersistentPlayer({
               {formatTime(current)} / {formatTime(duration)}
             </span>
             <div className="flex-1" />
+            <div className="relative">
+              <button type="button" onClick={() => setSettingsOpen((o) => !o)} aria-label={dict.settings}>
+                <Settings className="h-5 w-5" />
+              </button>
+              {settingsOpen && (
+                <div className="absolute bottom-full right-0 mb-3 w-56 rounded-lg border border-surface-border bg-surface/95 p-3 text-sm text-ink shadow-xl backdrop-blur">
+                  <SettingSection label={dict.speed}>
+                    {PLAYBACK_SPEEDS.map((s) => (
+                      <SettingChip key={s} active={rate === s} onClick={() => setRate(s)}>
+                        {s === 1 ? "1x" : `${s}x`}
+                      </SettingChip>
+                    ))}
+                  </SettingSection>
+                  <SettingSection label={dict.quality}>
+                    <SettingChip active disabled onClick={() => {}}>
+                      {dict.source}
+                    </SettingChip>
+                  </SettingSection>
+                  {active.subtitles.length > 0 && (
+                    <SettingSection label={dict.captions}>
+                      <SettingChip active={captionsLang === null} onClick={() => setCaptionsLang(null)}>
+                        {dict.off}
+                      </SettingChip>
+                      {active.subtitles.map((t) => (
+                        <SettingChip
+                          key={t.lang}
+                          active={captionsLang === t.lang}
+                          onClick={() => setCaptionsLang(t.lang)}
+                        >
+                          {t.lang.toUpperCase()}
+                        </SettingChip>
+                      ))}
+                    </SettingSection>
+                  )}
+                </div>
+              )}
+            </div>
             <button type="button" onClick={togglePip} aria-label={dict.pip}>
               <PictureInPicture2 className="h-5 w-5" />
             </button>
@@ -427,6 +493,42 @@ export function PersistentPlayer({
         </div>
       )}
     </div>
+  );
+}
+
+function SettingSection({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="mb-2 last:mb-0">
+      <p className="mb-1 text-xs text-ink-faint">{label}</p>
+      <div className="flex flex-wrap gap-1.5">{children}</div>
+    </div>
+  );
+}
+
+function SettingChip({
+  active,
+  disabled,
+  onClick,
+  children,
+}: {
+  active?: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        "rounded-full px-2.5 py-1 text-xs transition-colors",
+        active ? "bg-brand-500 text-white" : "bg-surface-hover text-ink-muted hover:text-ink",
+        disabled && "cursor-default opacity-60",
+      )}
+    >
+      {children}
+    </button>
   );
 }
 
