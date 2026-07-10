@@ -179,7 +179,7 @@
 - **Day 91** ✅ — Public profile (their lists/activity/taste match); analytics; week review.
 
 ### Week 14 — Web Social (Days 92–98) (W)
-- **Day 92** — Follow + followers/following (web).
+- **Day 92** ✅ — Follow + followers/following (web).
 - **Day 93** — Activity feed real-time (web) + filters.
 - **Day 94** — Likes/reactions parity; counts on detail.
 - **Day 95** — Recommend + inbox (web).
