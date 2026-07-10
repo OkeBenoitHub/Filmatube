@@ -5,6 +5,7 @@ import { Play, Film } from "lucide-react";
 import { MovieRow } from "@/components/catalog/MovieRow";
 import { ShareBar } from "@/components/catalog/ShareBar";
 import { SaveButton } from "@/components/catalog/SaveButton";
+import { ReactionBar } from "@/components/social/ReactionBar";
 import { getDict, getLocale } from "@/lib/i18n/server";
 import { getMovie, getPublishedMovies, localized, pickRelated } from "@/lib/movies";
 
@@ -117,6 +118,8 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
               <SaveButton movieId={movie.id} dict={c} />
               <ShareBar movieId={movie.id} title={title} dict={c} />
             </div>
+
+            <ReactionBar movieId={movie.id} dict={c} />
 
             {localized(movie.description, locale) && (
               <p className="max-w-2xl text-sm leading-relaxed text-ink-muted md:text-base">

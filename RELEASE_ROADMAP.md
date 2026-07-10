@@ -181,7 +181,7 @@
 ### Week 14 — Web Social (Days 92–98) (W)
 - **Day 92** ✅ — Follow + followers/following (web).
 - **Day 93** ✅ — Activity feed real-time (web) + filters.
-- **Day 94** — Likes/reactions parity; counts on detail.
+- **Day 94** ✅ — Likes/reactions parity; counts on detail.
 - **Day 95** — Recommend + inbox (web).
 - **Day 96** — Public profiles + **Taste Match %** badge.
 - **Day 97** — Follow suggestions (web); "people with your taste" discovery.
