@@ -165,7 +165,7 @@
 - **Day 81** ✅ — Collection detail + reorder; "My Stuff" hub (watchlist + collections + continue watching).
 - **Day 82** ✅ — PWA "save for later" (service-worker cache, best-effort); downloads info page.
 - **Day 83** ✅ — Library parity QA; bidirectional sync (watch later/collections Android↔web).
-- **Day 84** — Phase review; mid-MVP checkpoint.
+- **Day 84** ✅ — Phase review; mid-MVP checkpoint.
 
 ## PHASE 7 — Social Graph & Feed (Days 85–98)
 
