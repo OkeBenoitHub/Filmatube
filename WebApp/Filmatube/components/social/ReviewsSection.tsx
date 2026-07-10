@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ThumbsUp, Trash2 } from "lucide-react";
+import { ThumbsUp, Trash2, Flag } from "lucide-react";
 import {
+  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -38,6 +39,7 @@ export function ReviewsSection({ movieId, dict }: { movieId: string; dict: Dicti
   const [text, setText] = useState("");
   const [spoiler, setSpoiler] = useState(false);
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+  const [reported, setReported] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const q = query(collection(db, "reviews", movieId, "items"), orderBy("createdAt", "desc"));
@@ -96,6 +98,21 @@ export function ReviewsSection({ movieId, dict }: { movieId: string; dict: Dicti
     const ref = doc(db, "reviews", movieId, "items", review.id, "likes", user.uid);
     if (review.likedByMe) await deleteDoc(ref);
     else await setDoc(ref, { userId: user.uid, createdAt: serverTimestamp() });
+  };
+
+  const report = async (review: ReviewItem) => {
+    if (!user) return;
+    await addDoc(collection(db, "reports"), {
+      type: "review",
+      movieId,
+      targetId: review.id,
+      reportedUserId: review.userId,
+      reporterId: user.uid,
+      reason: "",
+      status: "pending",
+      createdAt: serverTimestamp(),
+    });
+    setReported((prev) => ({ ...prev, [review.id]: true }));
   };
 
   return (
@@ -172,19 +189,32 @@ export function ReviewsSection({ movieId, dict }: { movieId: string; dict: Dicti
                 </>
               )}
 
-              <button
-                type="button"
-                onClick={() => toggleLike(r)}
-                disabled={!user}
-                className={
-                  r.likedByMe
-                    ? "inline-flex items-center gap-1.5 text-sm font-semibold text-brand-400"
-                    : "inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink disabled:opacity-50"
-                }
-              >
-                <ThumbsUp className="h-4 w-4" aria-hidden />
-                {r.likeCount > 0 ? r.likeCount : dict.likeAction}
-              </button>
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => toggleLike(r)}
+                  disabled={!user}
+                  className={
+                    r.likedByMe
+                      ? "inline-flex items-center gap-1.5 text-sm font-semibold text-brand-400"
+                      : "inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink disabled:opacity-50"
+                  }
+                >
+                  <ThumbsUp className="h-4 w-4" aria-hidden />
+                  {r.likeCount > 0 ? r.likeCount : dict.likeAction}
+                </button>
+                {user && !r.isMine && (
+                  <button
+                    type="button"
+                    onClick={() => report(r)}
+                    disabled={reported[r.id]}
+                    className="inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink disabled:opacity-50"
+                  >
+                    <Flag className="h-4 w-4" aria-hidden />
+                    {reported[r.id] ? dict.reportedAction : dict.reportAction}
+                  </button>
+                )}
+              </div>
             </li>
           ))}
         </ul>

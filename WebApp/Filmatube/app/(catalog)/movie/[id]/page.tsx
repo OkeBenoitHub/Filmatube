@@ -9,6 +9,7 @@ import { ReactionBar } from "@/components/social/ReactionBar";
 import { RecommendButton } from "@/components/social/RecommendButton";
 import { StarRating } from "@/components/social/StarRating";
 import { ReviewsSection } from "@/components/social/ReviewsSection";
+import { CommentsSection } from "@/components/social/CommentsSection";
 import { getDict, getLocale } from "@/lib/i18n/server";
 import { getMovie, getPublishedMovies, localized, pickRelated } from "@/lib/movies";
 
@@ -166,6 +167,11 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
         {/* Reviews */}
         <section className="mt-10">
           <ReviewsSection movieId={movie.id} dict={c} />
+        </section>
+
+        {/* Comments */}
+        <section className="mt-10">
+          <CommentsSection movieId={movie.id} dict={c} />
         </section>
       </div>
 

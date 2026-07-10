@@ -200,7 +200,7 @@
 
 ### Week 16 — Web Reviews + Push + Requests + Broadcast (Days 106–112) (W)
 - **Day 106** ✅ — Ratings + reviews (web); spoiler handling.
-- **Day 107** — Threaded comments (web); report.
+- **Day 107** ✅ — Threaded comments (web); report.
 - **Day 108** — Web push (FCM) + notification center.
 - **Day 109** — Notification preferences (web); report-moderation queue (admin).
 - **Day 110** — **Admin broadcast** composer: segment (all/taste/active), schedule send, preview; Cloud Function fan-out.
