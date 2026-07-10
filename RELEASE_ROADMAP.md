@@ -191,7 +191,7 @@
 
 ### Week 15 — Android Reviews + Notifications (Days 99–105) (A)
 - **Day 99** ✅ — Star ratings (1–5); aggregation (Cloud Function → `averageRating`/`ratingsCount`).
-- **Day 100** — Written reviews (public on detail, spoiler-tag); review likes.
+- **Day 100** ✅ — Written reviews (public on detail, spoiler-tag); review likes.
 - **Day 101** — Threaded comments; comment likes; report review/comment; spoiler-free mode.
 - **Day 102** — FCM token registration; notification channels (social/content/system).
 - **Day 103** — All notification types wired + tested end-to-end.

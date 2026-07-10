@@ -24,6 +24,7 @@ import com.filmatube.app.ui.social.FeedScreen
 import com.filmatube.app.ui.social.FollowListScreen
 import com.filmatube.app.ui.social.PublicProfileScreen
 import com.filmatube.app.ui.social.RecommendationInboxScreen
+import com.filmatube.app.ui.social.ReviewsScreen
 import com.filmatube.app.ui.social.SuggestionsScreen
 import com.filmatube.app.ui.settings.ProfilesScreen
 import com.filmatube.app.ui.settings.SettingsScreen
@@ -38,9 +39,11 @@ private const val ROUTE_FOLLOWS = "follows/{mode}"
 private const val ROUTE_SUGGESTIONS = "suggestions"
 private const val ROUTE_INBOX = "inbox"
 private const val ROUTE_PUBLIC_PROFILE = "user/{userId}"
+private const val ROUTE_REVIEWS = "reviews/{movieId}"
 
 fun followsRoute(mode: String) = "follows/$mode"
 fun publicProfileRoute(userId: String) = "user/$userId"
+fun reviewsRoute(movieId: String) = "reviews/$movieId"
 private const val ROUTE_MOVIE = "movie/{movieId}"
 private const val ROUTE_PLAYER = "player/{movieId}"
 private const val ROUTE_BROWSE = "browse?genre={genre}"
@@ -82,6 +85,7 @@ fun FilmatubeNavHost(
                 onPlay = { navController.navigate(playerRoute(it)) },
                 onMovieClick = { navController.navigate(movieRoute(it)) },
                 onActorClick = { navController.navigate(actorRoute(it)) },
+                onOpenReviews = { navController.navigate(reviewsRoute(it)) },
             )
         }
         composable(
@@ -186,6 +190,15 @@ fun FilmatubeNavHost(
             arguments = listOf(navArgument("userId") { type = NavType.StringType }),
         ) {
             PublicProfileScreen(onBack = { navController.popBackStack() })
+        }
+        composable(
+            route = ROUTE_REVIEWS,
+            arguments = listOf(navArgument("movieId") { type = NavType.StringType }),
+        ) {
+            ReviewsScreen(
+                onBack = { navController.popBackStack() },
+                onUserClick = { navController.navigate(publicProfileRoute(it)) },
+            )
         }
     }
 }

@@ -28,6 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
@@ -87,6 +88,7 @@ fun MovieDetailScreen(
     onPlay: (String) -> Unit,
     onMovieClick: (String) -> Unit,
     onActorClick: (String) -> Unit,
+    onOpenReviews: (String) -> Unit,
     viewModel: MovieDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -122,6 +124,7 @@ fun MovieDetailScreen(
                 ratingCount = ratingAggregate.count,
                 onRate = viewModel::setRating,
                 onRecommend = { viewModel.loadRecipients(); showRecommend = true },
+                onOpenReviews = onOpenReviews,
                 downloadState = downloadState,
                 onToggleDownload = viewModel::toggleDownload,
                 onPlay = onPlay,
@@ -177,6 +180,7 @@ private fun DetailContent(
     ratingCount: Int,
     onRate: (Int) -> Unit,
     onRecommend: () -> Unit,
+    onOpenReviews: (String) -> Unit,
     downloadState: DownloadUiState,
     onToggleDownload: () -> Unit,
     onPlay: (String) -> Unit,
@@ -316,6 +320,13 @@ private fun DetailContent(
                 text = stringResource(R.string.detail_recommend),
                 onClick = onRecommend,
                 leadingIcon = Icons.Filled.Send,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            FilmatubeSecondaryButton(
+                text = stringResource(R.string.detail_reviews),
+                onClick = { onOpenReviews(movie.id) },
+                leadingIcon = Icons.AutoMirrored.Filled.Comment,
                 modifier = Modifier.fillMaxWidth(),
             )
 
