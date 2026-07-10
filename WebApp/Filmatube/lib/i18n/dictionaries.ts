@@ -242,6 +242,10 @@ const en = {
     remove: "Remove",
     deleteLabel: "Delete",
     noCollections: "No collections yet.",
+    saveCopy: "Save to my collections",
+    myStuff: "My Stuff",
+    moveUp: "Move up",
+    moveDown: "Move down",
   },
   player: {
     back: "Back",
@@ -522,6 +526,10 @@ const fr: Dictionary = {
     remove: "Retirer",
     deleteLabel: "Supprimer",
     noCollections: "Aucune collection.",
+    saveCopy: "Enregistrer dans mes collections",
+    myStuff: "Mon espace",
+    moveUp: "Monter",
+    moveDown: "Descendre",
   },
   player: {
     back: "Retour",

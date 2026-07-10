@@ -3,12 +3,13 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Upload, Search, X, Plus } from "lucide-react";
+import { Upload, Search, X, Plus, Share2, Check, Bookmark } from "lucide-react";
 import {
   saveCollection,
   deleteCollection,
   addMovieToCollection,
   removeMovieFromCollection,
+  saveCollectionCopy,
 } from "@/app/collections/actions";
 import { uploadPublic } from "@/lib/upload/media";
 import type { Collection } from "@/lib/collections";
@@ -44,9 +45,36 @@ export function CollectionEditor({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [pending, startTransition] = useTransition();
+  const [copied, setCopied] = useState(false);
   const coverInput = useRef<HTMLInputElement>(null);
 
   const localized = (m: CatalogMovie) => (locale === "fr" ? m.title.fr || m.title.en : m.title.en || m.title.fr);
+
+  const share = async () => {
+    const url = `${window.location.origin}/collections/${collection.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: collection.title, url });
+        return;
+      } catch {
+        /* fall through */
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const ShareButton = (
+    <Button variant="outline" onClick={share}>
+      {copied ? <Check className="h-4 w-4 text-brand-400" aria-hidden /> : <Share2 className="h-4 w-4" aria-hidden />}
+      {copied ? dict.copied : dict.share}
+    </Button>
+  );
 
   const onCover = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -124,6 +152,7 @@ export function CollectionEditor({
                 >
                   {dict.deleteLabel}
                 </Button>
+                {ShareButton}
               </div>
             </div>
           </div>
@@ -175,7 +204,24 @@ export function CollectionEditor({
           </div>
         </>
       ) : (
-        <h1 className="text-2xl font-bold text-ink">{collection.title}</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-bold text-ink">{collection.title}</h1>
+          <div className="flex gap-2">
+            <Button
+              loading={pending}
+              onClick={() =>
+                startTransition(async () => {
+                  const newId = await saveCollectionCopy(collection.id);
+                  router.push(`/collections/${newId}`);
+                })
+              }
+            >
+              <Bookmark className="h-4 w-4" aria-hidden />
+              {dict.saveCopy}
+            </Button>
+            {ShareButton}
+          </div>
+        </div>
       )}
 
       {movies.length === 0 ? (
