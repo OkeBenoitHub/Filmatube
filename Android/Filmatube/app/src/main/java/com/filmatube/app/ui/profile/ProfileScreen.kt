@@ -18,9 +18,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.MailOutline
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.PersonAddAlt
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -54,11 +57,13 @@ fun ProfileScreen(
     onOpenFollowing: () -> Unit,
     onOpenSuggestions: () -> Unit,
     onOpenInbox: () -> Unit,
+    onOpenNotifications: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val followerCount by viewModel.followerCount.collectAsStateWithLifecycle()
     val followingCount by viewModel.followingCount.collectAsStateWithLifecycle()
+    val unreadNotifications by viewModel.unreadNotifications.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -72,6 +77,20 @@ fun ProfileScreen(
                 style = MaterialTheme.typography.titleLarge,
             )
             Spacer(Modifier.weight(1f))
+            IconButton(onClick = onOpenNotifications) {
+                BadgedBox(
+                    badge = {
+                        if (unreadNotifications > 0) {
+                            Badge { Text(if (unreadNotifications > 99) "99+" else "$unreadNotifications") }
+                        }
+                    },
+                ) {
+                    Icon(
+                        Icons.Outlined.Notifications,
+                        contentDescription = stringResource(R.string.notifications_title),
+                    )
+                }
+            }
             IconButton(onClick = onOpenInbox) {
                 Icon(
                     Icons.Outlined.MailOutline,

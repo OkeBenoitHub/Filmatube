@@ -2,6 +2,7 @@ package com.filmatube.app.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.filmatube.app.data.notifications.NotificationRepository
 import com.filmatube.app.data.social.FollowRepository
 import com.filmatube.app.domain.model.UserProfile
 import com.filmatube.app.domain.repository.AuthRepository
@@ -22,9 +23,13 @@ class ProfileViewModel @Inject constructor(
     authRepository: AuthRepository,
     userRepository: UserRepository,
     followRepository: FollowRepository,
+    notificationRepository: NotificationRepository,
 ) : ViewModel() {
 
     private val uid: String? = authRepository.currentUser()?.uid
+
+    val unreadNotifications: StateFlow<Int> = notificationRepository.unreadCount
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 
     val state: StateFlow<DataState<UserProfile>> =
         (uid?.let { id ->
