@@ -1,6 +1,7 @@
 package com.filmatube.app.ui.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,9 +48,13 @@ import com.filmatube.app.ui.theme.FilmatubeSpacing
 fun ProfileScreen(
     onEditProfile: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenFollowers: () -> Unit,
+    onOpenFollowing: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val followerCount by viewModel.followerCount.collectAsStateWithLifecycle()
+    val followingCount by viewModel.followingCount.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -75,13 +80,27 @@ fun ProfileScreen(
             DataState.Loading -> LoadingView()
             is DataState.Error -> ErrorView(error = s.error, onRetry = {})
             DataState.Empty -> LoadingView()
-            is DataState.Success -> ProfileContent(profile = s.data, onEditProfile = onEditProfile)
+            is DataState.Success -> ProfileContent(
+                profile = s.data,
+                followerCount = followerCount,
+                followingCount = followingCount,
+                onEditProfile = onEditProfile,
+                onOpenFollowers = onOpenFollowers,
+                onOpenFollowing = onOpenFollowing,
+            )
         }
     }
 }
 
 @Composable
-private fun ProfileContent(profile: UserProfile, onEditProfile: () -> Unit) {
+private fun ProfileContent(
+    profile: UserProfile,
+    followerCount: Int,
+    followingCount: Int,
+    onEditProfile: () -> Unit,
+    onOpenFollowers: () -> Unit,
+    onOpenFollowing: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -124,7 +143,12 @@ private fun ProfileContent(profile: UserProfile, onEditProfile: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         )
 
-        StatsRow(profile)
+        StatsRow(
+            followerCount = followerCount,
+            followingCount = followingCount,
+            onOpenFollowers = onOpenFollowers,
+            onOpenFollowing = onOpenFollowing,
+        )
 
         BadgesSection()
 
@@ -133,20 +157,28 @@ private fun ProfileContent(profile: UserProfile, onEditProfile: () -> Unit) {
 }
 
 @Composable
-private fun StatsRow(profile: UserProfile) {
+private fun StatsRow(
+    followerCount: Int,
+    followingCount: Int,
+    onOpenFollowers: () -> Unit,
+    onOpenFollowing: () -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
-        Stat(count = profile.followersCount, label = stringResource(R.string.profile_followers))
-        Stat(count = profile.followingCount, label = stringResource(R.string.profile_following))
+        Stat(count = followerCount.toLong(), label = stringResource(R.string.profile_followers), onClick = onOpenFollowers)
+        Stat(count = followingCount.toLong(), label = stringResource(R.string.profile_following), onClick = onOpenFollowing)
         Stat(count = 0L, label = stringResource(R.string.profile_watched))
     }
 }
 
 @Composable
-private fun Stat(count: Long, label: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+private fun Stat(count: Long, label: String, onClick: (() -> Unit)? = null) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
+    ) {
         Text(count.toString(), style = MaterialTheme.typography.titleLarge)
         Text(
             label,

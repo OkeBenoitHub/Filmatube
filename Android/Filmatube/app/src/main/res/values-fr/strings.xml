@@ -189,6 +189,9 @@
     <string name="profile_edit">Modifier le profil</string>
     <string name="profile_followers">Abonnés</string>
     <string name="profile_following">Abonnements</string>
+    <string name="follow_action">Suivre</string>
+    <string name="following_action">Suivi</string>
+    <string name="follow_empty">Rien pour le moment.</string>
     <string name="profile_watched">Vus</string>
     <string name="profile_badges">Badges</string>
     <string name="profile_badges_empty">Regardez des films et soyez actif pour gagner des badges.</string>

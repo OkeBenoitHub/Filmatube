@@ -170,7 +170,7 @@
 ## PHASE 7 — Social Graph & Feed (Days 85–98)
 
 ### Week 13 — Android Social (Days 85–91) (A)
-- **Day 85** — Follow/unfollow; followers/following screens.
+- **Day 85** ✅ — Follow/unfollow; followers/following screens.
 - **Day 86** — Follow suggestions (taste overlap) + **Taste Match %** calculation/caching.
 - **Day 87** — Activity Feed (real-time listener): events (watching/watched/liked/reacted/added-watchlist/added-collection).
 - **Day 88** — Feed time filter; pagination; mute/hide.

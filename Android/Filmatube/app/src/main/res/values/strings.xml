@@ -192,6 +192,9 @@
     <string name="profile_edit">Edit profile</string>
     <string name="profile_followers">Followers</string>
     <string name="profile_following">Following</string>
+    <string name="follow_action">Follow</string>
+    <string name="following_action">Following</string>
+    <string name="follow_empty">Nothing here yet.</string>
     <string name="profile_watched">Watched</string>
     <string name="profile_badges">Badges</string>
     <string name="profile_badges_empty">Watch movies and be social to earn badges.</string>

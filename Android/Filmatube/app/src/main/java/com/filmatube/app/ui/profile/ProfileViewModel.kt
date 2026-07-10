@@ -2,6 +2,7 @@ package com.filmatube.app.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.filmatube.app.data.social.FollowRepository
 import com.filmatube.app.domain.model.UserProfile
 import com.filmatube.app.domain.repository.AuthRepository
 import com.filmatube.app.domain.repository.UserRepository
@@ -18,13 +19,16 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
+    authRepository: AuthRepository,
     userRepository: UserRepository,
+    followRepository: FollowRepository,
 ) : ViewModel() {
 
+    private val uid: String? = authRepository.currentUser()?.uid
+
     val state: StateFlow<DataState<UserProfile>> =
-        (authRepository.currentUser()?.uid?.let { uid ->
-            userRepository.observeUser(uid).map { profile ->
+        (uid?.let { id ->
+            userRepository.observeUser(id).map { profile ->
                 if (profile == null) DataState.Empty else DataState.Success(profile)
             }
         } ?: flowOf(DataState.Empty))
@@ -34,4 +38,12 @@ class ProfileViewModel @Inject constructor(
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = DataState.Loading,
             )
+
+    val followerCount: StateFlow<Int> =
+        (uid?.let { followRepository.observeFollowerIds(it).map { ids -> ids.size } } ?: flowOf(0))
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+
+    val followingCount: StateFlow<Int> =
+        (uid?.let { followRepository.observeFollowingIds(it).map { ids -> ids.size } } ?: flowOf(0))
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 }
