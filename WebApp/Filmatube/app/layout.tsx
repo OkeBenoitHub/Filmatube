@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { LocaleProvider } from "@/components/providers/LocaleProvider";
 import { MiniPlayerProvider } from "@/components/player/MiniPlayerProvider";
+import { ServiceWorkerRegister } from "@/components/providers/ServiceWorkerRegister";
 import { ToastProvider } from "@/components/ui/Toast";
 import { getDict, getLocale } from "@/lib/i18n/server";
 import "./globals.css";
@@ -15,6 +16,11 @@ export const metadata: Metadata = {
   },
   description:
     "Stream movies, follow people who share your taste, and talk about it all in real time.",
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#16a34a",
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
@@ -31,6 +37,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             </MiniPlayerProvider>
           </AuthProvider>
         </LocaleProvider>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

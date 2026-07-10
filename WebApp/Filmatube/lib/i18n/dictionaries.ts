@@ -246,6 +246,10 @@ const en = {
     myStuff: "My Stuff",
     moveUp: "Move up",
     moveDown: "Move down",
+    offlineTitle: "Offline downloads",
+    offlineBody:
+      "Download movies to watch offline in the Filmatube Android app. On the web, install Filmatube (Add to Home Screen) and pages you've visited stay available offline.",
+    getApp: "Get the Android app",
   },
   player: {
     back: "Back",
@@ -530,6 +534,10 @@ const fr: Dictionary = {
     myStuff: "Mon espace",
     moveUp: "Monter",
     moveDown: "Descendre",
+    offlineTitle: "Téléchargements hors ligne",
+    offlineBody:
+      "Téléchargez des films pour les regarder hors ligne dans l'application Android Filmatube. Sur le web, installez Filmatube (Ajouter à l'écran d'accueil) et les pages visitées restent disponibles hors ligne.",
+    getApp: "Obtenir l'application Android",
   },
   player: {
     back: "Retour",

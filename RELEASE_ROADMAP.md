@@ -163,7 +163,7 @@
 - **Day 79** ✅ — Collections: create/edit; cover → R2; add movies.
 - **Day 80** ✅ — Share collections (public link + OG cards); save others' public collections.
 - **Day 81** ✅ — Collection detail + reorder; "My Stuff" hub (watchlist + collections + continue watching).
-- **Day 82** — PWA "save for later" (service-worker cache, best-effort); downloads info page.
+- **Day 82** ✅ — PWA "save for later" (service-worker cache, best-effort); downloads info page.
 - **Day 83** — Library parity QA; bidirectional sync (watch later/collections Android↔web).
 - **Day 84** — Phase review; mid-MVP checkpoint.
 
