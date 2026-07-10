@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Group
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +40,7 @@ fun SettingsScreen(
     onManageProfiles: () -> Unit,
     onOpenDownloads: () -> Unit,
     onOpenLibrary: () -> Unit,
+    onOpenNotificationPrefs: () -> Unit,
     onSignedOut: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -131,6 +133,20 @@ fun SettingsScreen(
                     )
                 }
                 Switch(checked = spoilerFree, onCheckedChange = viewModel::setSpoilerFree)
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onOpenNotificationPrefs)
+                    .padding(vertical = FilmatubeSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Outlined.Notifications, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.padding(horizontal = FilmatubeSpacing.sm))
+                Text(stringResource(R.string.settings_notifications), style = MaterialTheme.typography.bodyLarge)
+                Spacer(Modifier.weight(1f))
+                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
 
             Row(

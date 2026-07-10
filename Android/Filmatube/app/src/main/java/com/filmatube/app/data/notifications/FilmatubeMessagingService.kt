@@ -10,11 +10,18 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.filmatube.app.R
+import com.filmatube.app.data.preferences.UserPreferencesRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 
 /**
  * Receives FCM pushes: persists new tokens and posts a system notification routed to the
@@ -22,6 +29,17 @@ import com.google.firebase.messaging.RemoteMessage
  * `route`) data field becomes a deep link so tapping the notification opens the right screen.
  */
 class FilmatubeMessagingService : FirebaseMessagingService() {
+
+    /** Hilt entry point — access the singleton preferences without making the Service @AndroidEntryPoint. */
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface PrefsEntryPoint {
+        fun userPreferences(): UserPreferencesRepository
+    }
+
+    private val preferences: UserPreferencesRepository by lazy {
+        EntryPointAccessors.fromApplication(applicationContext, PrefsEntryPoint::class.java).userPreferences()
+    }
 
     override fun onNewToken(token: String) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
@@ -39,9 +57,13 @@ class FilmatubeMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         val data = message.data
+        val category = data["category"]
+        // respect the user's per-channel opt-out
+        if (!runBlocking { preferences.notifEnabledFor(category).first() }) return
+
         val title = message.notification?.title ?: data["title"] ?: getString(R.string.app_name)
         val body = message.notification?.body ?: data["body"] ?: ""
-        val channelId = FilmatubeNotificationChannels.channelFor(data["category"])
+        val channelId = FilmatubeNotificationChannels.channelFor(category)
 
         val deepLink: Uri? = when {
             !data["route"].isNullOrBlank() -> Uri.parse(data["route"])

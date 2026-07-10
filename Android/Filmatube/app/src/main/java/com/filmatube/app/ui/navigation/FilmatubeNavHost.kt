@@ -17,6 +17,7 @@ import com.filmatube.app.ui.detail.MovieDetailScreen
 import com.filmatube.app.ui.downloads.DownloadsScreen
 import com.filmatube.app.ui.home.HomeScreen
 import com.filmatube.app.ui.notifications.NotificationCenterScreen
+import com.filmatube.app.ui.notifications.NotificationPreferencesScreen
 import com.filmatube.app.ui.library.LibraryScreen
 import com.filmatube.app.ui.player.PlayerScreen
 import com.filmatube.app.ui.profile.EditProfileScreen
@@ -41,6 +42,7 @@ private const val ROUTE_FOLLOWS = "follows/{mode}"
 private const val ROUTE_SUGGESTIONS = "suggestions"
 private const val ROUTE_INBOX = "inbox"
 private const val ROUTE_NOTIFICATIONS = "notifications"
+private const val ROUTE_NOTIFICATION_PREFS = "settings/notifications"
 private const val ROUTE_PUBLIC_PROFILE = "user/{userId}"
 private const val ROUTE_REVIEWS = "reviews/{movieId}"
 private const val ROUTE_COMMENTS = "comments/{movieId}"
@@ -156,6 +158,7 @@ fun FilmatubeNavHost(
                 onManageProfiles = { navController.navigate(ROUTE_PROFILES) },
                 onOpenDownloads = { navController.navigate(ROUTE_DOWNLOADS) },
                 onOpenLibrary = { navController.navigate(ROUTE_LIBRARY) },
+                onOpenNotificationPrefs = { navController.navigate(ROUTE_NOTIFICATION_PREFS) },
                 onSignedOut = onSignedOut,
             )
         }
@@ -198,6 +201,9 @@ fun FilmatubeNavHost(
                 onOpenMovie = { navController.navigate(movieRoute(it)) },
                 onOpenUser = { navController.navigate(publicProfileRoute(it)) },
             )
+        }
+        composable(ROUTE_NOTIFICATION_PREFS) {
+            NotificationPreferencesScreen(onBack = { navController.popBackStack() })
         }
         composable(
             route = ROUTE_PUBLIC_PROFILE,

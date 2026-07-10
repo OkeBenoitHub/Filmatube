@@ -196,7 +196,7 @@
 - **Day 102** ✅ — FCM token registration; notification channels (social/content/system).
 - **Day 103** ✅ — All notification types wired + tested end-to-end.
 - **Day 104** ✅ — In-app notification center: unread badge, grouping, mark-all-read, deep links.
-- **Day 105** — Notification preferences screen; week review.
+- **Day 105** ✅ — Notification preferences screen; week review.
 
 ### Week 16 — Web Reviews + Push + Requests + Broadcast (Days 106–112) (W)
 - **Day 106** — Ratings + reviews (web); spoiler handling.

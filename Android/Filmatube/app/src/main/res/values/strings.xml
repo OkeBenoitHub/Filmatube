@@ -77,6 +77,8 @@
     <string name="notif_recommendation">recommended a movie</string>
     <string name="notif_reply">replied to you</string>
     <string name="notif_review_like">liked your review</string>
+    <string name="notif_prefs_title">Notification preferences</string>
+    <string name="settings_notifications">Notifications</string>
     <string name="recommend_title">Recommend to</string>
     <string name="recommend_message_hint">Add a message (optional)</string>
     <string name="recommend_send">Send</string>

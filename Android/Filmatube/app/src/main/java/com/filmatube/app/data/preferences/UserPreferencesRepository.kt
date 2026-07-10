@@ -44,6 +44,9 @@ class UserPreferencesRepository @Inject constructor(
         val DOWNLOAD_WIFI_ONLY = booleanPreferencesKey("download_wifi_only")
         val DOWNLOAD_AUTO_DELETE_WATCHED = booleanPreferencesKey("download_auto_delete_watched")
         val SPOILER_FREE = booleanPreferencesKey("spoiler_free")
+        val NOTIF_SOCIAL = booleanPreferencesKey("notif_social")
+        val NOTIF_CONTENT = booleanPreferencesKey("notif_content")
+        val NOTIF_SYSTEM = booleanPreferencesKey("notif_system")
     }
 
     private companion object {
@@ -162,6 +165,30 @@ class UserPreferencesRepository @Inject constructor(
 
     suspend fun setSpoilerFree(enabled: Boolean) {
         dataStore.edit { prefs -> prefs[Keys.SPOILER_FREE] = enabled }
+    }
+
+    /** Per-channel push notification opt-in (all default on). */
+    val notifSocial: Flow<Boolean> = preferences.map { prefs -> prefs[Keys.NOTIF_SOCIAL] ?: true }
+    val notifContent: Flow<Boolean> = preferences.map { prefs -> prefs[Keys.NOTIF_CONTENT] ?: true }
+    val notifSystem: Flow<Boolean> = preferences.map { prefs -> prefs[Keys.NOTIF_SYSTEM] ?: true }
+
+    suspend fun setNotifSocial(enabled: Boolean) {
+        dataStore.edit { prefs -> prefs[Keys.NOTIF_SOCIAL] = enabled }
+    }
+
+    suspend fun setNotifContent(enabled: Boolean) {
+        dataStore.edit { prefs -> prefs[Keys.NOTIF_CONTENT] = enabled }
+    }
+
+    suspend fun setNotifSystem(enabled: Boolean) {
+        dataStore.edit { prefs -> prefs[Keys.NOTIF_SYSTEM] = enabled }
+    }
+
+    /** Whether a push in [category] (social/content/system) should be shown. */
+    fun notifEnabledFor(category: String?): Flow<Boolean> = when (category) {
+        "content" -> notifContent
+        "system" -> notifSystem
+        else -> notifSocial
     }
 
     private fun <T> String?.toEnum(default: T, parse: (String) -> T): T =
