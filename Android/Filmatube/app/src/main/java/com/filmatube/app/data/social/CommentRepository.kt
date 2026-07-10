@@ -1,5 +1,7 @@
 package com.filmatube.app.data.social
 
+import com.filmatube.app.data.notifications.NotificationRepository
+import com.filmatube.app.data.notifications.NotificationTypes
 import com.filmatube.app.di.IoDispatcher
 import com.filmatube.app.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -40,6 +42,7 @@ class CommentRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth,
     private val userRepository: UserRepository,
+    private val notificationRepository: NotificationRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
     private fun items(movieId: String) =
@@ -91,6 +94,22 @@ class CommentRepository @Inject constructor(
                     "createdAt" to FieldValue.serverTimestamp(),
                 ),
             ).await()
+            // notify the parent comment's author on a reply
+            if (parentId != null) {
+                val parentAuthor = runCatching {
+                    items(movieId).document(parentId).get().await().getString("userId")
+                }.getOrNull()
+                if (parentAuthor != null) {
+                    notificationRepository.notify(
+                        toUid = parentAuthor,
+                        type = NotificationTypes.REPLY,
+                        actorName = me?.displayName ?: "",
+                        actorAvatar = me?.avatarUrl ?: "",
+                        movieId = movieId,
+                        message = text.trim(),
+                    )
+                }
+            }
         }
 
     suspend fun deleteComment(movieId: String, commentId: String) = withContext(ioDispatcher) {

@@ -194,7 +194,7 @@
 - **Day 100** ✅ — Written reviews (public on detail, spoiler-tag); review likes.
 - **Day 101** ✅ — Threaded comments; comment likes; report review/comment; spoiler-free mode.
 - **Day 102** ✅ — FCM token registration; notification channels (social/content/system).
-- **Day 103** — All notification types wired + tested end-to-end.
+- **Day 103** ✅ — All notification types wired + tested end-to-end.
 - **Day 104** — In-app notification center: unread badge, grouping, mark-all-read, deep links.
 - **Day 105** — Notification preferences screen; week review.
 

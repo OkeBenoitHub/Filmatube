@@ -1,5 +1,7 @@
 package com.filmatube.app.data.social
 
+import com.filmatube.app.data.notifications.NotificationRepository
+import com.filmatube.app.data.notifications.NotificationTypes
 import com.filmatube.app.di.IoDispatcher
 import com.filmatube.app.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -40,6 +42,7 @@ class ReviewRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth,
     private val userRepository: UserRepository,
+    private val notificationRepository: NotificationRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
     private fun items(movieId: String) =
@@ -104,6 +107,15 @@ class ReviewRepository @Inject constructor(
             doc.delete().await()
         } else {
             doc.set(mapOf("userId" to uid, "createdAt" to FieldValue.serverTimestamp())).await()
+            // reviewId is the author's uid (one review per user)
+            val me = runCatching { userRepository.getUser(uid) }.getOrNull()
+            notificationRepository.notify(
+                toUid = reviewId,
+                type = NotificationTypes.REVIEW_LIKE,
+                actorName = me?.displayName ?: "",
+                actorAvatar = me?.avatarUrl ?: "",
+                movieId = movieId,
+            )
         }
     }
 }

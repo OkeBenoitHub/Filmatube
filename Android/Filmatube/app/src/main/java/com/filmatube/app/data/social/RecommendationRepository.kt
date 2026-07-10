@@ -1,5 +1,7 @@
 package com.filmatube.app.data.social
 
+import com.filmatube.app.data.notifications.NotificationRepository
+import com.filmatube.app.data.notifications.NotificationTypes
 import com.filmatube.app.di.IoDispatcher
 import com.filmatube.app.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -37,6 +39,7 @@ class RecommendationRepository @Inject constructor(
     private val auth: FirebaseAuth,
     private val userRepository: UserRepository,
     private val followRepository: FollowRepository,
+    private val notificationRepository: NotificationRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
     private fun inbox(uid: String) =
@@ -86,6 +89,15 @@ class RecommendationRepository @Inject constructor(
                 "createdAt" to FieldValue.serverTimestamp(),
             ),
         ).await()
+        notificationRepository.notify(
+            toUid = toUid,
+            type = NotificationTypes.RECOMMENDATION,
+            actorName = me?.displayName ?: "",
+            actorAvatar = me?.avatarUrl ?: "",
+            movieId = movieId,
+            movieTitle = movieTitle,
+            message = message,
+        )
     }
 
     /** People the current user follows — recommendation recipients. */

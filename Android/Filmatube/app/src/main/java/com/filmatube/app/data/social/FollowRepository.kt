@@ -1,7 +1,10 @@
 package com.filmatube.app.data.social
 
 import android.os.Bundle
+import com.filmatube.app.data.notifications.NotificationRepository
+import com.filmatube.app.data.notifications.NotificationTypes
 import com.filmatube.app.di.IoDispatcher
+import com.filmatube.app.domain.repository.UserRepository
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -25,6 +28,8 @@ class FollowRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth,
     private val analytics: FirebaseAnalytics,
+    private val userRepository: UserRepository,
+    private val notificationRepository: NotificationRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
     private val follows get() = firestore.collection("follows")
@@ -44,6 +49,13 @@ class FollowRepository @Inject constructor(
                 ),
             ).await()
             analytics.logEvent("social_follow", Bundle().apply { putString("target_id", targetUid) })
+            val me = runCatching { userRepository.getUser(uid) }.getOrNull()
+            notificationRepository.notify(
+                toUid = targetUid,
+                type = NotificationTypes.FOLLOW,
+                actorName = me?.displayName ?: "",
+                actorAvatar = me?.avatarUrl ?: "",
+            )
         } else {
             doc.delete().await()
         }
