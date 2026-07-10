@@ -195,6 +195,9 @@
     <string name="follow_action">Follow</string>
     <string name="following_action">Following</string>
     <string name="follow_empty">Nothing here yet.</string>
+    <string name="taste_match">%1$d%% match</string>
+    <string name="suggestions_title">Suggested for you</string>
+    <string name="discover_people">Find people</string>
     <string name="profile_watched">Watched</string>
     <string name="profile_badges">Badges</string>
     <string name="profile_badges_empty">Watch movies and be social to earn badges.</string>

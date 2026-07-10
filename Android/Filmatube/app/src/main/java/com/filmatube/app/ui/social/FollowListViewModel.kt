@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.filmatube.app.data.social.FollowRepository
+import com.filmatube.app.data.social.SocialRepository
 import com.filmatube.app.domain.repository.AuthRepository
 import com.filmatube.app.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,12 +22,14 @@ data class FollowUser(
     val displayName: String,
     val avatarUrl: String,
     val isFollowing: Boolean,
+    val tasteMatch: Int = 0,
 )
 
 @HiltViewModel
 class FollowListViewModel @Inject constructor(
     private val followRepository: FollowRepository,
     private val userRepository: UserRepository,
+    private val socialRepository: SocialRepository,
     authRepository: AuthRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -45,7 +48,13 @@ class FollowListViewModel @Inject constructor(
         combine(ids, followRepository.observeMyFollowingIds()) { userIds, myFollowing ->
             userIds.mapNotNull { id ->
                 userRepository.getUser(id)?.let { profile ->
-                    FollowUser(profile.uid, profile.displayName, profile.avatarUrl, id in myFollowing)
+                    FollowUser(
+                        uid = profile.uid,
+                        displayName = profile.displayName,
+                        avatarUrl = profile.avatarUrl,
+                        isFollowing = id in myFollowing,
+                        tasteMatch = socialRepository.tasteMatch(profile.genrePreferences),
+                    )
                 }
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())

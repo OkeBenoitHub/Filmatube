@@ -171,7 +171,7 @@
 
 ### Week 13 — Android Social (Days 85–91) (A)
 - **Day 85** ✅ — Follow/unfollow; followers/following screens.
-- **Day 86** — Follow suggestions (taste overlap) + **Taste Match %** calculation/caching.
+- **Day 86** ✅ — Follow suggestions (taste overlap) + **Taste Match %** calculation/caching.
 - **Day 87** — Activity Feed (real-time listener): events (watching/watched/liked/reacted/added-watchlist/added-collection).
 - **Day 88** — Feed time filter; pagination; mute/hide.
 - **Day 89** — Likes + reactions (love/fire/mind-blown/boring); reaction counts on detail; FCM notify followers.
