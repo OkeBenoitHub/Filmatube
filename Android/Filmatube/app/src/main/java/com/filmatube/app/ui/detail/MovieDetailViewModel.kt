@@ -9,6 +9,7 @@ import com.filmatube.app.data.library.WatchlistRepository
 import com.filmatube.app.data.preferences.UserPreferencesRepository
 import com.filmatube.app.data.social.FeedEventTypes
 import com.filmatube.app.data.social.FeedRepository
+import com.filmatube.app.data.social.ReactionRepository
 import com.filmatube.app.domain.model.Movie
 import com.filmatube.app.domain.repository.MovieRepository
 import com.filmatube.app.domain.util.DataState
@@ -39,6 +40,7 @@ class MovieDetailViewModel @Inject constructor(
     private val downloadRepository: DownloadRepository,
     private val watchlistRepository: WatchlistRepository,
     private val feedRepository: FeedRepository,
+    private val reactionRepository: ReactionRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -46,6 +48,28 @@ class MovieDetailViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(DetailUiState())
     val state = _state.asStateFlow()
+
+    val myReaction = reactionRepository.observeMyReaction(movieId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    private val _reactionCounts = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val reactionCounts = _reactionCounts.asStateFlow()
+
+    fun setReaction(type: String) {
+        val movie = (state.value.movie as? DataState.Success)?.data
+        val newType = if (myReaction.value == type) null else type
+        viewModelScope.launch {
+            reactionRepository.setReaction(movieId, newType)
+            _reactionCounts.value = reactionRepository.reactionCounts(movieId)
+            if (newType != null && movie != null) {
+                feedRepository.publish(FeedEventTypes.REACTED, movieId, movie.title.get("en"))
+            }
+        }
+    }
+
+    private fun loadReactionCounts() {
+        viewModelScope.launch { _reactionCounts.value = reactionRepository.reactionCounts(movieId) }
+    }
 
     val reminderSet = preferences.reminders
         .map { movieId in it }
@@ -94,6 +118,7 @@ class MovieDetailViewModel @Inject constructor(
 
     init {
         load()
+        loadReactionCounts()
     }
 
     fun load() {

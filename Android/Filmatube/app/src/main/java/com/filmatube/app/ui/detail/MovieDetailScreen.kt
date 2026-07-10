@@ -86,6 +86,8 @@ fun MovieDetailScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val reminderSet by viewModel.reminderSet.collectAsStateWithLifecycle()
     val savedForLater by viewModel.savedForLater.collectAsStateWithLifecycle()
+    val myReaction by viewModel.myReaction.collectAsStateWithLifecycle()
+    val reactionCounts by viewModel.reactionCounts.collectAsStateWithLifecycle()
     val downloadState by viewModel.downloadState.collectAsStateWithLifecycle()
     val language = LocaleController.currentTag()
     val context = LocalContext.current
@@ -102,6 +104,9 @@ fun MovieDetailScreen(
                 reminderSet = reminderSet,
                 savedForLater = savedForLater,
                 onToggleSaved = viewModel::toggleSaved,
+                myReaction = myReaction,
+                reactionCounts = reactionCounts,
+                onReact = viewModel::setReaction,
                 downloadState = downloadState,
                 onToggleDownload = viewModel::toggleDownload,
                 onPlay = onPlay,
@@ -138,6 +143,9 @@ private fun DetailContent(
     reminderSet: Boolean,
     savedForLater: Boolean,
     onToggleSaved: () -> Unit,
+    myReaction: String?,
+    reactionCounts: Map<String, Int>,
+    onReact: (String) -> Unit,
     downloadState: DownloadUiState,
     onToggleDownload: () -> Unit,
     onPlay: (String) -> Unit,
@@ -265,6 +273,8 @@ private fun DetailContent(
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            ReactionBar(myReaction = myReaction, counts = reactionCounts, onReact = onReact)
+
             if (movie.genres.isNotEmpty()) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {
                     movie.genres.forEach { genre ->
@@ -307,6 +317,39 @@ private fun DetailContent(
             }
         }
         Spacer(Modifier.height(FilmatubeSpacing.xxl))
+    }
+}
+
+@Composable
+private fun ReactionBar(myReaction: String?, counts: Map<String, Int>, onReact: (String) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {
+        com.filmatube.app.data.social.ReactionType.entries.forEach { reaction ->
+            val selected = myReaction == reaction.value
+            val count = counts[reaction.value] ?: 0
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = if (selected) {
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
+                } else {
+                    MaterialTheme.colorScheme.surfaceContainerHigh
+                },
+                modifier = Modifier.clickable { onReact(reaction.value) },
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                ) {
+                    Text(reaction.emoji)
+                    if (count > 0) {
+                        Text(
+                            "  $count",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
