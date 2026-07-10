@@ -4,20 +4,19 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.filmatube.app.data.preferences.UserPreferencesRepository
+import com.filmatube.app.data.social.Comment
+import com.filmatube.app.data.social.CommentRepository
 import com.filmatube.app.data.social.ReportRepository
 import com.filmatube.app.data.social.ReportTargetType
-import com.filmatube.app.data.social.Review
-import com.filmatube.app.data.social.ReviewRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ReviewsViewModel @Inject constructor(
-    private val reviewRepository: ReviewRepository,
+class CommentsViewModel @Inject constructor(
+    private val commentRepository: CommentRepository,
     private val reportRepository: ReportRepository,
     preferences: UserPreferencesRepository,
     savedStateHandle: SavedStateHandle,
@@ -25,33 +24,28 @@ class ReviewsViewModel @Inject constructor(
 
     private val movieId: String = savedStateHandle["movieId"] ?: ""
 
-    val reviews = reviewRepository.observeReviews(movieId)
+    val comments = commentRepository.observeComments(movieId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val spoilerFree = preferences.spoilerFree
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
-    /** The current user's own review, if any (used to prefill the editor). */
-    val myReview = reviews
-        .map { list -> list.firstOrNull { it.isMine } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-
-    fun submit(text: String, hasSpoiler: Boolean) {
+    fun post(text: String, hasSpoiler: Boolean, parentId: String?) {
         if (text.isBlank()) return
-        viewModelScope.launch { reviewRepository.submitReview(movieId, text, hasSpoiler) }
+        viewModelScope.launch { commentRepository.addComment(movieId, text, hasSpoiler, parentId) }
     }
 
-    fun delete() {
-        viewModelScope.launch { reviewRepository.deleteReview(movieId) }
+    fun delete(comment: Comment) {
+        viewModelScope.launch { commentRepository.deleteComment(movieId, comment.id) }
     }
 
-    fun toggleLike(review: Review) {
-        viewModelScope.launch { reviewRepository.toggleLike(movieId, review.id, review.likedByMe) }
+    fun toggleLike(comment: Comment) {
+        viewModelScope.launch { commentRepository.toggleLike(movieId, comment.id, comment.likedByMe) }
     }
 
-    fun report(review: Review) {
+    fun report(comment: Comment) {
         viewModelScope.launch {
-            reportRepository.report(ReportTargetType.REVIEW, movieId, review.id, review.userId)
+            reportRepository.report(ReportTargetType.COMMENT, movieId, comment.id, comment.userId)
         }
     }
 }

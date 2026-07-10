@@ -11,6 +11,7 @@ import androidx.navigation.navDeepLink
 import android.net.Uri
 import com.filmatube.app.ui.browse.BrowseScreen
 import com.filmatube.app.ui.community.CommunityScreen
+import com.filmatube.app.ui.social.CommentsScreen
 import com.filmatube.app.ui.detail.ActorScreen
 import com.filmatube.app.ui.detail.MovieDetailScreen
 import com.filmatube.app.ui.downloads.DownloadsScreen
@@ -40,10 +41,12 @@ private const val ROUTE_SUGGESTIONS = "suggestions"
 private const val ROUTE_INBOX = "inbox"
 private const val ROUTE_PUBLIC_PROFILE = "user/{userId}"
 private const val ROUTE_REVIEWS = "reviews/{movieId}"
+private const val ROUTE_COMMENTS = "comments/{movieId}"
 
 fun followsRoute(mode: String) = "follows/$mode"
 fun publicProfileRoute(userId: String) = "user/$userId"
 fun reviewsRoute(movieId: String) = "reviews/$movieId"
+fun commentsRoute(movieId: String) = "comments/$movieId"
 private const val ROUTE_MOVIE = "movie/{movieId}"
 private const val ROUTE_PLAYER = "player/{movieId}"
 private const val ROUTE_BROWSE = "browse?genre={genre}"
@@ -86,6 +89,7 @@ fun FilmatubeNavHost(
                 onMovieClick = { navController.navigate(movieRoute(it)) },
                 onActorClick = { navController.navigate(actorRoute(it)) },
                 onOpenReviews = { navController.navigate(reviewsRoute(it)) },
+                onOpenComments = { navController.navigate(commentsRoute(it)) },
             )
         }
         composable(
@@ -196,6 +200,15 @@ fun FilmatubeNavHost(
             arguments = listOf(navArgument("movieId") { type = NavType.StringType }),
         ) {
             ReviewsScreen(
+                onBack = { navController.popBackStack() },
+                onUserClick = { navController.navigate(publicProfileRoute(it)) },
+            )
+        }
+        composable(
+            route = ROUTE_COMMENTS,
+            arguments = listOf(navArgument("movieId") { type = NavType.StringType }),
+        ) {
+            CommentsScreen(
                 onBack = { navController.popBackStack() },
                 onUserClick = { navController.navigate(publicProfileRoute(it)) },
             )

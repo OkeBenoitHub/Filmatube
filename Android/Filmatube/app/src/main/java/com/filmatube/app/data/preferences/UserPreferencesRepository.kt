@@ -43,6 +43,7 @@ class UserPreferencesRepository @Inject constructor(
         val DOWNLOAD_QUALITY = stringPreferencesKey("download_quality")
         val DOWNLOAD_WIFI_ONLY = booleanPreferencesKey("download_wifi_only")
         val DOWNLOAD_AUTO_DELETE_WATCHED = booleanPreferencesKey("download_auto_delete_watched")
+        val SPOILER_FREE = booleanPreferencesKey("spoiler_free")
     }
 
     private companion object {
@@ -154,6 +155,13 @@ class UserPreferencesRepository @Inject constructor(
 
     suspend fun setDownloadAutoDeleteWatched(enabled: Boolean) {
         dataStore.edit { prefs -> prefs[Keys.DOWNLOAD_AUTO_DELETE_WATCHED] = enabled }
+    }
+
+    /** Spoiler-free mode: hide spoiler-tagged reviews/comments behind a reveal gate. */
+    val spoilerFree: Flow<Boolean> = preferences.map { prefs -> prefs[Keys.SPOILER_FREE] ?: false }
+
+    suspend fun setSpoilerFree(enabled: Boolean) {
+        dataStore.edit { prefs -> prefs[Keys.SPOILER_FREE] = enabled }
     }
 
     private fun <T> String?.toEnum(default: T, parse: (String) -> T): T =

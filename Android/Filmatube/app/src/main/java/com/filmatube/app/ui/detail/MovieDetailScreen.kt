@@ -28,6 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
@@ -89,6 +90,7 @@ fun MovieDetailScreen(
     onMovieClick: (String) -> Unit,
     onActorClick: (String) -> Unit,
     onOpenReviews: (String) -> Unit,
+    onOpenComments: (String) -> Unit,
     viewModel: MovieDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -125,6 +127,7 @@ fun MovieDetailScreen(
                 onRate = viewModel::setRating,
                 onRecommend = { viewModel.loadRecipients(); showRecommend = true },
                 onOpenReviews = onOpenReviews,
+                onOpenComments = onOpenComments,
                 downloadState = downloadState,
                 onToggleDownload = viewModel::toggleDownload,
                 onPlay = onPlay,
@@ -181,6 +184,7 @@ private fun DetailContent(
     onRate: (Int) -> Unit,
     onRecommend: () -> Unit,
     onOpenReviews: (String) -> Unit,
+    onOpenComments: (String) -> Unit,
     downloadState: DownloadUiState,
     onToggleDownload: () -> Unit,
     onPlay: (String) -> Unit,
@@ -327,6 +331,13 @@ private fun DetailContent(
                 text = stringResource(R.string.detail_reviews),
                 onClick = { onOpenReviews(movie.id) },
                 leadingIcon = Icons.AutoMirrored.Filled.Comment,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            FilmatubeSecondaryButton(
+                text = stringResource(R.string.detail_comments),
+                onClick = { onOpenComments(movie.id) },
+                leadingIcon = Icons.AutoMirrored.Filled.Chat,
                 modifier = Modifier.fillMaxWidth(),
             )
 

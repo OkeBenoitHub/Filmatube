@@ -45,6 +45,7 @@ fun SettingsScreen(
     val language by viewModel.language.collectAsStateWithLifecycle()
     val downloadQuality by viewModel.downloadQuality.collectAsStateWithLifecycle()
     val downloadWifiOnly by viewModel.downloadWifiOnly.collectAsStateWithLifecycle()
+    val spoilerFree by viewModel.spoilerFree.collectAsStateWithLifecycle()
     val autoDeleteWatched by viewModel.downloadAutoDeleteWatched.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -115,6 +116,21 @@ fun SettingsScreen(
                 Text(stringResource(R.string.download_auto_delete_watched), style = MaterialTheme.typography.bodyLarge)
                 Spacer(Modifier.weight(1f))
                 Switch(checked = autoDeleteWatched, onCheckedChange = viewModel::setDownloadAutoDeleteWatched)
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.settings_spoiler_free), style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        stringResource(R.string.settings_spoiler_free_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(checked = spoilerFree, onCheckedChange = viewModel::setSpoilerFree)
             }
 
             Row(

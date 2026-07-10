@@ -56,7 +56,9 @@ fun ReviewsScreen(
 ) {
     val reviews by viewModel.reviews.collectAsStateWithLifecycle()
     val myReview by viewModel.myReview.collectAsStateWithLifecycle()
+    val spoilerFree by viewModel.spoilerFree.collectAsStateWithLifecycle()
     val revealed = remember { mutableStateMapOf<String, Boolean>() }
+    val reported = remember { mutableStateMapOf<String, Boolean>() }
 
     Scaffold(
         topBar = {
@@ -98,9 +100,12 @@ fun ReviewsScreen(
                 items(reviews, key = { it.id }) { review ->
                     ReviewItem(
                         review = review,
+                        spoilerFree = spoilerFree,
                         revealed = revealed[review.id] == true,
+                        reported = reported[review.id] == true,
                         onReveal = { revealed[review.id] = true },
                         onToggleLike = { viewModel.toggleLike(review) },
+                        onReport = { viewModel.report(review); reported[review.id] = true },
                         onUserClick = { if (review.userId.isNotBlank()) onUserClick(review.userId) },
                     )
                 }
@@ -157,9 +162,12 @@ private fun ReviewEditor(
 @Composable
 private fun ReviewItem(
     review: Review,
+    spoilerFree: Boolean,
     revealed: Boolean,
+    reported: Boolean,
     onReveal: () -> Unit,
     onToggleLike: () -> Unit,
+    onReport: () -> Unit,
     onUserClick: () -> Unit,
 ) {
     Surface(
@@ -190,7 +198,7 @@ private fun ReviewItem(
                 }
             }
 
-            if (review.hasSpoiler && !revealed) {
+            if (review.hasSpoiler && spoilerFree && !revealed) {
                 Surface(
                     shape = RoundedCornerShape(10.dp),
                     color = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -204,6 +212,13 @@ private fun ReviewItem(
                     )
                 }
             } else {
+                if (review.hasSpoiler) {
+                    Text(
+                        stringResource(R.string.reviews_spoiler_chip),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
                 Text(review.text, style = MaterialTheme.typography.bodyMedium)
             }
 
@@ -219,6 +234,15 @@ private fun ReviewItem(
                         text = if (review.likeCount > 0) "  ${review.likeCount}" else "  ",
                         color = if (review.likedByMe) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+                if (!review.isMine) {
+                    TextButton(onClick = onReport, enabled = !reported) {
+                        Text(
+                            stringResource(if (reported) R.string.reviews_reported else R.string.reviews_report),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }
