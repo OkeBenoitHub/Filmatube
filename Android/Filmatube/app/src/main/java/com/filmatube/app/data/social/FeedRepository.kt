@@ -19,6 +19,7 @@ import javax.inject.Singleton
 /** An activity-feed entry (something a followed user did). */
 data class FeedEvent(
     val id: String,
+    val actorId: String,
     val actorName: String,
     val actorAvatar: String,
     val type: String,
@@ -52,7 +53,7 @@ class FeedRepository @Inject constructor(
     private fun events(uid: String) = firestore.collection("feed").document(uid).collection("events")
 
     /** The current user's feed (their followees' activity), newest first. */
-    fun observeFeed(): Flow<List<FeedEvent>> = callbackFlow {
+    fun observeFeed(limit: Int = 50): Flow<List<FeedEvent>> = callbackFlow {
         val uid = auth.currentUser?.uid
         if (uid == null) {
             trySend(emptyList())
@@ -61,11 +62,12 @@ class FeedRepository @Inject constructor(
         }
         val registration = events(uid)
             .orderBy("createdAt", Query.Direction.DESCENDING)
-            .limit(50)
+            .limit(limit.toLong())
             .addSnapshotListener { snap, _ ->
                 val list = snap?.documents?.map { d ->
                     FeedEvent(
                         id = d.id,
+                        actorId = d.getString("actorId") ?: "",
                         actorName = d.getString("actorName") ?: "",
                         actorAvatar = d.getString("actorAvatar") ?: "",
                         type = d.getString("type") ?: "",

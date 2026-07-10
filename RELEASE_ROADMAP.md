@@ -173,7 +173,7 @@
 - **Day 85** ✅ — Follow/unfollow; followers/following screens.
 - **Day 86** ✅ — Follow suggestions (taste overlap) + **Taste Match %** calculation/caching.
 - **Day 87** ✅ — Activity Feed (real-time listener): events (watching/watched/liked/reacted/added-watchlist/added-collection).
-- **Day 88** — Feed time filter; pagination; mute/hide.
+- **Day 88** ✅ — Feed time filter; pagination; mute/hide.
 - **Day 89** — Likes + reactions (love/fire/mind-blown/boring); reaction counts on detail; FCM notify followers.
 - **Day 90** — Recommend movie to a follower + message; recommendations inbox; FCM.
 - **Day 91** — Public profile (their lists/activity/taste match); analytics; week review.

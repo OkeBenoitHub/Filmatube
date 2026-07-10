@@ -34,6 +34,7 @@ class UserPreferencesRepository @Inject constructor(
         val ACTIVE_PROFILE_ID = stringPreferencesKey("active_profile_id")
         val RECENT_SEARCHES = stringPreferencesKey("recent_searches")
         val REMINDERS = stringSetPreferencesKey("coming_soon_reminders")
+        val MUTED_ACTORS = stringSetPreferencesKey("feed_muted_actors")
         val SUB_SIZE = stringPreferencesKey("subtitle_size")
         val SUB_TEXT_COLOR = stringPreferencesKey("subtitle_text_color")
         val SUB_BACKGROUND = stringPreferencesKey("subtitle_background")
@@ -88,6 +89,16 @@ class UserPreferencesRepository @Inject constructor(
 
     suspend fun clearRecentSearches() {
         dataStore.edit { prefs -> prefs.remove(Keys.RECENT_SEARCHES) }
+    }
+
+    /** Actor uids muted from the activity feed. */
+    val mutedActors: Flow<Set<String>> = preferences.map { prefs -> prefs[Keys.MUTED_ACTORS] ?: emptySet() }
+
+    suspend fun toggleMutedActor(actorId: String) {
+        dataStore.edit { prefs ->
+            val current = prefs[Keys.MUTED_ACTORS] ?: emptySet()
+            prefs[Keys.MUTED_ACTORS] = if (actorId in current) current - actorId else current + actorId
+        }
     }
 
     /** Movie ids the user asked to be reminded about (coming-soon). */

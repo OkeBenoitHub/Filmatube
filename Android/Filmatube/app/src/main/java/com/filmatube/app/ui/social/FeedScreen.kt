@@ -11,8 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -24,6 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.filmatube.app.R
 import com.filmatube.app.data.social.FeedEventTypes
+import com.filmatube.app.ui.components.FilmatubeFilterChip
 import com.filmatube.app.ui.components.UserAvatar
 import com.filmatube.app.ui.theme.FilmatubeSpacing
 
@@ -33,6 +39,7 @@ fun FeedScreen(
     viewModel: FeedViewModel = hiltViewModel(),
 ) {
     val feed by viewModel.feed.collectAsStateWithLifecycle()
+    val filter by viewModel.filter.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -42,6 +49,29 @@ fun FeedScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(stringResource(R.string.feed_title), style = MaterialTheme.typography.titleLarge)
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = FilmatubeSpacing.lg),
+            horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm),
+        ) {
+            FilmatubeFilterChip(
+                label = stringResource(R.string.feed_filter_today),
+                selected = filter == FeedFilter.TODAY,
+                onClick = { viewModel.setFilter(FeedFilter.TODAY) },
+            )
+            FilmatubeFilterChip(
+                label = stringResource(R.string.feed_filter_week),
+                selected = filter == FeedFilter.WEEK,
+                onClick = { viewModel.setFilter(FeedFilter.WEEK) },
+            )
+            FilmatubeFilterChip(
+                label = stringResource(R.string.feed_filter_all),
+                selected = filter == FeedFilter.ALL,
+                onClick = { viewModel.setFilter(FeedFilter.ALL) },
+            )
         }
 
         if (feed.isEmpty()) {
@@ -81,6 +111,21 @@ fun FeedScreen(
                                 overflow = TextOverflow.Ellipsis,
                             )
                         }
+                        IconButton(onClick = { viewModel.muteActor(event.actorId) }) {
+                            Icon(
+                                Icons.Filled.VolumeOff,
+                                contentDescription = stringResource(R.string.feed_mute),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+                item {
+                    TextButton(
+                        onClick = { viewModel.loadMore() },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.feed_load_more))
                     }
                 }
             }

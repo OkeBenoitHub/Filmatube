@@ -206,6 +206,11 @@
     <string name="feed_liked">liked</string>
     <string name="feed_reacted">reacted to</string>
     <string name="feed_added_collection">added to a collection</string>
+    <string name="feed_filter_today">Today</string>
+    <string name="feed_filter_week">This week</string>
+    <string name="feed_filter_all">All</string>
+    <string name="feed_mute">Mute</string>
+    <string name="feed_load_more">Load more</string>
     <string name="profile_watched">Watched</string>
     <string name="profile_badges">Badges</string>
     <string name="profile_badges_empty">Watch movies and be social to earn badges.</string>

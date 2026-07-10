@@ -203,6 +203,11 @@
     <string name="feed_liked">a aimé</string>
     <string name="feed_reacted">a réagi à</string>
     <string name="feed_added_collection">a ajouté à une collection</string>
+    <string name="feed_filter_today">Aujourd\'hui</string>
+    <string name="feed_filter_week">Cette semaine</string>
+    <string name="feed_filter_all">Tout</string>
+    <string name="feed_mute">Masquer</string>
+    <string name="feed_load_more">Voir plus</string>
     <string name="profile_watched">Vus</string>
     <string name="profile_badges">Badges</string>
     <string name="profile_badges_empty">Regardez des films et soyez actif pour gagner des badges.</string>
