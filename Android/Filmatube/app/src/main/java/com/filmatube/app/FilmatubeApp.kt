@@ -7,6 +7,7 @@ import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.filmatube.app.data.notifications.FilmatubeNotificationChannels
 import dagger.hilt.android.HiltAndroidApp
 
 /**
@@ -25,6 +26,7 @@ class FilmatubeApp : Application(), ImageLoaderFactory {
         super.onCreate()
         initAppCheck()
         FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
+        FilmatubeNotificationChannels.createAll(this)
     }
 
     private fun initAppCheck() {

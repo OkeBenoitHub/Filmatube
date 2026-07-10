@@ -38,6 +38,10 @@ service cloud.firestore {
         allow read, update, delete: if isSelf(userId);
         allow create: if isSignedIn(); // actor writes a notification into the recipient's inbox
       }
+
+      match /fcmTokens/{tokenId} {
+        allow read, write: if isSelf(userId);
+      }
     }
 
     // ───────── catalog ─────────
