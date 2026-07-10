@@ -6,6 +6,7 @@ import { MovieRow } from "@/components/catalog/MovieRow";
 import { ShareBar } from "@/components/catalog/ShareBar";
 import { SaveButton } from "@/components/catalog/SaveButton";
 import { ReactionBar } from "@/components/social/ReactionBar";
+import { RecommendButton } from "@/components/social/RecommendButton";
 import { getDict, getLocale } from "@/lib/i18n/server";
 import { getMovie, getPublishedMovies, localized, pickRelated } from "@/lib/movies";
 
@@ -116,6 +117,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
                 </a>
               )}
               <SaveButton movieId={movie.id} dict={c} />
+              <RecommendButton movieId={movie.id} movieTitle={title} dict={c} />
               <ShareBar movieId={movie.id} title={title} dict={c} />
             </div>
 

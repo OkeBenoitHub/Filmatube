@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Search, Compass, Bookmark, Users, UserRound } from "lucide-react";
+import { Home, Search, Compass, Bookmark, Users, Mail, UserRound } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Wordmark } from "@/components/Wordmark";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -27,9 +27,7 @@ export function AppHeader({ dict }: { dict: Dictionary["catalog"] }) {
     <header className="sticky top-0 z-40 border-b border-surface-border/60 bg-surface/80 backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 md:px-6">
         <div className="flex items-center gap-6">
-          <Link href="/home" aria-label="Filmatube">
-            <Wordmark />
-          </Link>
+          <Wordmark href="/home" />
           <nav className="flex items-center gap-1">
             {links.map(({ href, label, icon: Icon }) => {
               const active = pathname === href || pathname.startsWith(`${href}/`);
@@ -52,6 +50,13 @@ export function AppHeader({ dict }: { dict: Dictionary["catalog"] }) {
 
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
+          <Link
+            href="/inbox"
+            aria-label={dict.inbox}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-surface-border text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+          >
+            <Mail className="h-4 w-4" aria-hidden />
+          </Link>
           <Link
             href="/account"
             aria-label={dict.account}
