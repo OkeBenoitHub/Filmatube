@@ -3,13 +3,14 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Upload, Search, X, Plus, Share2, Check, Bookmark } from "lucide-react";
+import { Upload, Search, X, Plus, Share2, Check, Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   saveCollection,
   deleteCollection,
   addMovieToCollection,
   removeMovieFromCollection,
   saveCollectionCopy,
+  moveCollectionItem,
 } from "@/app/collections/actions";
 import { uploadPublic } from "@/lib/upload/media";
 import type { Collection } from "@/lib/collections";
@@ -240,19 +241,39 @@ export function CollectionEditor({
                 <p className="mt-1.5 truncate text-sm text-ink">{localized(movie)}</p>
               </Link>
               {isOwner && (
-                <button
-                  type="button"
-                  aria-label={dict.remove}
-                  onClick={() =>
-                    startTransition(async () => {
-                      await removeMovieFromCollection(collection.id, movie.id);
-                      router.refresh();
-                    })
-                  }
-                  className="absolute right-1.5 top-1.5 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity hover:bg-black/80 group-hover:opacity-100"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                <>
+                  <button
+                    type="button"
+                    aria-label={dict.remove}
+                    onClick={() =>
+                      startTransition(async () => {
+                        await removeMovieFromCollection(collection.id, movie.id);
+                        router.refresh();
+                      })
+                    }
+                    className="absolute right-1.5 top-1.5 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity hover:bg-black/80 group-hover:opacity-100"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                  <div className="absolute bottom-8 left-1.5 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      type="button"
+                      aria-label={dict.moveUp}
+                      onClick={() => startTransition(async () => { await moveCollectionItem(collection.id, movie.id, "up"); router.refresh(); })}
+                      className="rounded-full bg-black/60 p-1 text-white hover:bg-black/80"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={dict.moveDown}
+                      onClick={() => startTransition(async () => { await moveCollectionItem(collection.id, movie.id, "down"); router.refresh(); })}
+                      className="rounded-full bg-black/60 p-1 text-white hover:bg-black/80"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           ))}

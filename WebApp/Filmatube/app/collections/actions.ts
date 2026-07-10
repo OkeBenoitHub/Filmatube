@@ -60,8 +60,33 @@ export async function addMovieToCollection(id: string, movieId: string): Promise
   await assertOwner(id, user.uid);
   await getAdminDb().collection("collections").doc(id).collection("items").doc(movieId).set({
     movieId,
+    order: Date.now(),
     addedAt: FieldValue.serverTimestamp(),
   });
+  revalidatePath(`/collections/${id}`);
+}
+
+/** Move an item up/down by swapping its order with the adjacent item. */
+export async function moveCollectionItem(id: string, movieId: string, direction: "up" | "down"): Promise<void> {
+  const user = await requireUser();
+  await assertOwner(id, user.uid);
+  const col = getAdminDb().collection("collections").doc(id).collection("items");
+  const snap = await col.get();
+  const items = snap.docs
+    .map((d) => ({
+      id: d.id,
+      order: (d.get("order") as number) ?? (d.get("addedAt") as { toMillis?: () => number })?.toMillis?.() ?? 0,
+    }))
+    .sort((a, b) => a.order - b.order);
+
+  const idx = items.findIndex((i) => i.id === movieId);
+  const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+  if (idx < 0 || swapIdx < 0 || swapIdx >= items.length) return;
+
+  const batch = getAdminDb().batch();
+  batch.set(col.doc(items[idx].id), { order: items[swapIdx].order }, { merge: true });
+  batch.set(col.doc(items[swapIdx].id), { order: items[idx].order }, { merge: true });
+  await batch.commit();
   revalidatePath(`/collections/${id}`);
 }
 

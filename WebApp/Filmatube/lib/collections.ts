@@ -36,14 +36,14 @@ export async function getCollection(
   if (!doc.exists) return null;
   const collection = mapCollection(doc.id, doc.data() ?? {});
 
-  const itemsSnap = await getAdminDb()
-    .collection("collections")
-    .doc(id)
-    .collection("items")
-    .orderBy("addedAt", "desc")
-    .limit(200)
-    .get();
-  const movies = (await Promise.all(itemsSnap.docs.map((d) => getMovie(d.id)))).filter(
+  const itemsSnap = await getAdminDb().collection("collections").doc(id).collection("items").limit(200).get();
+  const ordered = itemsSnap.docs
+    .map((d) => ({
+      id: d.id,
+      order: (d.get("order") as number) ?? (d.get("addedAt") as { toMillis?: () => number })?.toMillis?.() ?? 0,
+    }))
+    .sort((a, b) => a.order - b.order);
+  const movies = (await Promise.all(ordered.map((o) => getMovie(o.id)))).filter(
     (m): m is CatalogMovie => m !== null,
   );
   return { collection, movies };
