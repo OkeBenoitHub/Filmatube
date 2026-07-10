@@ -29,6 +29,7 @@ import com.filmatube.app.ui.theme.FilmatubeSpacing
 @Composable
 fun SuggestionsScreen(
     onBack: () -> Unit,
+    onUserClick: (String) -> Unit,
     viewModel: SuggestionsViewModel = hiltViewModel(),
 ) {
     val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
@@ -62,6 +63,7 @@ fun SuggestionsScreen(
                         tasteMatch = user.tasteMatch,
                         isFollowing = false,
                         onToggle = { viewModel.follow(user.uid) },
+                        onClick = { onUserClick(user.uid) },
                     )
                 }
             }

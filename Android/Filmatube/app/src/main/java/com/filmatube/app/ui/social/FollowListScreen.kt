@@ -1,5 +1,6 @@
 package com.filmatube.app.ui.social
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,9 +40,12 @@ fun FollowUserRow(
     tasteMatch: Int,
     isFollowing: Boolean,
     onToggle: () -> Unit,
+    onClick: (() -> Unit)? = null,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -67,6 +71,7 @@ fun FollowUserRow(
 @Composable
 fun FollowListScreen(
     onBack: () -> Unit,
+    onUserClick: (String) -> Unit,
     viewModel: FollowListViewModel = hiltViewModel(),
 ) {
     val users by viewModel.users.collectAsStateWithLifecycle()
@@ -103,6 +108,7 @@ fun FollowListScreen(
                         tasteMatch = user.tasteMatch,
                         isFollowing = user.isFollowing,
                         onToggle = { viewModel.toggleFollow(user.uid, !user.isFollowing) },
+                        onClick = { onUserClick(user.uid) },
                     )
                 }
             }

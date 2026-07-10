@@ -1,6 +1,8 @@
 package com.filmatube.app.data.social
 
+import android.os.Bundle
 import com.filmatube.app.di.IoDispatcher
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -22,6 +24,7 @@ import javax.inject.Singleton
 class FollowRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth,
+    private val analytics: FirebaseAnalytics,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
     private val follows get() = firestore.collection("follows")
@@ -40,6 +43,7 @@ class FollowRepository @Inject constructor(
                     "createdAt" to FieldValue.serverTimestamp(),
                 ),
             ).await()
+            analytics.logEvent("social_follow", Bundle().apply { putString("target_id", targetUid) })
         } else {
             doc.delete().await()
         }

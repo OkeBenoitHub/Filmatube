@@ -22,6 +22,7 @@ import com.filmatube.app.ui.profile.ProfileScreen
 import com.filmatube.app.ui.search.SearchScreen
 import com.filmatube.app.ui.social.FeedScreen
 import com.filmatube.app.ui.social.FollowListScreen
+import com.filmatube.app.ui.social.PublicProfileScreen
 import com.filmatube.app.ui.social.RecommendationInboxScreen
 import com.filmatube.app.ui.social.SuggestionsScreen
 import com.filmatube.app.ui.settings.ProfilesScreen
@@ -36,8 +37,10 @@ private const val ROUTE_LIBRARY = "library"
 private const val ROUTE_FOLLOWS = "follows/{mode}"
 private const val ROUTE_SUGGESTIONS = "suggestions"
 private const val ROUTE_INBOX = "inbox"
+private const val ROUTE_PUBLIC_PROFILE = "user/{userId}"
 
 fun followsRoute(mode: String) = "follows/$mode"
+fun publicProfileRoute(userId: String) = "user/$userId"
 private const val ROUTE_MOVIE = "movie/{movieId}"
 private const val ROUTE_PLAYER = "player/{movieId}"
 private const val ROUTE_BROWSE = "browse?genre={genre}"
@@ -118,7 +121,10 @@ fun FilmatubeNavHost(
         }
         composable(TopLevelDestination.THEATER.route) { TheaterScreen() }
         composable(TopLevelDestination.COMMUNITY.route) {
-            FeedScreen(onMovieClick = { navController.navigate(movieRoute(it)) })
+            FeedScreen(
+                onMovieClick = { navController.navigate(movieRoute(it)) },
+                onUserClick = { navController.navigate(publicProfileRoute(it)) },
+            )
         }
         composable(TopLevelDestination.PROFILE.route) {
             ProfileScreen(
@@ -158,16 +164,28 @@ fun FilmatubeNavHost(
             route = ROUTE_FOLLOWS,
             arguments = listOf(navArgument("mode") { type = NavType.StringType }),
         ) {
-            FollowListScreen(onBack = { navController.popBackStack() })
+            FollowListScreen(
+                onBack = { navController.popBackStack() },
+                onUserClick = { navController.navigate(publicProfileRoute(it)) },
+            )
         }
         composable(ROUTE_SUGGESTIONS) {
-            SuggestionsScreen(onBack = { navController.popBackStack() })
+            SuggestionsScreen(
+                onBack = { navController.popBackStack() },
+                onUserClick = { navController.navigate(publicProfileRoute(it)) },
+            )
         }
         composable(ROUTE_INBOX) {
             RecommendationInboxScreen(
                 onBack = { navController.popBackStack() },
                 onMovieClick = { navController.navigate(movieRoute(it)) },
             )
+        }
+        composable(
+            route = ROUTE_PUBLIC_PROFILE,
+            arguments = listOf(navArgument("userId") { type = NavType.StringType }),
+        ) {
+            PublicProfileScreen(onBack = { navController.popBackStack() })
         }
     }
 }

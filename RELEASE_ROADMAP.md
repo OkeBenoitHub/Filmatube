@@ -176,7 +176,7 @@
 - **Day 88** ✅ — Feed time filter; pagination; mute/hide.
 - **Day 89** ✅ — Likes + reactions (love/fire/mind-blown/boring); reaction counts on detail; FCM notify followers.
 - **Day 90** ✅ — Recommend movie to a follower + message; recommendations inbox; FCM.
-- **Day 91** — Public profile (their lists/activity/taste match); analytics; week review.
+- **Day 91** ✅ — Public profile (their lists/activity/taste match); analytics; week review.
 
 ### Week 14 — Web Social (Days 92–98) (W)
 - **Day 92** — Follow + followers/following (web).

@@ -36,6 +36,7 @@ import com.filmatube.app.ui.theme.FilmatubeSpacing
 @Composable
 fun FeedScreen(
     onMovieClick: (String) -> Unit,
+    onUserClick: (String) -> Unit,
     viewModel: FeedViewModel = hiltViewModel(),
 ) {
     val feed by viewModel.feed.collectAsStateWithLifecycle()
@@ -95,7 +96,12 @@ fun FeedScreen(
                         horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        UserAvatar(url = event.actorAvatar, name = event.actorName, size = 40.dp)
+                        UserAvatar(
+                            url = event.actorAvatar,
+                            name = event.actorName,
+                            size = 40.dp,
+                            modifier = Modifier.clickable { if (event.actorId.isNotBlank()) onUserClick(event.actorId) },
+                        )
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 "${event.actorName} ${actionText(event.type)}",
