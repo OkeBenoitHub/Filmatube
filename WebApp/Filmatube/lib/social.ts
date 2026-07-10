@@ -31,6 +31,34 @@ export async function getFollowUsers(ids: string[]): Promise<FollowUserCard[]> {
     .map((p) => ({ uid: p.uid, displayName: p.displayName, avatarUrl: p.avatarUrl, bio: p.bio }));
 }
 
+/** A suggested user to follow, ranked by taste overlap. */
+export interface SuggestedUser extends FollowUserCard {
+  tasteMatch: number;
+}
+
+/**
+ * "People with your taste" — scans users, ranks by genre overlap with `myUid`,
+ * excludes self + already-followed + banned. Mirrors Android SocialRepository.suggestedUsers.
+ */
+export async function getSuggestedUsers(myUid: string, max = 20): Promise<SuggestedUser[]> {
+  const [mine, followingIds] = await Promise.all([getUserProfile(myUid), getFollowingIds(myUid)]);
+  const exclude = new Set<string>([myUid, ...followingIds]);
+  const myGenres = mine?.genrePreferences ?? [];
+
+  const snap = await getAdminDb().collection("users").limit(60).get();
+  return snap.docs
+    .filter((d) => !exclude.has(d.id) && d.get("isBanned") !== true && (d.get("displayName") ?? "") !== "")
+    .map((d) => ({
+      uid: d.id,
+      displayName: (d.get("displayName") as string) ?? "",
+      avatarUrl: (d.get("avatarUrl") as string) ?? "",
+      bio: (d.get("bio") as string) ?? "",
+      tasteMatch: tasteMatch(myGenres, (d.get("genrePreferences") as string[]) ?? []),
+    }))
+    .sort((a, b) => b.tasteMatch - a.tasteMatch)
+    .slice(0, max);
+}
+
 /** Jaccard similarity of two genre-preference sets as a 0–100 percentage. */
 export function tasteMatch(mine: string[], theirs: string[]): number {
   if (mine.length === 0 || theirs.length === 0) return 0;

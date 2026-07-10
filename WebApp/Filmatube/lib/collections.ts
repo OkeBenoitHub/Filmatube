@@ -29,6 +29,15 @@ export async function getUserCollections(uid: string): Promise<Collection[]> {
     .sort((a, b) => a.title.localeCompare(b.title));
 }
 
+/** A user's public collections only — shown on their public profile. */
+export async function getPublicCollections(uid: string): Promise<Collection[]> {
+  const snap = await getAdminDb().collection("collections").where("userId", "==", uid).limit(100).get();
+  return snap.docs
+    .map((d) => mapCollection(d.id, d.data()))
+    .filter((c) => c.isPublic)
+    .sort((a, b) => a.title.localeCompare(b.title));
+}
+
 export async function getCollection(
   id: string,
 ): Promise<{ collection: Collection; movies: CatalogMovie[] } | null> {

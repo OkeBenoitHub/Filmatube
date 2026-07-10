@@ -1,20 +1,24 @@
 import Link from "next/link";
+import { Globe } from "lucide-react";
 import { notFound } from "next/navigation";
 import { FollowButton } from "@/components/social/FollowButton";
+import { TasteMatchBadge } from "@/components/social/TasteMatchBadge";
 import { UserAvatar } from "@/components/social/UserList";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getDict } from "@/lib/i18n/server";
 import { getUserProfile } from "@/lib/user";
+import { getPublicCollections } from "@/lib/collections";
 import { getFollowerIds, getFollowingIds, tasteMatch } from "@/lib/social";
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [me, dict, profile, followerIds, followingIds] = await Promise.all([
+  const [me, dict, profile, followerIds, followingIds, collections] = await Promise.all([
     getCurrentUser(),
     getDict(),
     getUserProfile(id),
     getFollowerIds(id),
     getFollowingIds(id),
+    getPublicCollections(id),
   ]);
   if (!profile) notFound();
   const c = dict.catalog;
@@ -47,10 +51,10 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
             </Link>
           </div>
 
-          {!isSelf && taste > 0 && (
-            <p className="text-sm font-semibold text-brand-400">
-              {taste}% {c.matchSuffix}
-            </p>
+          {!isSelf && (
+            <div className="flex justify-center sm:justify-start">
+              <TasteMatchBadge percent={taste} dict={c} />
+            </div>
           )}
 
           <div className="flex justify-center sm:justify-start">
@@ -67,6 +71,28 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
             </span>
           ))}
         </div>
+      )}
+
+      {collections.length > 0 && (
+        <section className="mt-10 space-y-3">
+          <h2 className="text-lg font-semibold text-ink">{c.collections}</h2>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {collections.map((col) => (
+              <Link key={col.id} href={`/collections/${col.id}`} className="w-40 shrink-0">
+                <div className="relative aspect-video overflow-hidden rounded-lg border border-surface-border bg-surface-hover">
+                  {col.coverUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={col.coverUrl} alt="" className="h-full w-full object-cover" />
+                  )}
+                  <span className="absolute right-1.5 top-1.5 rounded bg-black/60 p-1 text-white">
+                    <Globe className="h-3 w-3" aria-hidden />
+                  </span>
+                </div>
+                <p className="mt-1.5 truncate text-sm text-ink">{col.title}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );

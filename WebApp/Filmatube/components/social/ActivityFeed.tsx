@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { VolumeX } from "lucide-react";
+import { UserPlus, VolumeX } from "lucide-react";
 import { collection, limit, onSnapshot, orderBy, query, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -115,7 +115,16 @@ export function ActivityFeed({ dict }: { dict: Dictionary["catalog"] }) {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-6">
-      <h1 className="text-2xl font-bold text-ink">{dict.activity}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-ink">{dict.activity}</h1>
+        <Link
+          href="/discover"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-surface-border px-3 py-1.5 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+        >
+          <UserPlus className="h-4 w-4" aria-hidden />
+          {dict.discoverPeople}
+        </Link>
+      </div>
 
       <div className="mt-4 flex gap-2">
         {chips.map(({ key, label }) => (
@@ -135,7 +144,16 @@ export function ActivityFeed({ dict }: { dict: Dictionary["catalog"] }) {
       </div>
 
       {visible.length === 0 ? (
-        <p className="py-12 text-center text-ink-muted">{dict.feedEmpty}</p>
+        <div className="py-12 text-center">
+          <p className="text-ink-muted">{dict.feedEmpty}</p>
+          <Link
+            href="/discover"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+          >
+            <UserPlus className="h-4 w-4" aria-hidden />
+            {dict.discoverPeople}
+          </Link>
+        </div>
       ) : (
         <ul className="mt-6 divide-y divide-surface-border">
           {visible.map((e) => (
