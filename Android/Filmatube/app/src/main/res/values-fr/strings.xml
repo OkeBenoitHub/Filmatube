@@ -33,6 +33,9 @@
     <string name="detail_watch_later">À voir plus tard</string>
     <string name="detail_saved">Enregistré</string>
     <string name="detail_recommend">Recommander</string>
+    <string name="detail_rate_this">Noter ce film</string>
+    <string name="detail_your_rating">Votre note</string>
+    <string name="detail_rate_star">Noter %1$d étoiles</string>
     <string name="recommend_title">Recommander à</string>
     <string name="recommend_message_hint">Ajouter un message (facultatif)</string>
     <string name="recommend_send">Envoyer</string>

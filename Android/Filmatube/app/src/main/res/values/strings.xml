@@ -33,6 +33,9 @@
     <string name="detail_watch_later">Watch Later</string>
     <string name="detail_saved">Saved</string>
     <string name="detail_recommend">Recommend</string>
+    <string name="detail_rate_this">Rate this movie</string>
+    <string name="detail_your_rating">Your rating</string>
+    <string name="detail_rate_star">Rate %1$d stars</string>
     <string name="recommend_title">Recommend to</string>
     <string name="recommend_message_hint">Add a message (optional)</string>
     <string name="recommend_send">Send</string>

@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material3.Icon
@@ -93,6 +94,8 @@ fun MovieDetailScreen(
     val savedForLater by viewModel.savedForLater.collectAsStateWithLifecycle()
     val myReaction by viewModel.myReaction.collectAsStateWithLifecycle()
     val reactionCounts by viewModel.reactionCounts.collectAsStateWithLifecycle()
+    val myRating by viewModel.myRating.collectAsStateWithLifecycle()
+    val ratingAggregate by viewModel.ratingAggregate.collectAsStateWithLifecycle()
     val recipients by viewModel.recipients.collectAsStateWithLifecycle()
     val downloadState by viewModel.downloadState.collectAsStateWithLifecycle()
     val language = LocaleController.currentTag()
@@ -114,6 +117,10 @@ fun MovieDetailScreen(
                 myReaction = myReaction,
                 reactionCounts = reactionCounts,
                 onReact = viewModel::setReaction,
+                myRating = myRating,
+                ratingAverage = ratingAggregate.average,
+                ratingCount = ratingAggregate.count,
+                onRate = viewModel::setRating,
                 onRecommend = { viewModel.loadRecipients(); showRecommend = true },
                 downloadState = downloadState,
                 onToggleDownload = viewModel::toggleDownload,
@@ -165,6 +172,10 @@ private fun DetailContent(
     myReaction: String?,
     reactionCounts: Map<String, Int>,
     onReact: (String) -> Unit,
+    myRating: Int?,
+    ratingAverage: Double,
+    ratingCount: Int,
+    onRate: (Int) -> Unit,
     onRecommend: () -> Unit,
     downloadState: DownloadUiState,
     onToggleDownload: () -> Unit,
@@ -226,11 +237,13 @@ private fun DetailContent(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    if (movie.averageRating > 0) {
+                    val displayAverage = if (ratingCount > 0) ratingAverage else movie.averageRating
+                    val displayCount = if (ratingCount > 0) ratingCount.toLong() else movie.ratingsCount
+                    if (displayAverage > 0) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Filled.Star, contentDescription = null, tint = FilmatubeGold, modifier = Modifier.width(18.dp))
                             Text(
-                                text = "  ${"%.1f".format(movie.averageRating)}  (${movie.ratingsCount})",
+                                text = "  ${"%.1f".format(displayAverage)}  ($displayCount)",
                                 style = MaterialTheme.typography.bodyMedium,
                             )
                         }
@@ -293,6 +306,10 @@ private fun DetailContent(
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            if (!movie.isComingSoon) {
+                RatingBar(myRating = myRating, onRate = onRate)
+            }
+
             ReactionBar(myReaction = myReaction, counts = reactionCounts, onReact = onReact)
 
             FilmatubeSecondaryButton(
@@ -344,6 +361,30 @@ private fun DetailContent(
             }
         }
         Spacer(Modifier.height(FilmatubeSpacing.xxl))
+    }
+}
+
+@Composable
+private fun RatingBar(myRating: Int?, onRate: (Int) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xs)) {
+        Text(
+            text = stringResource(if (myRating != null) R.string.detail_your_rating else R.string.detail_rate_this),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xs)) {
+            (1..5).forEach { star ->
+                val filled = myRating != null && star <= myRating
+                Icon(
+                    imageVector = if (filled) Icons.Filled.Star else Icons.Filled.StarBorder,
+                    contentDescription = stringResource(R.string.detail_rate_star, star),
+                    tint = if (filled) FilmatubeGold else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .width(32.dp)
+                        .clickable { onRate(star) },
+                )
+            }
+        }
     }
 }
 

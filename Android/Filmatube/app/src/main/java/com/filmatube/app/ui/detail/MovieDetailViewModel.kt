@@ -9,6 +9,8 @@ import com.filmatube.app.data.library.WatchlistRepository
 import com.filmatube.app.data.preferences.UserPreferencesRepository
 import com.filmatube.app.data.social.FeedEventTypes
 import com.filmatube.app.data.social.FeedRepository
+import com.filmatube.app.data.social.RatingAggregate
+import com.filmatube.app.data.social.RatingRepository
 import com.filmatube.app.data.social.ReactionRepository
 import com.filmatube.app.data.social.RecipientUser
 import com.filmatube.app.data.social.RecommendationRepository
@@ -43,6 +45,7 @@ class MovieDetailViewModel @Inject constructor(
     private val watchlistRepository: WatchlistRepository,
     private val feedRepository: FeedRepository,
     private val reactionRepository: ReactionRepository,
+    private val ratingRepository: RatingRepository,
     private val recommendationRepository: RecommendationRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -72,6 +75,19 @@ class MovieDetailViewModel @Inject constructor(
 
     private fun loadReactionCounts() {
         viewModelScope.launch { _reactionCounts.value = reactionRepository.reactionCounts(movieId) }
+    }
+
+    val myRating = ratingRepository.observeMyRating(movieId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    val ratingAggregate = ratingRepository.observeAggregate(movieId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RatingAggregate(0.0, 0))
+
+    fun setRating(value: Int) {
+        val current = myRating.value
+        viewModelScope.launch {
+            ratingRepository.setRating(movieId, if (current == value) null else value)
+        }
     }
 
     private val _recipients = MutableStateFlow<List<RecipientUser>>(emptyList())

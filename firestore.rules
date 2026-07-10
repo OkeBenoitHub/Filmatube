@@ -98,6 +98,14 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.resource.data.fromUserId == request.auth.uid;
     }
 
+    // ───────── ratings (1–5 stars, one per user per movie) ─────────
+    // Aggregation into movies/{id}.averageRating/ratingsCount is done by a Cloud Function
+    // (functions/index.js); clients may also compute a live average by reading this subtree.
+    match /ratings/{movieId}/items/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSelf(userId);
+    }
+
     // ───────── reviews & comments ─────────
     match /reviews/{movieId}/items/{reviewId} {
       allow read: if isSignedIn();
