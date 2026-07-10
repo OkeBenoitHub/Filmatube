@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.PersonAddAlt
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
@@ -52,6 +53,7 @@ fun ProfileScreen(
     onOpenFollowers: () -> Unit,
     onOpenFollowing: () -> Unit,
     onOpenSuggestions: () -> Unit,
+    onOpenInbox: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -70,6 +72,12 @@ fun ProfileScreen(
                 style = MaterialTheme.typography.titleLarge,
             )
             Spacer(Modifier.weight(1f))
+            IconButton(onClick = onOpenInbox) {
+                Icon(
+                    Icons.Outlined.MailOutline,
+                    contentDescription = stringResource(R.string.inbox_title),
+                )
+            }
             IconButton(onClick = onOpenSuggestions) {
                 Icon(
                     Icons.Outlined.PersonAddAlt,

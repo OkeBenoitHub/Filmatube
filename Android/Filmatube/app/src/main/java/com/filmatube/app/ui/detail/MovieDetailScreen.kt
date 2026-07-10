@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.PlayCircle
@@ -46,6 +47,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.filmatube.app.ui.social.RecommendDialog
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -88,9 +93,11 @@ fun MovieDetailScreen(
     val savedForLater by viewModel.savedForLater.collectAsStateWithLifecycle()
     val myReaction by viewModel.myReaction.collectAsStateWithLifecycle()
     val reactionCounts by viewModel.reactionCounts.collectAsStateWithLifecycle()
+    val recipients by viewModel.recipients.collectAsStateWithLifecycle()
     val downloadState by viewModel.downloadState.collectAsStateWithLifecycle()
     val language = LocaleController.currentTag()
     val context = LocalContext.current
+    var showRecommend by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         when (val movie = state.movie) {
@@ -107,6 +114,7 @@ fun MovieDetailScreen(
                 myReaction = myReaction,
                 reactionCounts = reactionCounts,
                 onReact = viewModel::setReaction,
+                onRecommend = { viewModel.loadRecipients(); showRecommend = true },
                 downloadState = downloadState,
                 onToggleDownload = viewModel::toggleDownload,
                 onPlay = onPlay,
@@ -132,6 +140,17 @@ fun MovieDetailScreen(
             )
         }
     }
+
+    if (showRecommend) {
+        RecommendDialog(
+            recipients = recipients,
+            onSend = { uid, message ->
+                viewModel.recommend(uid, message)
+                showRecommend = false
+            },
+            onDismiss = { showRecommend = false },
+        )
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -146,6 +165,7 @@ private fun DetailContent(
     myReaction: String?,
     reactionCounts: Map<String, Int>,
     onReact: (String) -> Unit,
+    onRecommend: () -> Unit,
     downloadState: DownloadUiState,
     onToggleDownload: () -> Unit,
     onPlay: (String) -> Unit,
@@ -274,6 +294,13 @@ private fun DetailContent(
             )
 
             ReactionBar(myReaction = myReaction, counts = reactionCounts, onReact = onReact)
+
+            FilmatubeSecondaryButton(
+                text = stringResource(R.string.detail_recommend),
+                onClick = onRecommend,
+                leadingIcon = Icons.Filled.Send,
+                modifier = Modifier.fillMaxWidth(),
+            )
 
             if (movie.genres.isNotEmpty()) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {

@@ -32,6 +32,14 @@
     <string name="detail_reminder_set">Rappel activé</string>
     <string name="detail_watch_later">À voir plus tard</string>
     <string name="detail_saved">Enregistré</string>
+    <string name="detail_recommend">Recommander</string>
+    <string name="recommend_title">Recommander à</string>
+    <string name="recommend_message_hint">Ajouter un message (facultatif)</string>
+    <string name="recommend_send">Envoyer</string>
+    <string name="recommend_no_followers">Suivez des personnes pour leur recommander des films.</string>
+    <string name="inbox_title">Recommandations</string>
+    <string name="inbox_empty">Aucune recommandation.</string>
+    <string name="recommend_from">%1$s recommande</string>
     <string name="my_library">Ma bibliothèque</string>
     <string name="library_empty">Votre bibliothèque est vide.</string>
     <string name="detail_download">Télécharger</string>

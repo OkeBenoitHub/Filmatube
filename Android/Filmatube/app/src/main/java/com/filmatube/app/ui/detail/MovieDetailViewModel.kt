@@ -10,6 +10,8 @@ import com.filmatube.app.data.preferences.UserPreferencesRepository
 import com.filmatube.app.data.social.FeedEventTypes
 import com.filmatube.app.data.social.FeedRepository
 import com.filmatube.app.data.social.ReactionRepository
+import com.filmatube.app.data.social.RecipientUser
+import com.filmatube.app.data.social.RecommendationRepository
 import com.filmatube.app.domain.model.Movie
 import com.filmatube.app.domain.repository.MovieRepository
 import com.filmatube.app.domain.util.DataState
@@ -41,6 +43,7 @@ class MovieDetailViewModel @Inject constructor(
     private val watchlistRepository: WatchlistRepository,
     private val feedRepository: FeedRepository,
     private val reactionRepository: ReactionRepository,
+    private val recommendationRepository: RecommendationRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -69,6 +72,20 @@ class MovieDetailViewModel @Inject constructor(
 
     private fun loadReactionCounts() {
         viewModelScope.launch { _reactionCounts.value = reactionRepository.reactionCounts(movieId) }
+    }
+
+    private val _recipients = MutableStateFlow<List<RecipientUser>>(emptyList())
+    val recipients = _recipients.asStateFlow()
+
+    fun loadRecipients() {
+        viewModelScope.launch { _recipients.value = recommendationRepository.recipients() }
+    }
+
+    fun recommend(toUid: String, message: String) {
+        val movie = (state.value.movie as? DataState.Success)?.data
+        viewModelScope.launch {
+            recommendationRepository.send(toUid, movieId, movie?.title?.get("en") ?: "", message.trim())
+        }
     }
 
     val reminderSet = preferences.reminders

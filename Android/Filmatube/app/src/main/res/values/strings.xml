@@ -32,6 +32,14 @@
     <string name="detail_reminder_set">Reminder set</string>
     <string name="detail_watch_later">Watch Later</string>
     <string name="detail_saved">Saved</string>
+    <string name="detail_recommend">Recommend</string>
+    <string name="recommend_title">Recommend to</string>
+    <string name="recommend_message_hint">Add a message (optional)</string>
+    <string name="recommend_send">Send</string>
+    <string name="recommend_no_followers">Follow people to recommend movies to them.</string>
+    <string name="inbox_title">Recommendations</string>
+    <string name="inbox_empty">No recommendations yet.</string>
+    <string name="recommend_from">%1$s recommends</string>
     <string name="my_library">My Library</string>
     <string name="library_empty">Your library is empty.</string>
     <string name="detail_download">Download</string>
