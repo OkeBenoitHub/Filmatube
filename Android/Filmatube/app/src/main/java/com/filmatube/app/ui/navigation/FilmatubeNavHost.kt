@@ -20,6 +20,7 @@ import com.filmatube.app.ui.player.PlayerScreen
 import com.filmatube.app.ui.profile.EditProfileScreen
 import com.filmatube.app.ui.profile.ProfileScreen
 import com.filmatube.app.ui.search.SearchScreen
+import com.filmatube.app.ui.social.FeedScreen
 import com.filmatube.app.ui.social.FollowListScreen
 import com.filmatube.app.ui.social.SuggestionsScreen
 import com.filmatube.app.ui.settings.ProfilesScreen
@@ -114,7 +115,9 @@ fun FilmatubeNavHost(
             SearchScreen(onMovieClick = { navController.navigate(movieRoute(it)) })
         }
         composable(TopLevelDestination.THEATER.route) { TheaterScreen() }
-        composable(TopLevelDestination.COMMUNITY.route) { CommunityScreen() }
+        composable(TopLevelDestination.COMMUNITY.route) {
+            FeedScreen(onMovieClick = { navController.navigate(movieRoute(it)) })
+        }
         composable(TopLevelDestination.PROFILE.route) {
             ProfileScreen(
                 onEditProfile = { navController.navigate(ROUTE_PROFILE_EDIT) },

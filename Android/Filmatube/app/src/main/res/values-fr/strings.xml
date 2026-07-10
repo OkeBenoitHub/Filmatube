@@ -195,6 +195,14 @@
     <string name="taste_match">%1$d%% d\'affinité</string>
     <string name="suggestions_title">Suggestions pour vous</string>
     <string name="discover_people">Trouver des personnes</string>
+    <string name="feed_title">Activité</string>
+    <string name="feed_empty">Aucune activité. Suivez des personnes pour voir ce qu\'elles regardent.</string>
+    <string name="feed_watching">regarde</string>
+    <string name="feed_watched">a regardé</string>
+    <string name="feed_added_watchlist">a enregistré</string>
+    <string name="feed_liked">a aimé</string>
+    <string name="feed_reacted">a réagi à</string>
+    <string name="feed_added_collection">a ajouté à une collection</string>
     <string name="profile_watched">Vus</string>
     <string name="profile_badges">Badges</string>
     <string name="profile_badges_empty">Regardez des films et soyez actif pour gagner des badges.</string>

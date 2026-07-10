@@ -24,6 +24,8 @@ import com.filmatube.app.data.download.DownloadUtil
 import com.filmatube.app.data.playback.PlaybackRepository
 import com.filmatube.app.data.playback.WatchProgressRepository
 import com.filmatube.app.data.preferences.UserPreferencesRepository
+import com.filmatube.app.data.social.FeedEventTypes
+import com.filmatube.app.data.social.FeedRepository
 import com.filmatube.app.domain.model.Movie
 import com.filmatube.app.domain.model.SubtitleStyle
 import com.filmatube.app.domain.repository.MovieRepository
@@ -56,11 +58,13 @@ class PlayerViewModel @Inject constructor(
     private val movieRepository: MovieRepository,
     private val preferencesRepository: UserPreferencesRepository,
     private val downloadRepository: DownloadRepository,
+    private val feedRepository: FeedRepository,
     private val analytics: PlaybackAnalytics,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val movieId: String = checkNotNull(savedStateHandle["movieId"])
+    private var movieTitle: String = ""
 
     private val _uiState = MutableStateFlow<PlayerUiState>(PlayerUiState.Loading)
     val uiState: StateFlow<PlayerUiState> = _uiState.asStateFlow()
@@ -145,6 +149,7 @@ class PlayerViewModel @Inject constructor(
                     analytics.complete(movieId)
                     persistProgress()
                     maybeAutoDeleteWatched()
+                    viewModelScope.launch { feedRepository.publish(FeedEventTypes.WATCHED, movieId, movieTitle) }
                 }
                 // Recovered after a network drop / retry.
                 if (playbackState == Player.STATE_READY && _uiState.value is PlayerUiState.Error) {
@@ -242,6 +247,8 @@ class PlayerViewModel @Inject constructor(
                     _upNext.value = media.next
                     _introStartMs.value = (media.movie?.introStartSec ?: 0) * 1000L
                     _introEndMs.value = (media.movie?.introEndSec ?: 0) * 1000L
+                    movieTitle = media.movie?.title?.get("en") ?: ""
+                    viewModelScope.launch { feedRepository.publish(FeedEventTypes.WATCHING, movieId, movieTitle) }
                     val resumeMs = watchProgressRepository.resumePosition(movieId)
                     if (resumeMs > 0L) {
                         player.seekTo(resumeMs)

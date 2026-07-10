@@ -7,6 +7,8 @@ import androidx.media3.common.util.UnstableApi
 import com.filmatube.app.data.download.DownloadRepository
 import com.filmatube.app.data.library.WatchlistRepository
 import com.filmatube.app.data.preferences.UserPreferencesRepository
+import com.filmatube.app.data.social.FeedEventTypes
+import com.filmatube.app.data.social.FeedRepository
 import com.filmatube.app.domain.model.Movie
 import com.filmatube.app.domain.repository.MovieRepository
 import com.filmatube.app.domain.util.DataState
@@ -36,6 +38,7 @@ class MovieDetailViewModel @Inject constructor(
     private val preferences: UserPreferencesRepository,
     private val downloadRepository: DownloadRepository,
     private val watchlistRepository: WatchlistRepository,
+    private val feedRepository: FeedRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -53,7 +56,14 @@ class MovieDetailViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     fun toggleSaved() {
-        viewModelScope.launch { watchlistRepository.toggle(movieId) }
+        val movie = (state.value.movie as? DataState.Success)?.data
+        val wasSaved = savedForLater.value
+        viewModelScope.launch {
+            watchlistRepository.toggle(movieId)
+            if (!wasSaved && movie != null) {
+                feedRepository.publish(FeedEventTypes.ADDED_WATCHLIST, movieId, movie.title.get("en"))
+            }
+        }
     }
 
     val downloadState = downloadRepository.items()

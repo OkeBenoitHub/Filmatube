@@ -198,6 +198,14 @@
     <string name="taste_match">%1$d%% match</string>
     <string name="suggestions_title">Suggested for you</string>
     <string name="discover_people">Find people</string>
+    <string name="feed_title">Activity</string>
+    <string name="feed_empty">No activity yet. Follow people to see what they\'re watching.</string>
+    <string name="feed_watching">is watching</string>
+    <string name="feed_watched">watched</string>
+    <string name="feed_added_watchlist">saved</string>
+    <string name="feed_liked">liked</string>
+    <string name="feed_reacted">reacted to</string>
+    <string name="feed_added_collection">added to a collection</string>
     <string name="profile_watched">Watched</string>
     <string name="profile_badges">Badges</string>
     <string name="profile_badges_empty">Watch movies and be social to earn badges.</string>
