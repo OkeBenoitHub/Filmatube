@@ -42,6 +42,11 @@ service cloud.firestore {
       match /fcmTokens/{tokenId} {
         allow read, write: if isSelf(userId);
       }
+
+      // per-user settings (e.g. notification channel opt-in) — a Cloud Function honors these when sending push
+      match /settings/{settingId} {
+        allow read, write: if isSelf(userId);
+      }
     }
 
     // ───────── catalog ─────────

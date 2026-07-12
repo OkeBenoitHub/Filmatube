@@ -38,6 +38,12 @@ export default async function AccountPage() {
           >
             {a.manageProfiles}
           </Link>
+          <Link
+            href="/account/notifications"
+            className="inline-flex h-9 items-center rounded-lg border border-surface-border px-4 text-sm font-medium text-ink hover:bg-surface-hover"
+          >
+            {dict.catalog.notificationsTitle}
+          </Link>
         </div>
 
         <div className="mt-4 flex w-full justify-around">
