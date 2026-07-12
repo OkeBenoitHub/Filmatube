@@ -147,6 +147,11 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // ───────── admin broadcasts (processed server-side / by a Cloud Function) ─────────
+    match /broadcasts/{broadcastId} {
+      allow read, write: if isAdmin();
+    }
+
     // ───────── content requests ─────────
     match /requests/{requestId} {
       allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);

@@ -203,7 +203,7 @@
 - **Day 107** ✅ — Threaded comments (web); report.
 - **Day 108** ✅ — Web push (FCM) + notification center.
 - **Day 109** ✅ — Notification preferences (web); report-moderation queue (admin).
-- **Day 110** — **Admin broadcast** composer: segment (all/taste/active), schedule send, preview; Cloud Function fan-out.
+- **Day 110** ✅ — **Admin broadcast** composer: segment (all/taste/active), schedule send, preview; Cloud Function fan-out.
 - **Day 111** — Content Request form (user) + **admin requests queue** (approve/reject + reason → FCM); link request → added movie.
 - **Day 112** — Parity QA; week review.
 

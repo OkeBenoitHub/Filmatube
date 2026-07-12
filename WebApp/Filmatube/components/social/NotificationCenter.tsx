@@ -14,6 +14,8 @@ interface Notification {
   actorId: string;
   actorName: string;
   actorAvatar: string;
+  title: string;
+  message: string;
   movieId: string;
   movieTitle: string;
   read: boolean;
@@ -58,6 +60,8 @@ export function NotificationCenter({ dict }: { dict: Dictionary["catalog"] }) {
             actorId: d.get("actorId") ?? "",
             actorName: d.get("actorName") ?? "",
             actorAvatar: d.get("actorAvatar") ?? "",
+            title: d.get("title") ?? "",
+            message: d.get("message") ?? "",
             movieId: d.get("movieId") ?? "",
             movieTitle: d.get("movieTitle") ?? "",
             read: d.get("read") ?? false,
@@ -132,10 +136,19 @@ function Group({
             >
               <UserAvatar name={n.actorName} url={n.actorAvatar} size={40} />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm text-ink">
-                  <span className="font-semibold">{n.actorName}</span> {actionText(n.type, dict)}
-                </p>
-                {n.movieTitle && <p className="truncate text-xs text-ink-muted">{n.movieTitle}</p>}
+                {n.type === "system" ? (
+                  <>
+                    <p className="truncate text-sm font-semibold text-ink">{n.title || n.actorName}</p>
+                    {n.message && <p className="truncate text-xs text-ink-muted">{n.message}</p>}
+                  </>
+                ) : (
+                  <>
+                    <p className="truncate text-sm text-ink">
+                      <span className="font-semibold">{n.actorName}</span> {actionText(n.type, dict)}
+                    </p>
+                    {n.movieTitle && <p className="truncate text-xs text-ink-muted">{n.movieTitle}</p>}
+                  </>
+                )}
               </div>
               {!n.read && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-brand-500" aria-hidden />}
             </button>
