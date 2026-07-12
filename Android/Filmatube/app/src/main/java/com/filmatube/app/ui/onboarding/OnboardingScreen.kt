@@ -164,6 +164,7 @@ private fun OnboardingPageContent(page: OnboardingPage) {
             Text(
                 text = stringResource(page.titleRes),
                 style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center,
             )
             Text(
