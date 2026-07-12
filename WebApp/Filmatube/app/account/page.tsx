@@ -44,6 +44,12 @@ export default async function AccountPage() {
           >
             {dict.catalog.notificationsTitle}
           </Link>
+          <Link
+            href="/requests"
+            className="inline-flex h-9 items-center rounded-lg border border-surface-border px-4 text-sm font-medium text-ink hover:bg-surface-hover"
+          >
+            {dict.catalog.requestMovie}
+          </Link>
         </div>
 
         <div className="mt-4 flex w-full justify-around">
