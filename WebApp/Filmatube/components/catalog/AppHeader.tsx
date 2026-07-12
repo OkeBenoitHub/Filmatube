@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, Search, Compass, Bookmark, Users, Mail, UserRound } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { NotificationBell } from "@/components/social/NotificationBell";
 import { Wordmark } from "@/components/Wordmark";
 import { useAuth } from "@/components/providers/AuthProvider";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -50,6 +51,7 @@ export function AppHeader({ dict }: { dict: Dictionary["catalog"] }) {
 
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
+          <NotificationBell dict={dict} />
           <Link
             href="/inbox"
             aria-label={dict.inbox}

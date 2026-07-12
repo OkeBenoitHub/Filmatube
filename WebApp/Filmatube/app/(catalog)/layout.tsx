@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/catalog/AppHeader";
+import { PushRegistration } from "@/components/providers/PushRegistration";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getDict } from "@/lib/i18n/server";
 
@@ -12,6 +13,7 @@ export default async function CatalogLayout({ children }: { children: React.Reac
   return (
     <div className="min-h-screen bg-surface">
       <AppHeader dict={dict.catalog} />
+      <PushRegistration />
       <main className="pb-16">{children}</main>
     </div>
   );
