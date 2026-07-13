@@ -49,8 +49,14 @@ export function RegisterForm({ dict }: { dict: Dictionary["auth"] }) {
     setError(null);
     setLoading(true);
     try {
-      await signInWithGoogle();
-      succeed();
+      const { isNewUser } = await signInWithGoogle();
+      if (isNewUser) {
+        succeed(); // new user → taste onboarding
+      } else {
+        // Existing account signing in via the register page → straight to the app.
+        router.replace("/home");
+        router.refresh();
+      }
     } catch (err) {
       setError(mapAuthError(errorCode(err), dict.errors));
       setLoading(false);

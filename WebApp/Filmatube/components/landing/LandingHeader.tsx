@@ -7,7 +7,15 @@ import type { Dictionary } from "@/lib/i18n/dictionaries";
  * Sticky landing/marketing header — logo, section nav, language switcher, sign-in + app CTA.
  * `linkPrefix` is "" on the landing page (same-page anchors) and "/" elsewhere (jump to landing).
  */
-export function LandingHeader({ dict, linkPrefix = "" }: { dict: Dictionary; linkPrefix?: string }) {
+export function LandingHeader({
+  dict,
+  linkPrefix = "",
+  hideSignIn = false,
+}: {
+  dict: Dictionary;
+  linkPrefix?: string;
+  hideSignIn?: boolean;
+}) {
   const t = dict.landing;
   const navLinks = [
     { href: `${linkPrefix}#features`, label: t.navFeatures },
@@ -29,12 +37,14 @@ export function LandingHeader({ dict, linkPrefix = "" }: { dict: Dictionary; lin
         </nav>
         <div className="flex items-center gap-3">
           <LanguageSwitcher />
-          <Link
-            href="/login"
-            className="hidden h-9 items-center rounded-lg px-3 text-sm font-medium text-ink-muted transition-colors hover:text-ink sm:inline-flex"
-          >
-            {dict.common.signIn}
-          </Link>
+          {!hideSignIn && (
+            <Link
+              href="/login"
+              className="hidden h-9 items-center rounded-lg px-3 text-sm font-medium text-ink-muted transition-colors hover:text-ink sm:inline-flex"
+            >
+              {dict.common.signIn}
+            </Link>
+          )}
           <Link
             href="/home"
             className="inline-flex h-9 items-center rounded-lg bg-brand-500 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-600"

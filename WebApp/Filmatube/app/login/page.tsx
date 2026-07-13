@@ -8,7 +8,7 @@ export default async function LoginPage() {
   const dict = await getDict();
   return (
     <div className="flex min-h-screen flex-col bg-surface">
-      <LandingHeader dict={dict} linkPrefix="/" />
+      <LandingHeader dict={dict} linkPrefix="/" hideSignIn />
       <Suspense>
         <LoginForm dict={dict.auth} />
       </Suspense>

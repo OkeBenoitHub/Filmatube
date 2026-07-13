@@ -50,8 +50,14 @@ export function LoginForm({ dict }: { dict: Dictionary["auth"] }) {
     setError(null);
     setLoading(true);
     try {
-      await signInWithGoogle();
-      succeed();
+      const { isNewUser } = await signInWithGoogle();
+      if (isNewUser) {
+        // First-time Google users go through taste onboarding, like email sign-ups.
+        router.replace("/account/taste");
+        router.refresh();
+      } else {
+        succeed();
+      }
     } catch (err) {
       setError(mapAuthError(errorCode(err), dict.errors));
       setLoading(false);

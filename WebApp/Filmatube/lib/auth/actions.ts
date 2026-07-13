@@ -1,6 +1,7 @@
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  getAdditionalUserInfo,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -33,9 +34,11 @@ export async function registerWithEmail(name: string, email: string, password: s
   await postSession(cred.user, true);
 }
 
-export async function signInWithGoogle(): Promise<void> {
+/** Returns `isNewUser` so callers can route first-time users through taste onboarding. */
+export async function signInWithGoogle(): Promise<{ isNewUser: boolean }> {
   const cred = await signInWithPopup(auth, new GoogleAuthProvider());
   await postSession(cred.user);
+  return { isNewUser: getAdditionalUserInfo(cred)?.isNewUser ?? false };
 }
 
 export async function sendReset(email: string): Promise<void> {
