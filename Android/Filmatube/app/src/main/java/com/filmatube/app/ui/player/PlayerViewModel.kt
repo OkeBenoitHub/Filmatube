@@ -29,6 +29,7 @@ import com.filmatube.app.data.social.FeedRepository
 import com.filmatube.app.domain.model.Movie
 import com.filmatube.app.domain.model.SubtitleStyle
 import com.filmatube.app.domain.repository.MovieRepository
+import com.filmatube.app.data.analytics.CrashReporter
 import com.filmatube.app.domain.util.AppError
 import com.filmatube.app.domain.util.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -60,6 +61,7 @@ class PlayerViewModel @Inject constructor(
     private val downloadRepository: DownloadRepository,
     private val feedRepository: FeedRepository,
     private val analytics: PlaybackAnalytics,
+    private val crashReporter: CrashReporter,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -256,7 +258,10 @@ class PlayerViewModel @Inject constructor(
                     }
                     _uiState.value = PlayerUiState.Ready
                 }
-                .onFailure { _uiState.value = PlayerUiState.Error(it.toAppError()) }
+                .onFailure {
+                    crashReporter.recordNonFatal(it, "player load failed movieId=$movieId")
+                    _uiState.value = PlayerUiState.Error(it.toAppError())
+                }
         }
     }
 

@@ -3,6 +3,7 @@ package com.filmatube.app.data.playback
 import com.filmatube.app.BuildConfig
 import com.filmatube.app.di.IoDispatcher
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.perf.FirebasePerformance
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -37,10 +38,18 @@ class PlaybackRepository @Inject constructor(
             .get()
             .build()
 
-        okHttpClient.newCall(request).execute().use { response ->
-            val body = response.body?.string().orEmpty()
-            check(response.isSuccessful) { "Stream request failed (${response.code})" }
-            json.decodeFromString<StreamResponse>(body).url
+        // Custom Performance trace: presign + network latency for playback start.
+        val trace = FirebasePerformance.getInstance().newTrace("stream_url_resolve")
+        trace.start()
+        try {
+            okHttpClient.newCall(request).execute().use { response ->
+                trace.putMetric("http_code", response.code.toLong())
+                val body = response.body?.string().orEmpty()
+                check(response.isSuccessful) { "Stream request failed (${response.code})" }
+                json.decodeFromString<StreamResponse>(body).url
+            }
+        } finally {
+            trace.stop()
         }
     }
 }
