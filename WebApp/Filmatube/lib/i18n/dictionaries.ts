@@ -212,15 +212,163 @@ const en = {
   },
   legal: {
     backHome: "Back to home",
-    updated: "Last updated",
-    privacyTitle: "Privacy Policy",
-    privacyIntro:
-      "This is a placeholder Privacy Policy for Filmatube. It explains, in plain terms, what data we collect (your account, viewing activity and preferences), why we collect it (to run the service and personalize your experience), and your choices. A full policy will be published before general availability.",
-    privacyContact: "Questions about your data? Email privacy@filmatube.app.",
-    termsTitle: "Terms of Service",
-    termsIntro:
-      "This is a placeholder Terms of Service for Filmatube. By using the app you agree to use it lawfully, respect other members, and not misuse the content or platform. Full terms will be published before general availability.",
-    termsContact: "Questions about these terms? Email legal@filmatube.app.",
+    updatedLabel: "Last updated",
+    privacy: {
+      title: "Privacy Policy",
+      subtitle: "How we collect, use, and protect your data.",
+      updated: "July 13, 2026",
+      sections: [
+        {
+          heading: "Overview",
+          body: [
+            'Filmatube ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use the Filmatube website and mobile applications.',
+          ],
+        },
+        {
+          heading: "Information We Collect",
+          body: [
+            "Account information: When you register, we collect your email address, display name, and profile picture (optional). If you sign in with Google, we receive your name and profile photo from Google.",
+            "Usage data: We collect information about the movies you watch, your watch progress, watchlists and collections, the ratings, reviews and reactions you leave, and the people you follow. This data powers your recommendations and social feed.",
+            "Device information: We collect your device type, operating system version, app version, and a unique device identifier to deliver a consistent experience and diagnose issues.",
+          ],
+        },
+        {
+          heading: "How We Use Your Information",
+          body: [
+            "To operate and improve Filmatube, including personalized movie recommendations, taste-matching, and social features.",
+            "To send push notifications about new releases, activity from people you follow, recommendations, and showtimes — only if you have enabled notifications.",
+            "To analyze aggregate usage trends, monitor performance, and keep the service secure. We do not sell your individual data to third parties.",
+          ],
+        },
+        {
+          heading: "Data Storage & Security",
+          body: [
+            "Your account and activity data are stored on Google Firebase (Cloud Firestore and Firebase Authentication). Media files — video, images and subtitles — are stored on Cloudflare R2 and served over encrypted connections.",
+            "Data is encrypted in transit and at rest. We apply Firestore Security Rules so that you can only access your own data unless you explicitly make it public (for example, a public review or collection).",
+          ],
+        },
+        {
+          heading: "Third-Party Services",
+          body: [
+            "Firebase (Google) — authentication, database, cloud messaging, analytics and crash reporting.",
+            "Cloudflare R2 — video, image and subtitle storage and delivery.",
+            "The Movie Database (TMDB) — movie metadata such as titles, synopses and artwork.",
+            "Payment processor — if you purchase a subscription, billing is handled by our payment provider; we do not store your full card details.",
+            "We do not use advertising networks or sell your personal data.",
+          ],
+        },
+        {
+          heading: "Your Rights",
+          body: [
+            "Access & portability: You may request a copy of your personal data by contacting us.",
+            "Deletion: You can delete your account from the app settings. This removes your personal data from our servers within 30 days, except where we must retain limited records to comply with the law.",
+            "Correction: You can update your profile information at any time from within the app.",
+          ],
+        },
+        {
+          heading: "Children's Privacy",
+          body: [
+            "Filmatube is not directed at children under the age of 13. We do not knowingly collect personal information from children under 13. If you believe a child has provided us with their information, please contact us and we will remove it.",
+          ],
+        },
+        {
+          heading: "Changes to This Policy",
+          body: [
+            "We may update this Privacy Policy from time to time. We will notify you of material changes via an in-app banner or notification. Continued use of Filmatube after changes are posted constitutes acceptance of the updated policy.",
+          ],
+        },
+        {
+          heading: "Contact",
+          body: ["For privacy-related questions or data requests, contact us at privacy@filmatube.app."],
+        },
+      ],
+    },
+    terms: {
+      title: "Terms of Service",
+      subtitle: "Rules for using Filmatube fairly and safely.",
+      updated: "July 13, 2026",
+      sections: [
+        {
+          heading: "Acceptance of Terms",
+          body: [
+            "By accessing or using Filmatube, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the service.",
+          ],
+        },
+        {
+          heading: "Eligibility",
+          body: [
+            "You must be at least 13 years old to use Filmatube. By using the service you represent that you meet this requirement. Users between 13 and 18 must have the consent of a parent or legal guardian.",
+          ],
+        },
+        {
+          heading: "Your Account",
+          body: [
+            "You are responsible for maintaining the security of your account credentials and must not share your password.",
+            "You are responsible for all activity that occurs under your account. Notify us immediately if you suspect unauthorized access.",
+            "We reserve the right to suspend or terminate accounts that violate these Terms.",
+          ],
+        },
+        {
+          heading: "Acceptable Use",
+          body: [
+            "You may use Filmatube only for lawful purposes and in accordance with these Terms.",
+            "You may not post or share content that infringes intellectual-property rights, contains hate speech, harassment, or unlawful material, or that includes spoilers posted in bad faith to harm other members' experience.",
+            "You may not attempt to reverse-engineer, scrape, redistribute, or extract media or data from Filmatube beyond normal personal use.",
+            "Automated access, bots, or scripts that place undue load on our infrastructure, and any attempt to circumvent playback or download protections, are strictly prohibited.",
+          ],
+        },
+        {
+          heading: "Content & Intellectual Property",
+          body: [
+            "Movies available on Filmatube are licensed by us or provided by rights holders. We do not grant you any ownership of this content; your access is a limited, personal, non-transferable licence to stream and, where offered, download for offline viewing.",
+            "User-generated content — reviews, comments, ratings, collections and profile details — remains yours. By submitting it, you grant Filmatube a non-exclusive, worldwide licence to host and display it within the service.",
+            "The Filmatube name, logo, and application are our intellectual property and may not be reproduced without permission.",
+          ],
+        },
+        {
+          heading: "Showtimes & Watch Parties",
+          body: [
+            "Showtimes and watch parties are scheduled, synchronized viewing sessions. By joining, you agree to follow the host's controls and our community guidelines. Do not use these features to share content in violation of its licence, or to harass other participants.",
+          ],
+        },
+        {
+          heading: "Downloads & Offline Viewing",
+          body: [
+            "Where offered, downloads are provided for your personal offline viewing only and are stored encrypted on your device. Downloaded titles may expire or be removed when their licence changes. You may not copy, share, or attempt to decrypt downloaded files.",
+          ],
+        },
+        {
+          heading: "Subscriptions & Payments",
+          body: [
+            "Some content or features may require a paid subscription. Prices and inclusions are shown before purchase. Billing is handled by our payment provider, and subscriptions renew unless cancelled before the renewal date. Except where required by law, payments are non-refundable.",
+          ],
+        },
+        {
+          heading: "Disclaimers",
+          body: [
+            'Filmatube is provided "as is" and "as available" without warranties of any kind, express or implied.',
+            "We do not guarantee that the service will be uninterrupted, error-free, or secure, or that specific titles will remain available.",
+            "Content availability may change without notice due to licensing.",
+          ],
+        },
+        {
+          heading: "Limitation of Liability",
+          body: [
+            "To the fullest extent permitted by law, Filmatube shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the service, even if advised of the possibility of such damages.",
+          ],
+        },
+        {
+          heading: "Changes to Terms",
+          body: [
+            "We may revise these Terms at any time. We will notify you of significant changes via an in-app message or notification. Your continued use of Filmatube after the effective date constitutes acceptance of the new Terms.",
+          ],
+        },
+        {
+          heading: "Contact",
+          body: ["Questions about these Terms? Contact us at legal@filmatube.app."],
+        },
+      ],
+    },
   },
   watch: {
     title: "The web player is coming",
@@ -715,15 +863,163 @@ const fr: Dictionary = {
   },
   legal: {
     backHome: "Retour à l'accueil",
-    updated: "Dernière mise à jour",
-    privacyTitle: "Politique de confidentialité",
-    privacyIntro:
-      "Ceci est une politique de confidentialité provisoire pour Filmatube. Elle explique simplement quelles données nous collectons (votre compte, votre activité de visionnage et vos préférences), pourquoi (pour faire fonctionner le service et personnaliser votre expérience) et vos choix. Une politique complète sera publiée avant la disponibilité générale.",
-    privacyContact: "Des questions sur vos données ? Écrivez à privacy@filmatube.app.",
-    termsTitle: "Conditions d'utilisation",
-    termsIntro:
-      "Ceci est une version provisoire des conditions d'utilisation de Filmatube. En utilisant l'application, vous acceptez de l'utiliser légalement, de respecter les autres membres et de ne pas détourner le contenu ou la plateforme. Les conditions complètes seront publiées avant la disponibilité générale.",
-    termsContact: "Des questions sur ces conditions ? Écrivez à legal@filmatube.app.",
+    updatedLabel: "Dernière mise à jour",
+    privacy: {
+      title: "Politique de confidentialité",
+      subtitle: "Comment nous collectons, utilisons et protégeons vos données.",
+      updated: "13 juillet 2026",
+      sections: [
+        {
+          heading: "Aperçu",
+          body: [
+            "Filmatube (« nous », « notre » ou « nos ») s'engage à protéger votre vie privée. La présente politique de confidentialité explique comment nous collectons, utilisons et protégeons vos informations lorsque vous utilisez le site web et les applications mobiles Filmatube.",
+          ],
+        },
+        {
+          heading: "Informations que nous collectons",
+          body: [
+            "Informations de compte : lors de votre inscription, nous collectons votre adresse e-mail, votre nom d'affichage et votre photo de profil (facultative). Si vous vous connectez avec Google, nous recevons votre nom et votre photo de profil de Google.",
+            "Données d'utilisation : nous collectons des informations sur les films que vous regardez, votre progression, vos listes et collections, les notes, avis et réactions que vous laissez, ainsi que les personnes que vous suivez. Ces données alimentent vos recommandations et votre fil social.",
+            "Informations sur l'appareil : nous collectons le type d'appareil, la version du système d'exploitation, la version de l'application et un identifiant unique afin d'offrir une expérience cohérente et de diagnostiquer les problèmes.",
+          ],
+        },
+        {
+          heading: "Comment nous utilisons vos informations",
+          body: [
+            "Pour exploiter et améliorer Filmatube, y compris les recommandations personnalisées, l'affinité de goûts et les fonctions sociales.",
+            "Pour envoyer des notifications push concernant les nouveautés, l'activité des personnes que vous suivez, les recommandations et les séances — uniquement si vous avez activé les notifications.",
+            "Pour analyser les tendances d'utilisation agrégées, surveiller les performances et sécuriser le service. Nous ne vendons pas vos données individuelles à des tiers.",
+          ],
+        },
+        {
+          heading: "Stockage et sécurité des données",
+          body: [
+            "Vos données de compte et d'activité sont stockées sur Google Firebase (Cloud Firestore et Firebase Authentication). Les fichiers multimédias — vidéos, images et sous-titres — sont stockés sur Cloudflare R2 et diffusés via des connexions chiffrées.",
+            "Les données sont chiffrées en transit et au repos. Nous appliquons des règles de sécurité Firestore afin que vous ne puissiez accéder qu'à vos propres données, sauf si vous les rendez explicitement publiques (par exemple un avis ou une collection publique).",
+          ],
+        },
+        {
+          heading: "Services tiers",
+          body: [
+            "Firebase (Google) — authentification, base de données, messagerie, analytique et rapports de plantage.",
+            "Cloudflare R2 — stockage et diffusion des vidéos, images et sous-titres.",
+            "The Movie Database (TMDB) — métadonnées de films telles que titres, synopsis et visuels.",
+            "Prestataire de paiement — si vous souscrivez un abonnement, la facturation est gérée par notre prestataire de paiement ; nous ne stockons pas l'intégralité de vos données de carte.",
+            "Nous n'utilisons pas de réseaux publicitaires et ne vendons pas vos données personnelles.",
+          ],
+        },
+        {
+          heading: "Vos droits",
+          body: [
+            "Accès et portabilité : vous pouvez demander une copie de vos données personnelles en nous contactant.",
+            "Suppression : vous pouvez supprimer votre compte dans les paramètres de l'application. Cela supprime vos données personnelles de nos serveurs sous 30 jours, sauf lorsque nous devons conserver des enregistrements limités pour respecter la loi.",
+            "Rectification : vous pouvez mettre à jour les informations de votre profil à tout moment depuis l'application.",
+          ],
+        },
+        {
+          heading: "Confidentialité des mineurs",
+          body: [
+            "Filmatube ne s'adresse pas aux enfants de moins de 13 ans. Nous ne collectons pas sciemment d'informations personnelles auprès d'enfants de moins de 13 ans. Si vous pensez qu'un enfant nous a communiqué ses informations, contactez-nous et nous les supprimerons.",
+          ],
+        },
+        {
+          heading: "Modifications de cette politique",
+          body: [
+            "Nous pouvons mettre à jour cette politique de confidentialité de temps à autre. Nous vous informerons de tout changement important via une bannière ou une notification dans l'application. Toute utilisation continue de Filmatube après la publication des modifications vaut acceptation de la politique mise à jour.",
+          ],
+        },
+        {
+          heading: "Contact",
+          body: ["Pour toute question relative à la confidentialité ou à vos données, contactez-nous à privacy@filmatube.app."],
+        },
+      ],
+    },
+    terms: {
+      title: "Conditions d'utilisation",
+      subtitle: "Les règles pour utiliser Filmatube de façon équitable et sûre.",
+      updated: "13 juillet 2026",
+      sections: [
+        {
+          heading: "Acceptation des conditions",
+          body: [
+            "En accédant à Filmatube ou en l'utilisant, vous acceptez d'être lié par les présentes conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser le service.",
+          ],
+        },
+        {
+          heading: "Admissibilité",
+          body: [
+            "Vous devez avoir au moins 13 ans pour utiliser Filmatube. En utilisant le service, vous déclarez remplir cette condition. Les utilisateurs âgés de 13 à 18 ans doivent avoir le consentement d'un parent ou tuteur légal.",
+          ],
+        },
+        {
+          heading: "Votre compte",
+          body: [
+            "Vous êtes responsable de la sécurité de vos identifiants et ne devez pas partager votre mot de passe.",
+            "Vous êtes responsable de toute activité effectuée sous votre compte. Prévenez-nous immédiatement en cas de suspicion d'accès non autorisé.",
+            "Nous nous réservons le droit de suspendre ou de résilier les comptes qui enfreignent les présentes conditions.",
+          ],
+        },
+        {
+          heading: "Utilisation acceptable",
+          body: [
+            "Vous ne pouvez utiliser Filmatube qu'à des fins licites et conformément aux présentes conditions.",
+            "Vous ne pouvez pas publier ou partager de contenu portant atteinte aux droits de propriété intellectuelle, contenant des propos haineux, du harcèlement ou du contenu illégal, ni des spoilers publiés de mauvaise foi pour nuire à l'expérience des autres membres.",
+            "Vous ne pouvez pas tenter de faire de l'ingénierie inverse, d'extraire, de redistribuer ou d'aspirer des médias ou des données de Filmatube au-delà d'un usage personnel normal.",
+            "L'accès automatisé, les robots ou scripts qui surchargent notre infrastructure, ainsi que toute tentative de contourner les protections de lecture ou de téléchargement, sont strictement interdits.",
+          ],
+        },
+        {
+          heading: "Contenu et propriété intellectuelle",
+          body: [
+            "Les films disponibles sur Filmatube sont sous licence ou fournis par les ayants droit. Nous ne vous accordons aucune propriété sur ce contenu ; votre accès est une licence limitée, personnelle et non transférable de diffusion en continu et, lorsque cela est proposé, de téléchargement pour un visionnage hors ligne.",
+            "Le contenu généré par l'utilisateur — avis, commentaires, notes, collections et informations de profil — vous appartient. En le soumettant, vous accordez à Filmatube une licence non exclusive et mondiale pour l'héberger et l'afficher au sein du service.",
+            "Le nom, le logo et l'application Filmatube sont notre propriété intellectuelle et ne peuvent être reproduits sans autorisation.",
+          ],
+        },
+        {
+          heading: "Séances et soirées cinéma",
+          body: [
+            "Les séances et soirées cinéma sont des sessions de visionnage programmées et synchronisées. En y participant, vous acceptez de suivre les commandes de l'hôte et nos règles de communauté. N'utilisez pas ces fonctions pour partager du contenu en violation de sa licence ni pour harceler les autres participants.",
+          ],
+        },
+        {
+          heading: "Téléchargements et visionnage hors ligne",
+          body: [
+            "Lorsqu'ils sont proposés, les téléchargements sont destinés à votre seul visionnage hors ligne personnel et sont stockés chiffrés sur votre appareil. Les titres téléchargés peuvent expirer ou être retirés en cas de changement de licence. Vous ne pouvez pas copier, partager ou tenter de déchiffrer les fichiers téléchargés.",
+          ],
+        },
+        {
+          heading: "Abonnements et paiements",
+          body: [
+            "Certains contenus ou fonctions peuvent nécessiter un abonnement payant. Les prix et les inclusions sont indiqués avant l'achat. La facturation est gérée par notre prestataire de paiement, et les abonnements se renouvellent sauf annulation avant la date de renouvellement. Sauf disposition légale contraire, les paiements ne sont pas remboursables.",
+          ],
+        },
+        {
+          heading: "Avertissements",
+          body: [
+            "Filmatube est fourni « tel quel » et « selon disponibilité », sans garantie d'aucune sorte, expresse ou implicite.",
+            "Nous ne garantissons pas que le service sera ininterrompu, exempt d'erreurs ou sécurisé, ni que des titres précis resteront disponibles.",
+            "La disponibilité du contenu peut changer sans préavis en raison des licences.",
+          ],
+        },
+        {
+          heading: "Limitation de responsabilité",
+          body: [
+            "Dans toute la mesure permise par la loi, Filmatube ne saurait être tenu responsable des dommages indirects, accessoires, spéciaux ou consécutifs résultant de votre utilisation du service, même si nous avons été informés de la possibilité de tels dommages.",
+          ],
+        },
+        {
+          heading: "Modifications des conditions",
+          body: [
+            "Nous pouvons réviser les présentes conditions à tout moment. Nous vous informerons de tout changement important via un message ou une notification dans l'application. Toute utilisation continue de Filmatube après la date d'entrée en vigueur vaut acceptation des nouvelles conditions.",
+          ],
+        },
+        {
+          heading: "Contact",
+          body: ["Des questions sur ces conditions ? Contactez-nous à legal@filmatube.app."],
+        },
+      ],
+    },
   },
   watch: {
     title: "Le lecteur web arrive",
