@@ -10,8 +10,8 @@ import {
 import { auth } from "@/lib/firebase";
 
 /** POST the ID token to create the httpOnly session cookie (also ensures the user doc). */
-async function postSession(user: User): Promise<void> {
-  const idToken = await user.getIdToken();
+async function postSession(user: User, forceRefresh = false): Promise<void> {
+  const idToken = await user.getIdToken(forceRefresh);
   const res = await fetch("/api/auth/session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -28,7 +28,9 @@ export async function signInWithEmail(email: string, password: string): Promise<
 export async function registerWithEmail(name: string, email: string, password: string): Promise<void> {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   await updateProfile(cred.user, { displayName: name });
-  await postSession(cred.user);
+  // Force a token refresh so the ID token carries the just-set displayName —
+  // otherwise the server provisions the user doc with the email prefix.
+  await postSession(cred.user, true);
 }
 
 export async function signInWithGoogle(): Promise<void> {

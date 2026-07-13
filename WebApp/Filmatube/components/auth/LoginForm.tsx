@@ -14,7 +14,12 @@ import { GoogleButton } from "./GoogleButton";
 
 export function LoginForm({ dict }: { dict: Dictionary["auth"] }) {
   const router = useRouter();
-  const next = useSearchParams().get("next") || "/home";
+  const nextParam = useSearchParams().get("next");
+  // Only allow internal paths — blocks open redirects (//evil.com, /\evil.com, https://…).
+  const next =
+    nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//") && !nextParam.includes("\\")
+      ? nextParam
+      : "/home";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
