@@ -45,6 +45,10 @@ class ReviewRepository @Inject constructor(
     private val notificationRepository: NotificationRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
+    private companion object {
+        const val MAX_REVIEWS = 100L
+    }
+
     private fun items(movieId: String) =
         firestore.collection("reviews").document(movieId).collection("items")
 
@@ -53,6 +57,7 @@ class ReviewRepository @Inject constructor(
         val uid = auth.currentUser?.uid
         val registration = items(movieId)
             .orderBy("createdAt", Query.Direction.DESCENDING)
+            .limit(MAX_REVIEWS)
             .addSnapshotListener { snap, _ ->
                 val docs = snap?.documents ?: emptyList()
                 launch {

@@ -210,7 +210,7 @@
 ## PHASE 9 — Hardening, Beta & Launch (Days 113–126)
 
 ### Week 17 — Android Hardening & Testing (Days 113–119) (A)
-- **Day 113** — Firestore query optimization + composite indexes (Android paths); pagination audit.
+- **Day 113** ✅ — Firestore query optimization + composite indexes (Android paths); pagination audit.
 - **Day 114** — Image/caching audit (Coil); memory/leak audit; APK size; cold-start.
 - **Day 115** — Crashlytics + Performance review; fix top issues.
 - **Day 116** — Unit tests (ViewModels/repos) + critical UI/E2E flows; CI gating.

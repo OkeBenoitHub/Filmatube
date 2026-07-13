@@ -45,6 +45,10 @@ class CommentRepository @Inject constructor(
     private val notificationRepository: NotificationRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
+    private companion object {
+        const val MAX_COMMENTS = 200L
+    }
+
     private fun items(movieId: String) =
         firestore.collection("comments").document(movieId).collection("items")
 
@@ -53,6 +57,7 @@ class CommentRepository @Inject constructor(
         val uid = auth.currentUser?.uid
         val registration = items(movieId)
             .orderBy("createdAt", Query.Direction.ASCENDING)
+            .limit(MAX_COMMENTS)
             .addSnapshotListener { snap, _ ->
                 val docs = snap?.documents ?: emptyList()
                 launch {
