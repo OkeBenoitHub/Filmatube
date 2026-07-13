@@ -29,7 +29,8 @@ android {
             buildConfigField("String", "WEB_API_BASE_URL", "\"http://10.0.2.2:3000\"")
         }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",

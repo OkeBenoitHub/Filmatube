@@ -3,9 +3,9 @@ package com.filmatube.app
 import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
+import coil.disk.DiskCache
+import coil.memory.MemoryCache
 import com.google.firebase.appcheck.FirebaseAppCheck
-import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
-import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.filmatube.app.data.notifications.FilmatubeNotificationChannels
 import dagger.hilt.android.HiltAndroidApp
@@ -32,16 +32,26 @@ class FilmatubeApp : Application(), ImageLoaderFactory {
     private fun initAppCheck() {
         val appCheck = FirebaseAppCheck.getInstance()
         appCheck.setTokenAutoRefreshEnabled(true)
-        val factory = if (BuildConfig.DEBUG) {
-            DebugAppCheckProviderFactory.getInstance()
-        } else {
-            PlayIntegrityAppCheckProviderFactory.getInstance()
-        }
-        appCheck.installAppCheckProviderFactory(factory)
+        // Provider factory is variant-specific: debug provider (src/debug) vs
+        // Play Integrity (src/release). Keeps the debug provider out of release builds.
+        appCheck.installAppCheckProviderFactory(appCheckProviderFactory())
     }
 
     override fun newImageLoader(): ImageLoader =
         ImageLoader.Builder(this)
             .crossfade(true)
+            // Posters/backdrops are immutable per URL → cache aggressively across sessions.
+            .memoryCache {
+                MemoryCache.Builder(this)
+                    .maxSizePercent(0.25) // up to 25% of app RAM for decoded bitmaps
+                    .build()
+            }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(cacheDir.resolve("image_cache"))
+                    .maxSizeBytes(256L * 1024 * 1024) // 256 MB on-disk
+                    .build()
+            }
+            .respectCacheHeaders(false) // R2/CDN images are content-addressed; ignore no-cache
             .build()
 }
