@@ -12,7 +12,7 @@ export function AuthShell({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center px-6 py-12">
+    <div className="flex w-full flex-1 items-center justify-center px-6 py-16">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-3 text-center">
           <Wordmark />

@@ -23,9 +23,8 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { Wordmark } from "@/components/Wordmark";
 import { LandingFooter } from "@/components/landing/LandingFooter";
+import { LandingHeader } from "@/components/landing/LandingHeader";
 import { getDict } from "@/lib/i18n/server";
 import { cn } from "@/lib/utils";
 
@@ -64,43 +63,9 @@ export default async function LandingPage() {
 
   const faqs = [t.faq.q1, t.faq.q2, t.faq.q3, t.faq.q4, t.faq.q5, t.faq.q6];
 
-  const navLinks = [
-    { href: "#features", label: t.navFeatures },
-    { href: "#how", label: t.navHow },
-    { href: "#faq", label: t.navFaq },
-    { href: "#download", label: t.navDownload },
-  ];
-
   return (
     <div className="flex min-h-screen flex-col bg-surface">
-      {/* ── Header ─────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-surface-border/60 bg-surface/80 backdrop-blur">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
-          <Wordmark />
-          <nav className="hidden items-center gap-7 md:flex">
-            {navLinks.map((link) => (
-              <a key={link.href} href={link.href} className="text-sm font-medium text-ink-muted transition-colors hover:text-ink">
-                {link.label}
-              </a>
-            ))}
-          </nav>
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
-            <Link
-              href="/login"
-              className="hidden h-9 items-center rounded-lg px-3 text-sm font-medium text-ink-muted transition-colors hover:text-ink sm:inline-flex"
-            >
-              {dict.common.signIn}
-            </Link>
-            <Link
-              href="/home"
-              className="inline-flex h-9 items-center rounded-lg bg-brand-500 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
-            >
-              {t.openApp}
-            </Link>
-          </div>
-        </div>
-      </header>
+      <LandingHeader dict={dict} />
 
       <main className="flex-1">
         {/* ── Hero ─────────────────────────────────────────────── */}
