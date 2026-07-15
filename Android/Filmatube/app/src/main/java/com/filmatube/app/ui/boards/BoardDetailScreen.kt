@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -68,16 +69,21 @@ import com.filmatube.app.ui.theme.FilmatubeSpacing
 fun BoardDetailScreen(
     onBack: () -> Unit,
     onMovieClick: (String) -> Unit,
+    onOpenMembers: () -> Unit,
     viewModel: BoardDetailViewModel = hiltViewModel(),
 ) {
     val board by viewModel.board.collectAsStateWithLifecycle()
     val isMember by viewModel.isMember.collectAsStateWithLifecycle()
+    val amMuted by viewModel.amMuted.collectAsStateWithLifecycle()
     val invitedCount by viewModel.invitedCount.collectAsStateWithLifecycle()
     val messages by viewModel.messages.collectAsStateWithLifecycle()
     val typingNames by viewModel.typingNames.collectAsStateWithLifecycle()
     val draft by viewModel.draft.collectAsStateWithLifecycle()
     val spoiler by viewModel.spoiler.collectAsStateWithLifecycle()
     val replyingTo by viewModel.replyingTo.collectAsStateWithLifecycle()
+    val isOwner = viewModel.isOwner
+    val pinnedId = board?.pinnedMessageId.orEmpty()
+    val pinnedMessage = messages.firstOrNull { it.id == pinnedId }
     val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
     val revealed = remember { mutableStateMapOf<String, Boolean>() }
@@ -103,6 +109,11 @@ fun BoardDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.detail_back))
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onOpenMembers) {
+                        Icon(Icons.Filled.Groups, contentDescription = stringResource(R.string.board_members_title))
                     }
                 },
             )
@@ -205,6 +216,31 @@ fun BoardDetailScreen(
 
             HorizontalDivider()
 
+            // Pinned message banner
+            pinnedMessage?.let { pin ->
+                Surface(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = isOwner) { viewModel.pinMessage(pin) }
+                            .padding(horizontal = FilmatubeSpacing.lg, vertical = FilmatubeSpacing.sm),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm),
+                    ) {
+                        Icon(Icons.Filled.PushPin, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(stringResource(R.string.board_pinned), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                            Text(
+                                pin.text.ifBlank { pin.movieTitle },
+                                style = MaterialTheme.typography.bodySmall,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+                }
+            }
+
             // Messages
             if (messages.isEmpty()) {
                 Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -225,11 +261,15 @@ fun BoardDetailScreen(
                         MessageBubble(
                             message = msg,
                             myUid = viewModel.myUid,
+                            isOwner = isOwner,
+                            isPinned = msg.id == pinnedId,
                             revealed = revealed[msg.id] == true,
                             onReveal = { revealed[msg.id] = true },
                             onDelete = { viewModel.deleteMessage(msg) },
                             onReply = { viewModel.setReplyTo(msg) },
                             onReact = { emoji -> viewModel.toggleReaction(msg, emoji) },
+                            onPin = { viewModel.pinMessage(msg) },
+                            onReport = { viewModel.reportMessage(msg) },
                             onMovieClick = onMovieClick,
                         )
                     }
@@ -250,8 +290,15 @@ fun BoardDetailScreen(
                 )
             }
 
-            // Composer / join gate
-            if (isMember || viewModel.isOwner) {
+            // Composer / mute / join gate
+            if (amMuted) {
+                Text(
+                    stringResource(R.string.board_you_muted),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth().padding(FilmatubeSpacing.md),
+                )
+            } else if (isMember || isOwner) {
                 ChatComposer(
                     draft = draft,
                     spoiler = spoiler,
@@ -278,14 +325,19 @@ fun BoardDetailScreen(
 private fun MessageBubble(
     message: BoardMessage,
     myUid: String?,
+    isOwner: Boolean,
+    isPinned: Boolean,
     revealed: Boolean,
     onReveal: () -> Unit,
     onDelete: () -> Unit,
     onReply: () -> Unit,
     onReact: (String) -> Unit,
+    onPin: () -> Unit,
+    onReport: () -> Unit,
     onMovieClick: (String) -> Unit,
 ) {
     var pickerOpen by remember { mutableStateOf(false) }
+    var reported by remember { mutableStateOf(false) }
 
     Row(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {
         UserAvatar(url = message.userAvatar, name = message.userName, size = 32.dp)
@@ -418,6 +470,24 @@ private fun MessageBubble(
                         .clickable { pickerOpen = !pickerOpen }
                         .padding(vertical = 4.dp, horizontal = FilmatubeSpacing.sm),
                 )
+                if (isOwner) {
+                    Text(
+                        stringResource(if (isPinned) R.string.board_unpin else R.string.board_pin),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.clickable(onClick = onPin).padding(vertical = 4.dp, horizontal = 2.dp),
+                    )
+                }
+                if (!message.isMine) {
+                    Text(
+                        stringResource(if (reported) R.string.board_reported_msg else R.string.board_report_msg),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .clickable(enabled = !reported) { onReport(); reported = true }
+                            .padding(vertical = 4.dp, horizontal = FilmatubeSpacing.sm),
+                    )
+                }
             }
             if (pickerOpen) {
                 Row(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {

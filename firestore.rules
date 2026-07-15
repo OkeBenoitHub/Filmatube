@@ -182,15 +182,28 @@ service cloud.firestore {
             || (request.auth.uid in resource.data.memberIds && !(request.auth.uid in request.resource.data.memberIds))
           ));
 
-      // members + messages rules are added with join (Day 129) and chat (Day 130)
+      function isBoardOwner() {
+        return isSignedIn()
+          && get(/databases/$(database)/documents/boards/$(boardId)).data.ownerId == request.auth.uid;
+      }
+      function canPost() {
+        return exists(/databases/$(database)/documents/boards/$(boardId)/members/$(request.auth.uid))
+          && get(/databases/$(database)/documents/boards/$(boardId)/members/$(request.auth.uid)).data.get('muted', false) == false;
+      }
+
       match /members/{userId} {
         allow read: if isSignedIn();
-        allow write: if isSelf(userId) || isAdmin();
+        allow create: if isSelf(userId);
+        // Self can update/leave; the board owner (or admin) can mute/remove any member.
+        allow update, delete: if isSelf(userId) || isAdmin() || isBoardOwner();
       }
       match /messages/{messageId} {
         allow read: if isSignedIn();
-        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-        allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+        // Only non-muted members may post.
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid && canPost();
+        allow delete: if isAdmin()
+          || (isSignedIn() && resource.data.userId == request.auth.uid)
+          || isBoardOwner();
         // Author may edit their message; anyone signed-in may toggle a reaction (reactions map only).
         allow update: if isAdmin()
           || (isSignedIn() && resource.data.userId == request.auth.uid)

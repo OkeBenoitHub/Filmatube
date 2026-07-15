@@ -24,10 +24,13 @@ class BoardDetailViewModel @Inject constructor(
 
     private val boardId: String = savedStateHandle["boardId"] ?: ""
 
-    private val _board = MutableStateFlow<Board?>(null)
-    val board = _board.asStateFlow()
+    val board = boardRepository.observeBoard(boardId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     val isMember = boardRepository.observeMembership(boardId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    val amMuted = boardRepository.observeMyMuted(boardId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     val messages = boardRepository.observeMessages(boardId)
@@ -95,12 +98,8 @@ class BoardDetailViewModel @Inject constructor(
     private val _invitedCount = MutableStateFlow<Int?>(null)
     val invitedCount = _invitedCount.asStateFlow()
 
-    val isOwner get() = _board.value?.ownerId == boardRepository.myUid
+    val isOwner get() = board.value?.ownerId == boardRepository.myUid
     val myUid: String? get() = boardRepository.myUid
-
-    init {
-        viewModelScope.launch { _board.value = boardRepository.getBoard(boardId) }
-    }
 
     fun toggleMembership() {
         viewModelScope.launch {
@@ -109,7 +108,7 @@ class BoardDetailViewModel @Inject constructor(
     }
 
     fun invite() {
-        val title = _board.value?.title ?: return
+        val title = board.value?.title ?: return
         viewModelScope.launch {
             _invitedCount.value = boardRepository.inviteFollowers(boardId, title)
         }
@@ -117,5 +116,16 @@ class BoardDetailViewModel @Inject constructor(
 
     fun clearInvited() {
         _invitedCount.value = null
+    }
+
+    fun pinMessage(message: BoardMessage) {
+        val current = board.value?.pinnedMessageId
+        viewModelScope.launch {
+            boardRepository.pinMessage(boardId, if (current == message.id) "" else message.id)
+        }
+    }
+
+    fun reportMessage(message: BoardMessage) {
+        viewModelScope.launch { boardRepository.reportMessage(boardId, message.id, message.userId) }
     }
 }

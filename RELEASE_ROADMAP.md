@@ -238,7 +238,7 @@
 - **Day 129** ✅ — Join/leave; invite followers (FCM).
 - **Day 130** ✅ — Real-time board chat (Firestore listener); send/typing; spoiler tag.
 - **Day 131** ✅ — Emoji reactions; reply threads; share movie card into board.
-- **Day 132** — Member list + roles + moderation (mute/remove/pin); report message.
+- **Day 132** ✅ — Member list + roles + moderation (mute/remove/pin); report message.
 - **Day 133** — Board notifications + deep links; week review.
 
 ### Week 20 — Web Boards & Chat (Days 134–140) (W)

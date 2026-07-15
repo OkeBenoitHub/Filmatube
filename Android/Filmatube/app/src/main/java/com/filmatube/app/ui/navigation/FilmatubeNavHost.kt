@@ -13,6 +13,7 @@ import com.filmatube.app.ui.browse.BrowseScreen
 import com.filmatube.app.ui.boards.BoardDetailScreen
 import com.filmatube.app.ui.boards.BoardsScreen
 import com.filmatube.app.ui.boards.CreateBoardScreen
+import com.filmatube.app.ui.boards.MembersScreen
 import com.filmatube.app.ui.community.CommunityScreen
 import com.filmatube.app.ui.social.CommentsScreen
 import com.filmatube.app.ui.detail.ActorScreen
@@ -52,7 +53,9 @@ private const val ROUTE_COMMENTS = "comments/{movieId}"
 private const val ROUTE_BOARDS = "boards"
 private const val ROUTE_BOARD = "board/{boardId}"
 private const val ROUTE_CREATE_BOARD = "boards/create"
+private const val ROUTE_BOARD_MEMBERS = "board/{boardId}/members"
 fun boardRoute(boardId: String) = "board/$boardId"
+fun boardMembersRoute(boardId: String) = "board/$boardId/members"
 
 fun followsRoute(mode: String) = "follows/$mode"
 fun publicProfileRoute(userId: String) = "user/$userId"
@@ -256,10 +259,21 @@ fun FilmatubeNavHost(
         composable(
             route = ROUTE_BOARD,
             arguments = listOf(navArgument("boardId") { type = NavType.StringType }),
-        ) {
+        ) { entry ->
+            val boardId = entry.arguments?.getString("boardId").orEmpty()
             BoardDetailScreen(
                 onBack = { navController.popBackStack() },
                 onMovieClick = { navController.navigate(movieRoute(it)) },
+                onOpenMembers = { navController.navigate(boardMembersRoute(boardId)) },
+            )
+        }
+        composable(
+            route = ROUTE_BOARD_MEMBERS,
+            arguments = listOf(navArgument("boardId") { type = NavType.StringType }),
+        ) {
+            MembersScreen(
+                onBack = { navController.popBackStack() },
+                onUserClick = { navController.navigate(publicProfileRoute(it)) },
             )
         }
     }

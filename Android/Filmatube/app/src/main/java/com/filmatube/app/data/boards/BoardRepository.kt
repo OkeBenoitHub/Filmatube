@@ -59,6 +59,16 @@ data class Board(
     val ownerId: String,
     val memberCount: Int,
     val createdAtMs: Long,
+    val pinnedMessageId: String = "",
+)
+
+/** A member of a board. */
+data class BoardMember(
+    val uid: String,
+    val name: String,
+    val avatar: String,
+    val role: String,
+    val muted: Boolean,
 )
 
 /** Board discovery: featured + browse by type, reading public `boards`. */
@@ -340,6 +350,85 @@ class BoardRepository @Inject constructor(
         if (doc == null || !doc.exists()) null else doc.toBoard()
     }
 
+    /** Realtime board doc (so the pinned message updates live). */
+    fun observeBoard(id: String): Flow<Board?> = callbackFlow {
+        val registration = boards.document(id).addSnapshotListener { snap, _ ->
+            trySend(if (snap != null && snap.exists()) snap.toBoard() else null)
+        }
+        awaitClose { registration.remove() }
+    }
+
+    // ── members & moderation ──────────────────────────────────────────────
+    private fun members(boardId: String) = boards.document(boardId).collection("members")
+
+    fun observeMembers(boardId: String): Flow<List<BoardMember>> = callbackFlow {
+        val registration = members(boardId)
+            .addSnapshotListener { snap, _ ->
+                trySend(
+                    snap?.documents.orEmpty().map { d ->
+                        BoardMember(
+                            uid = d.id,
+                            name = d.getString("userName") ?: "",
+                            avatar = d.getString("userAvatar") ?: "",
+                            role = d.getString("role") ?: "member",
+                            muted = d.getBoolean("muted") ?: false,
+                        )
+                    }.sortedBy { if (it.role == "owner") 0 else 1 },
+                )
+            }
+        awaitClose { registration.remove() }
+    }
+
+    /** Whether the current user is muted in [boardId] (realtime). */
+    fun observeMyMuted(boardId: String): Flow<Boolean> = callbackFlow {
+        val uid = myUid
+        if (uid == null) {
+            trySend(false)
+            awaitClose { }
+            return@callbackFlow
+        }
+        val registration = members(boardId).document(uid)
+            .addSnapshotListener { snap, _ -> trySend(snap?.getBoolean("muted") == true) }
+        awaitClose { registration.remove() }
+    }
+
+    suspend fun setMuted(boardId: String, memberUid: String, muted: Boolean) = withContext(ioDispatcher) {
+        runCatching { members(boardId).document(memberUid).update("muted", muted).await() }
+    }
+
+    /** Owner removes a member: delete their member doc + drop them from the board. */
+    suspend fun removeMember(boardId: String, memberUid: String) = withContext(ioDispatcher) {
+        val board = boards.document(boardId)
+        val batch = firestore.batch()
+        batch.update(board, mapOf("memberIds" to FieldValue.arrayRemove(memberUid), "memberCount" to FieldValue.increment(-1)))
+        batch.delete(members(boardId).document(memberUid))
+        runCatching { batch.commit().await() }
+    }
+
+    /** Owner pins (or clears with "") a message on the board. */
+    suspend fun pinMessage(boardId: String, messageId: String) = withContext(ioDispatcher) {
+        runCatching { boards.document(boardId).update("pinnedMessageId", messageId).await() }
+    }
+
+    /** Report a message for moderation. */
+    suspend fun reportMessage(boardId: String, messageId: String, reportedUserId: String) = withContext(ioDispatcher) {
+        val uid = myUid ?: return@withContext
+        runCatching {
+            firestore.collection("reports").add(
+                mapOf(
+                    "type" to "board_message",
+                    "boardId" to boardId,
+                    "targetId" to messageId,
+                    "reportedUserId" to reportedUserId,
+                    "reporterId" to uid,
+                    "reason" to "",
+                    "status" to "pending",
+                    "createdAt" to FieldValue.serverTimestamp(),
+                ),
+            ).await()
+        }
+    }
+
     private fun com.google.firebase.firestore.DocumentSnapshot.toBoard(): Board = Board(
         id = id,
         title = getString("title") ?: "",
@@ -354,6 +443,7 @@ class BoardRepository @Inject constructor(
         ownerId = getString("ownerId") ?: "",
         memberCount = (getLong("memberCount") ?: 0L).toInt(),
         createdAtMs = getTimestamp("createdAt")?.toDate()?.time ?: 0L,
+        pinnedMessageId = getString("pinnedMessageId") ?: "",
     )
 
     private fun com.google.firebase.firestore.QuerySnapshot?.toBoards(): List<Board> =
