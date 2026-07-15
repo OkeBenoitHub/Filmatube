@@ -44,13 +44,11 @@ export function RecommendationInbox({ dict }: { dict: Dictionary["catalog"] }) {
   }, [user]);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 md:px-6">
-      <h1 className="text-2xl font-bold text-ink">{dict.inbox}</h1>
-
+    <div>
       {items.length === 0 ? (
         <p className="py-12 text-center text-ink-muted">{dict.inboxEmpty}</p>
       ) : (
-        <ul className="mt-6 space-y-3">
+        <ul className="space-y-3">
           {items.map((r) => (
             <li key={r.id} className="flex gap-3 rounded-xl border border-surface-border p-3">
               <UserAvatar name={r.fromName} url={r.fromAvatar} size={44} />

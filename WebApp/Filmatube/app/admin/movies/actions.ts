@@ -1,9 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { FieldValue } from "firebase-admin/firestore";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { CATALOG_TAG } from "@/lib/movies";
 import type { MovieFormValues } from "@/lib/admin/movie-form";
 
 async function assertAdmin() {
@@ -51,6 +52,7 @@ export async function upsertMovie(id: string | null, values: MovieFormValues): P
   if (id) {
     await db.collection("movies").doc(id).set(doc, { merge: true });
     revalidatePath("/admin/movies");
+  revalidateTag(CATALOG_TAG);
     return id;
   }
 
@@ -63,6 +65,7 @@ export async function upsertMovie(id: string | null, values: MovieFormValues): P
     addedAt: FieldValue.serverTimestamp(),
   });
   revalidatePath("/admin/movies");
+  revalidateTag(CATALOG_TAG);
   return ref.id;
 }
 
@@ -73,10 +76,12 @@ export async function setMovieStatus(id: string, status: "draft" | "published"):
     { merge: true },
   );
   revalidatePath("/admin/movies");
+  revalidateTag(CATALOG_TAG);
 }
 
 export async function deleteMovie(id: string): Promise<void> {
   await assertAdmin();
   await getAdminDb().collection("movies").doc(id).delete();
   revalidatePath("/admin/movies");
+  revalidateTag(CATALOG_TAG);
 }

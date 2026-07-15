@@ -46,7 +46,6 @@ export function NotificationPreferences({ dict }: { dict: Dictionary["catalog"] 
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-ink-muted">{dict.notifPrefsDesc}</p>
       <ul className="divide-y divide-surface-border rounded-xl border border-surface-border">
         {rows.map((r) => (
           <li key={r.key} className="flex items-center justify-between gap-4 px-4 py-3">
