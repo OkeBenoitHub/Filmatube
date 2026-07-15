@@ -1,5 +1,7 @@
+import { Compass } from "lucide-react";
 import { BrowseControls } from "@/components/catalog/BrowseControls";
 import { MovieCard } from "@/components/catalog/MovieCard";
+import { PageHero } from "@/components/ui/PageHero";
 import { getDict, getLocale } from "@/lib/i18n/server";
 import { getPublishedMovies, localized } from "@/lib/movies";
 
@@ -31,8 +33,10 @@ export default async function BrowsePage({
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 md:px-6">
-      <h1 className="text-2xl font-bold text-ink">{c.browse}</h1>
-      <BrowseControls dict={c} genres={dict.genres} years={years} />
+      <PageHero icon={Compass} eyebrow={c.requestsEyebrow} title={c.browse} subtitle={c.browseSubtitle} />
+      <div className="pt-4">
+        <BrowseControls dict={c} genres={dict.genres} years={years} />
+      </div>
       {list.length === 0 ? (
         <p className="py-16 text-center text-ink-muted">{c.empty}</p>
       ) : (
