@@ -1,7 +1,7 @@
 import "server-only";
 
 import { getAdminDb } from "@/lib/firebase-admin";
-import { getMovie, type CatalogMovie } from "@/lib/movies";
+import { getPublishedMovies, type CatalogMovie } from "@/lib/movies";
 
 export interface Collection {
   id: string;
@@ -45,15 +45,18 @@ export async function getCollection(
   if (!doc.exists) return null;
   const collection = mapCollection(doc.id, doc.data() ?? {});
 
-  const itemsSnap = await getAdminDb().collection("collections").doc(id).collection("items").limit(200).get();
-  const ordered = itemsSnap.docs
+  const [itemsSnap, catalog] = await Promise.all([
+    getAdminDb().collection("collections").doc(id).collection("items").limit(200).get(),
+    getPublishedMovies(),
+  ]);
+  const byId = new Map(catalog.map((m) => [m.id, m]));
+  const movies = itemsSnap.docs
     .map((d) => ({
       id: d.id,
       order: (d.get("order") as number) ?? (d.get("addedAt") as { toMillis?: () => number })?.toMillis?.() ?? 0,
     }))
-    .sort((a, b) => a.order - b.order);
-  const movies = (await Promise.all(ordered.map((o) => getMovie(o.id)))).filter(
-    (m): m is CatalogMovie => m !== null,
-  );
+    .sort((a, b) => a.order - b.order)
+    .map((o) => byId.get(o.id))
+    .filter((m): m is CatalogMovie => m !== undefined);
   return { collection, movies };
 }

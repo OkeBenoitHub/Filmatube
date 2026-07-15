@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Globe } from "lucide-react";
+import { Globe, LibraryBig } from "lucide-react";
 import { MovieCard } from "@/components/catalog/MovieCard";
 import { ContinueWatchingRow } from "@/components/catalog/ContinueWatchingRow";
 import { NewCollectionButton } from "@/components/collections/NewCollectionButton";
@@ -21,14 +21,20 @@ export default async function LibraryPage() {
   const c = dict.catalog;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 py-8">
-      <h1 className="px-4 text-2xl font-bold text-ink md:px-6">{c.myStuff}</h1>
+    <div className="mx-auto max-w-6xl space-y-10 py-8">
+      {/* Large left-aligned title with brand icon tile */}
+      <div className="flex items-center gap-4 px-4 md:px-6">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 shadow-lg shadow-brand-900/40">
+          <LibraryBig className="h-7 w-7 text-white" aria-hidden />
+        </div>
+        <h1 className="text-4xl font-extrabold tracking-tight text-ink md:text-5xl">{c.myStuff}</h1>
+      </div>
 
       <ContinueWatchingRow title={c.continueWatching} items={continueWatching} locale={locale} />
 
       {/* Collections */}
-      <section className="space-y-3 px-4 md:px-6">
-        <div className="flex items-center justify-between">
+      <section className="space-y-3">
+        <div className="flex items-center justify-between px-4 md:px-6">
           <h2 className="text-lg font-semibold text-ink">{c.collections}</h2>
           <div className="flex items-center gap-2">
             <NewCollectionButton label={c.newCollection} />
@@ -38,10 +44,10 @@ export default async function LibraryPage() {
           </div>
         </div>
         {collections.length > 0 && (
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {collections.slice(0, 8).map((col) => (
-              <Link key={col.id} href={`/collections/${col.id}`} className="w-40 shrink-0">
-                <div className="relative aspect-video overflow-hidden rounded-lg border border-surface-border bg-surface-hover">
+          <div className="flex gap-3 overflow-x-auto px-4 pb-2 md:px-6">
+            {collections.slice(0, 12).map((col) => (
+              <Link key={col.id} href={`/collections/${col.id}`} className="w-44 shrink-0">
+                <div className="relative aspect-video overflow-hidden rounded-xl border border-surface-border bg-surface-hover transition-colors hover:border-brand-700/60">
                   {col.coverUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={col.coverUrl} alt="" className="h-full w-full object-cover" />
@@ -60,14 +66,16 @@ export default async function LibraryPage() {
       </section>
 
       {/* Watch Later */}
-      <section className="space-y-3 px-4 md:px-6">
-        <h2 className="text-lg font-semibold text-ink">{c.watchLater}</h2>
+      <section className="space-y-3">
+        <h2 className="px-4 text-lg font-semibold text-ink md:px-6">{c.watchLater}</h2>
         {watchlist.length === 0 ? (
-          <p className="py-8 text-ink-muted">{c.libraryEmpty}</p>
+          <p className="px-4 py-8 text-ink-muted md:px-6">{c.libraryEmpty}</p>
         ) : (
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
+          <div className="flex gap-3 overflow-x-auto px-4 pb-2 md:px-6">
             {watchlist.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} locale={locale} />
+              <div key={movie.id} className="w-36 shrink-0">
+                <MovieCard movie={movie} locale={locale} />
+              </div>
             ))}
           </div>
         )}

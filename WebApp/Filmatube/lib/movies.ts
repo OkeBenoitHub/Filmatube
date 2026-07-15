@@ -1,7 +1,11 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
 import { getAdminDb } from "@/lib/firebase-admin";
 import type { Locale } from "@/lib/i18n/config";
+
+/** Cache tag for the movie catalog — admin mutations call revalidateTag(CATALOG_TAG). */
+export const CATALOG_TAG = "catalog";
 
 export interface CatalogCast {
   name: string;
@@ -85,10 +89,14 @@ function mapDoc(id: string, x: Record<string, unknown>): CatalogMovie {
  * their rows from in memory — index-safe (no composite indexes), mirroring the
  * Android repository's approach.
  */
-export async function getPublishedMovies(): Promise<CatalogMovie[]> {
-  const snap = await getAdminDb().collection("movies").where("status", "==", "published").limit(500).get();
-  return snap.docs.map((d) => mapDoc(d.id, d.data())).sort((a, b) => b.addedAtMs - a.addedAtMs);
-}
+export const getPublishedMovies = unstable_cache(
+  async (): Promise<CatalogMovie[]> => {
+    const snap = await getAdminDb().collection("movies").where("status", "==", "published").limit(500).get();
+    return snap.docs.map((d) => mapDoc(d.id, d.data())).sort((a, b) => b.addedAtMs - a.addedAtMs);
+  },
+  ["published-movies"],
+  { revalidate: 60, tags: [CATALOG_TAG] },
+);
 
 export interface ContinueWatchingItem {
   movie: CatalogMovie;
@@ -101,40 +109,39 @@ export interface ContinueWatchingItem {
  * progress syncs across platforms. Index-safe (orderBy updatedAt only).
  */
 export async function getContinueWatching(uid: string, limit = 12): Promise<ContinueWatchingItem[]> {
-  const snap = await getAdminDb()
-    .collection("watchProgress")
-    .doc(uid)
-    .collection("items")
-    .orderBy("updatedAt", "desc")
-    .limit(20)
-    .get();
+  const [snap, catalog] = await Promise.all([
+    getAdminDb().collection("watchProgress").doc(uid).collection("items").orderBy("updatedAt", "desc").limit(20).get(),
+    getPublishedMovies(),
+  ]);
+  const byId = new Map(catalog.map((m) => [m.id, m]));
 
-  const entries = snap.docs
+  return snap.docs
     .map((d) => ({
       movieId: (d.get("movieId") as string) ?? d.id,
       progress: (d.get("progress") as number) ?? 0,
       completed: (d.get("completed") as boolean) ?? false,
     }))
     .filter((e) => !e.completed)
-    .slice(0, limit);
-
-  const items = await Promise.all(
-    entries.map(async (e) => {
-      const movie = await getMovie(e.movieId);
+    .slice(0, limit)
+    .map((e) => {
+      const movie = byId.get(e.movieId);
       return movie ? { movie, progress: Number(e.progress) } : null;
-    }),
-  );
-  return items.filter((x): x is ContinueWatchingItem => x !== null);
+    })
+    .filter((x): x is ContinueWatchingItem => x !== null);
 }
 
 /** A single published movie, or null (draft/missing movies stay hidden). */
-export async function getMovie(id: string): Promise<CatalogMovie | null> {
-  const snap = await getAdminDb().collection("movies").doc(id).get();
-  if (!snap.exists) return null;
-  const data = snap.data() ?? {};
-  if (data.status !== "published") return null;
-  return mapDoc(snap.id, data);
-}
+export const getMovie = unstable_cache(
+  async (id: string): Promise<CatalogMovie | null> => {
+    const snap = await getAdminDb().collection("movies").doc(id).get();
+    if (!snap.exists) return null;
+    const data = snap.data() ?? {};
+    if (data.status !== "published") return null;
+    return mapDoc(snap.id, data);
+  },
+  ["movie"],
+  { revalidate: 60, tags: [CATALOG_TAG] },
+);
 
 // --- pure row selectors (operate on getPublishedMovies() output) ---
 
