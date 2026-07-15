@@ -17,6 +17,23 @@ export const metadata: Metadata = {
   description:
     "Stream movies, follow people who share your taste, and talk about it all in real time.",
   manifest: "/manifest.webmanifest",
+  applicationName: "Filmatube",
+  keywords: ["movies", "streaming", "social", "reviews", "watch together", "film"],
+  openGraph: {
+    type: "website",
+    siteName: "Filmatube",
+    title: "Filmatube — Watch. Share. Discuss.",
+    description:
+      "Stream movies, follow people who share your taste, and talk about it all in real time.",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Filmatube" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Filmatube — Watch. Share. Discuss.",
+    description:
+      "Stream movies, follow people who share your taste, and talk about it all in real time.",
+    images: ["/og.png"],
+  },
 };
 
 export const viewport: Viewport = {

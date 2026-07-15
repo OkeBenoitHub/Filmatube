@@ -222,10 +222,10 @@
 - **Day 120** ✅ — Web performance (code-split, image optimization, caching headers, Lighthouse).
 - **Day 121** ✅ — Security (web): App Check, session hardening, presign rate-limiting, R2 anti-hotlink/expiry audit.
 - **Day 122** ✅ — Web E2E tests + CI gating; Firestore rules final audit; cost review.
-- **Day 123** — Closed beta (Play Internal Testing + web preview); Crashlytics monitoring; feedback intake.
-- **Day 124** — Beta fixes; landing page final (hero/features/screenshots/store buttons), SEO/OG, privacy + terms.
-- **Day 125** — Play Store listing (icon, screenshots EN/FR, description, content rating, data-safety); Firebase Hosting deploy.
-- **Day 126** — **🚀 v1.0 LAUNCH**; production rules hardening; post-launch monitoring + retro.
+- **Day 123** — ⚠️ RE-SCOPED (Play Store dropped) — web preview beta + feedback intake; Android Crashlytics monitoring (sideloaded APK). Play Internal Testing N/A.
+- **Day 124** ✅ — Landing page final + SEO/OG (OG image, sitemap, robots) + privacy + terms. (Play "store buttons" dropped.)
+- **Day 125** — ⚠️ RE-SCOPED (Play Store dropped) — Play Store listing N/A. Only survivor = web hosting deploy → folded into Day 126.
+- **Day 126** — **🚀 v1.0 WEB LAUNCH**; hosting deploy; production rules hardening; post-launch monitoring + retro.
 
 ---
 
