@@ -42,7 +42,21 @@ class BoardDetailViewModel @Inject constructor(
     private val _spoiler = MutableStateFlow(false)
     val spoiler = _spoiler.asStateFlow()
 
+    private val _replyingTo = MutableStateFlow<BoardMessage?>(null)
+    val replyingTo = _replyingTo.asStateFlow()
+
     private var typingJob: Job? = null
+
+    fun setReplyTo(message: BoardMessage?) {
+        _replyingTo.value = message
+    }
+
+    fun toggleReaction(message: BoardMessage, emoji: String) {
+        val uid = boardRepository.myUid ?: return
+        viewModelScope.launch {
+            boardRepository.toggleReaction(boardId, message.id, emoji, message.reactions[uid])
+        }
+    }
 
     fun setDraft(v: String) {
         _draft.value = v
@@ -65,10 +79,12 @@ class BoardDetailViewModel @Inject constructor(
         val text = _draft.value.trim()
         if (text.isBlank()) return
         val spoiler = _spoiler.value
+        val replyTo = _replyingTo.value
         _draft.value = ""
         _spoiler.value = false
+        _replyingTo.value = null
         typingJob?.cancel()
-        viewModelScope.launch { boardRepository.sendMessage(boardId, text, spoiler) }
+        viewModelScope.launch { boardRepository.sendMessage(boardId, text, spoiler, replyTo) }
     }
 
     fun deleteMessage(message: BoardMessage) {
@@ -80,6 +96,7 @@ class BoardDetailViewModel @Inject constructor(
     val invitedCount = _invitedCount.asStateFlow()
 
     val isOwner get() = _board.value?.ownerId == boardRepository.myUid
+    val myUid: String? get() = boardRepository.myUid
 
     init {
         viewModelScope.launch { _board.value = boardRepository.getBoard(boardId) }

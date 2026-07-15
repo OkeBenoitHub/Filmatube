@@ -237,7 +237,7 @@
 - **Day 128** ✅ — Create board (title/desc/cover → R2, public/private); My Boards.
 - **Day 129** ✅ — Join/leave; invite followers (FCM).
 - **Day 130** ✅ — Real-time board chat (Firestore listener); send/typing; spoiler tag.
-- **Day 131** — Emoji reactions; reply threads; share movie card into board.
+- **Day 131** ✅ — Emoji reactions; reply threads; share movie card into board.
 - **Day 132** — Member list + roles + moderation (mute/remove/pin); report message.
 - **Day 133** — Board notifications + deep links; week review.
 

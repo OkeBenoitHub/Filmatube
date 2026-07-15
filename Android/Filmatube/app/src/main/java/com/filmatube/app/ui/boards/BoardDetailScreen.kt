@@ -38,9 +38,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -51,6 +54,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.filmatube.app.R
+import com.filmatube.app.data.boards.BOARD_REACTIONS
 import com.filmatube.app.data.boards.BoardMessage
 import com.filmatube.app.data.boards.BoardTypes
 import com.filmatube.app.ui.components.FilmatubePrimaryButton
@@ -63,6 +67,7 @@ import com.filmatube.app.ui.theme.FilmatubeSpacing
 @Composable
 fun BoardDetailScreen(
     onBack: () -> Unit,
+    onMovieClick: (String) -> Unit,
     viewModel: BoardDetailViewModel = hiltViewModel(),
 ) {
     val board by viewModel.board.collectAsStateWithLifecycle()
@@ -72,6 +77,7 @@ fun BoardDetailScreen(
     val typingNames by viewModel.typingNames.collectAsStateWithLifecycle()
     val draft by viewModel.draft.collectAsStateWithLifecycle()
     val spoiler by viewModel.spoiler.collectAsStateWithLifecycle()
+    val replyingTo by viewModel.replyingTo.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
     val revealed = remember { mutableStateMapOf<String, Boolean>() }
@@ -218,9 +224,13 @@ fun BoardDetailScreen(
                     items(messages, key = { it.id }) { msg ->
                         MessageBubble(
                             message = msg,
+                            myUid = viewModel.myUid,
                             revealed = revealed[msg.id] == true,
                             onReveal = { revealed[msg.id] = true },
                             onDelete = { viewModel.deleteMessage(msg) },
+                            onReply = { viewModel.setReplyTo(msg) },
+                            onReact = { emoji -> viewModel.toggleReaction(msg, emoji) },
+                            onMovieClick = onMovieClick,
                         )
                     }
                 }
@@ -245,6 +255,8 @@ fun BoardDetailScreen(
                 ChatComposer(
                     draft = draft,
                     spoiler = spoiler,
+                    replyingToName = replyingTo?.userName,
+                    onCancelReply = { viewModel.setReplyTo(null) },
                     onDraftChange = viewModel::setDraft,
                     onSpoilerChange = viewModel::setSpoiler,
                     onSend = viewModel::send,
@@ -265,10 +277,16 @@ fun BoardDetailScreen(
 @Composable
 private fun MessageBubble(
     message: BoardMessage,
+    myUid: String?,
     revealed: Boolean,
     onReveal: () -> Unit,
     onDelete: () -> Unit,
+    onReply: () -> Unit,
+    onReact: (String) -> Unit,
+    onMovieClick: (String) -> Unit,
 ) {
+    var pickerOpen by remember { mutableStateOf(false) }
+
     Row(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {
         UserAvatar(url = message.userAvatar, name = message.userName, size = 32.dp)
         Column(modifier = Modifier.weight(1f)) {
@@ -289,28 +307,130 @@ private fun MessageBubble(
                     )
                 }
             }
-            if (message.hasSpoiler && !revealed) {
+
+            // Reply quote
+            if (message.replyToName.isNotBlank()) {
                 Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    modifier = Modifier.clickable(onClick = onReveal),
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier.padding(vertical = 2.dp),
                 ) {
-                    Text(
-                        stringResource(R.string.reviews_spoiler_hidden),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    Column(modifier = Modifier.padding(horizontal = FilmatubeSpacing.sm, vertical = 4.dp)) {
+                        Text(message.replyToName, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                        Text(
+                            message.replyToText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+            }
+
+            // Movie card
+            if (message.movieId.isNotBlank()) {
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier.padding(top = 2.dp).clickable { onMovieClick(message.movieId) },
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm),
                         modifier = Modifier.padding(FilmatubeSpacing.sm),
-                    )
+                    ) {
+                        AsyncImage(
+                            model = message.moviePoster,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.size(width = 44.dp, height = 66.dp).clip(RoundedCornerShape(6.dp)),
+                        )
+                        Text(message.movieTitle, style = MaterialTheme.typography.titleSmall)
+                    }
                 }
-            } else {
-                if (message.hasSpoiler) {
-                    Text(
-                        stringResource(R.string.reviews_spoiler_chip),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.error,
-                    )
+            }
+
+            // Text (with spoiler gate)
+            if (message.text.isNotBlank()) {
+                if (message.hasSpoiler && !revealed) {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        modifier = Modifier.clickable(onClick = onReveal),
+                    ) {
+                        Text(
+                            stringResource(R.string.reviews_spoiler_hidden),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(FilmatubeSpacing.sm),
+                        )
+                    }
+                } else {
+                    if (message.hasSpoiler) {
+                        Text(
+                            stringResource(R.string.reviews_spoiler_chip),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                    Text(message.text, style = MaterialTheme.typography.bodyMedium)
                 }
-                Text(message.text, style = MaterialTheme.typography.bodyMedium)
+            }
+
+            // Reaction chips
+            val grouped = message.reactions.values.groupingBy { it }.eachCount()
+            if (grouped.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.padding(top = 2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xs),
+                ) {
+                    grouped.forEach { (emoji, count) ->
+                        val mine = myUid != null && message.reactions[myUid] == emoji
+                        Surface(
+                            shape = RoundedCornerShape(50),
+                            color = if (mine) MaterialTheme.colorScheme.primary.copy(alpha = 0.22f) else MaterialTheme.colorScheme.surfaceContainerHigh,
+                            modifier = Modifier.clickable { onReact(emoji) },
+                        ) {
+                            Text(
+                                "$emoji $count",
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Actions
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(R.string.board_reply),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.clickable(onClick = onReply).padding(vertical = 4.dp, horizontal = 2.dp),
+                )
+                Text(
+                    stringResource(R.string.board_react),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .clickable { pickerOpen = !pickerOpen }
+                        .padding(vertical = 4.dp, horizontal = FilmatubeSpacing.sm),
+                )
+            }
+            if (pickerOpen) {
+                Row(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {
+                    BOARD_REACTIONS.forEach { emoji ->
+                        Text(
+                            emoji,
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier
+                                .clickable { onReact(emoji); pickerOpen = false }
+                                .padding(4.dp),
+                        )
+                    }
+                }
             }
         }
     }
@@ -320,6 +440,8 @@ private fun MessageBubble(
 private fun ChatComposer(
     draft: String,
     spoiler: Boolean,
+    replyingToName: String?,
+    onCancelReply: () -> Unit,
     onDraftChange: (String) -> Unit,
     onSpoilerChange: (Boolean) -> Unit,
     onSend: () -> Unit,
@@ -329,6 +451,22 @@ private fun ChatComposer(
             modifier = Modifier.fillMaxWidth().padding(FilmatubeSpacing.sm),
             verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xs),
         ) {
+            if (replyingToName != null) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        stringResource(R.string.board_replying_to, replyingToName),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        stringResource(R.string.comments_cancel_reply),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.clickable(onClick = onCancelReply).padding(4.dp),
+                    )
+                }
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Switch(checked = spoiler, onCheckedChange = onSpoilerChange)
                 Text(

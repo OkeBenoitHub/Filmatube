@@ -23,6 +23,9 @@ object BoardTypes {
     const val GENERAL = "general"
 }
 
+/** Emoji available as message reactions. */
+val BOARD_REACTIONS = listOf("👍", "❤️", "😂", "😮", "😢", "🔥")
+
 /** A chat message in a board. */
 data class BoardMessage(
     val id: String,
@@ -33,6 +36,12 @@ data class BoardMessage(
     val hasSpoiler: Boolean,
     val createdAtMs: Long,
     val isMine: Boolean,
+    val reactions: Map<String, String> = emptyMap(), // uid -> emoji
+    val replyToName: String = "",
+    val replyToText: String = "",
+    val movieId: String = "",
+    val movieTitle: String = "",
+    val moviePoster: String = "",
 )
 
 /** A community board (discussion space). */
@@ -209,6 +218,8 @@ class BoardRepository @Inject constructor(
             .limit(limit)
             .addSnapshotListener { snap, _ ->
                 val list = snap?.documents?.map { d ->
+                    @Suppress("UNCHECKED_CAST")
+                    val reactions = (d.get("reactions") as? Map<String, String>) ?: emptyMap()
                     BoardMessage(
                         id = d.id,
                         userId = d.getString("userId") ?: "",
@@ -218,6 +229,12 @@ class BoardRepository @Inject constructor(
                         hasSpoiler = d.getBoolean("hasSpoiler") ?: false,
                         createdAtMs = d.getTimestamp("createdAt")?.toDate()?.time ?: 0L,
                         isMine = uid != null && d.getString("userId") == uid,
+                        reactions = reactions,
+                        replyToName = d.getString("replyToName") ?: "",
+                        replyToText = d.getString("replyToText") ?: "",
+                        movieId = d.getString("movieId") ?: "",
+                        movieTitle = d.getString("movieTitle") ?: "",
+                        moviePoster = d.getString("moviePoster") ?: "",
                     )
                 }?.reversed() ?: emptyList()
                 trySend(list)
@@ -225,24 +242,66 @@ class BoardRepository @Inject constructor(
         awaitClose { registration.remove() }
     }
 
-    suspend fun sendMessage(boardId: String, text: String, hasSpoiler: Boolean) = withContext(ioDispatcher) {
+    suspend fun sendMessage(
+        boardId: String,
+        text: String,
+        hasSpoiler: Boolean,
+        replyTo: BoardMessage? = null,
+    ) = withContext(ioDispatcher) {
         val uid = myUid ?: return@withContext
         if (text.isBlank()) return@withContext
         val me = runCatching { userRepository.getUser(uid) }.getOrNull()
-        runCatching {
-            messages(boardId).add(
-                mapOf(
-                    "userId" to uid,
-                    "userName" to (me?.displayName ?: ""),
-                    "userAvatar" to (me?.avatarUrl ?: ""),
-                    "text" to text.trim(),
-                    "hasSpoiler" to hasSpoiler,
-                    "createdAt" to FieldValue.serverTimestamp(),
-                ),
-            ).await()
+        val doc = buildMap<String, Any> {
+            put("userId", uid)
+            put("userName", me?.displayName ?: "")
+            put("userAvatar", me?.avatarUrl ?: "")
+            put("text", text.trim())
+            put("hasSpoiler", hasSpoiler)
+            put("createdAt", FieldValue.serverTimestamp())
+            if (replyTo != null) {
+                put("replyToName", replyTo.userName)
+                put("replyToText", replyTo.text.take(120))
+            }
         }
+        runCatching { messages(boardId).add(doc).await() }
         runCatching { typing(boardId).document(uid).delete().await() }
     }
+
+    /** Share a movie card into a board's chat. */
+    suspend fun postMovieCard(boardId: String, movieId: String, movieTitle: String, poster: String) =
+        withContext(ioDispatcher) {
+            val uid = myUid ?: return@withContext
+            val me = runCatching { userRepository.getUser(uid) }.getOrNull()
+            runCatching {
+                messages(boardId).add(
+                    mapOf(
+                        "userId" to uid,
+                        "userName" to (me?.displayName ?: ""),
+                        "userAvatar" to (me?.avatarUrl ?: ""),
+                        "text" to "",
+                        "hasSpoiler" to false,
+                        "movieId" to movieId,
+                        "movieTitle" to movieTitle,
+                        "moviePoster" to poster,
+                        "createdAt" to FieldValue.serverTimestamp(),
+                    ),
+                ).await()
+            }
+        }
+
+    /** Toggle the current user's emoji reaction on a message (reactions map keyed by uid). */
+    suspend fun toggleReaction(boardId: String, messageId: String, emoji: String, current: String?) =
+        withContext(ioDispatcher) {
+            val uid = myUid ?: return@withContext
+            val ref = messages(boardId).document(messageId)
+            runCatching {
+                if (current == emoji) {
+                    ref.update(mapOf("reactions.$uid" to FieldValue.delete())).await()
+                } else {
+                    ref.update(mapOf("reactions.$uid" to emoji)).await()
+                }
+            }
+        }
 
     suspend fun deleteMessage(boardId: String, messageId: String) = withContext(ioDispatcher) {
         runCatching { messages(boardId).document(messageId).delete().await() }

@@ -114,6 +114,11 @@
     <string name="board_typing_one">%1$s is typing…</string>
     <string name="board_typing_many">Several people are typing…</string>
     <string name="board_no_messages">No messages yet. Say hi!</string>
+    <string name="board_reply">Reply</string>
+    <string name="board_react">React</string>
+    <string name="board_replying_to">Replying to %1$s</string>
+    <string name="board_share_to">Share to a board</string>
+    <string name="board_shared">Shared to %1$s</string>
     <string name="recommend_title">Recommend to</string>
     <string name="recommend_message_hint">Add a message (optional)</string>
     <string name="recommend_send">Send</string>

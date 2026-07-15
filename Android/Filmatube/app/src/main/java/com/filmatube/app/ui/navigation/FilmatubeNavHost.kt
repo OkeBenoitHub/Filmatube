@@ -257,7 +257,10 @@ fun FilmatubeNavHost(
             route = ROUTE_BOARD,
             arguments = listOf(navArgument("boardId") { type = NavType.StringType }),
         ) {
-            BoardDetailScreen(onBack = { navController.popBackStack() })
+            BoardDetailScreen(
+                onBack = { navController.popBackStack() },
+                onMovieClick = { navController.navigate(movieRoute(it)) },
+            )
         }
     }
 }

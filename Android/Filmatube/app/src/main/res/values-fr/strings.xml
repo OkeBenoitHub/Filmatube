@@ -114,6 +114,11 @@
     <string name="board_typing_one">%1$s est en train d\'écrire…</string>
     <string name="board_typing_many">Plusieurs personnes écrivent…</string>
     <string name="board_no_messages">Aucun message. Dites bonjour !</string>
+    <string name="board_reply">Répondre</string>
+    <string name="board_react">Réagir</string>
+    <string name="board_replying_to">Réponse à %1$s</string>
+    <string name="board_share_to">Partager dans un forum</string>
+    <string name="board_shared">Partagé dans %1$s</string>
     <string name="recommend_title">Recommander à</string>
     <string name="recommend_message_hint">Ajouter un message (facultatif)</string>
     <string name="recommend_send">Envoyer</string>

@@ -7,6 +7,8 @@ import androidx.media3.common.util.UnstableApi
 import com.filmatube.app.data.download.DownloadRepository
 import com.filmatube.app.data.library.WatchlistRepository
 import com.filmatube.app.data.preferences.UserPreferencesRepository
+import com.filmatube.app.data.boards.Board
+import com.filmatube.app.data.boards.BoardRepository
 import com.filmatube.app.data.social.FeedEventTypes
 import com.filmatube.app.data.social.FeedRepository
 import com.filmatube.app.data.social.RatingAggregate
@@ -47,6 +49,7 @@ class MovieDetailViewModel @Inject constructor(
     private val reactionRepository: ReactionRepository,
     private val ratingRepository: RatingRepository,
     private val recommendationRepository: RecommendationRepository,
+    private val boardRepository: BoardRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -95,6 +98,25 @@ class MovieDetailViewModel @Inject constructor(
 
     fun loadRecipients() {
         viewModelScope.launch { _recipients.value = recommendationRepository.recipients() }
+    }
+
+    /** Boards the user can share this movie into (owned or joined). */
+    val myBoards = boardRepository.observeMyBoards()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<Board>())
+
+    private val _sharedToBoard = MutableStateFlow<String?>(null)
+    val sharedToBoard = _sharedToBoard.asStateFlow()
+
+    fun shareToBoard(board: Board) {
+        val movie = (state.value.movie as? DataState.Success)?.data ?: return
+        viewModelScope.launch {
+            boardRepository.postMovieCard(board.id, movie.id, movie.title.get("en"), movie.posterUrl)
+            _sharedToBoard.value = board.title
+        }
+    }
+
+    fun clearSharedToBoard() {
+        _sharedToBoard.value = null
     }
 
     fun recommend(toUid: String, message: String) {

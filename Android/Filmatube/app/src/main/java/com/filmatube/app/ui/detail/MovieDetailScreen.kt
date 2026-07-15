@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.material.icons.filled.Downloading
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Send
@@ -50,6 +51,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -103,9 +105,19 @@ fun MovieDetailScreen(
     val ratingAggregate by viewModel.ratingAggregate.collectAsStateWithLifecycle()
     val recipients by viewModel.recipients.collectAsStateWithLifecycle()
     val downloadState by viewModel.downloadState.collectAsStateWithLifecycle()
+    val myBoards by viewModel.myBoards.collectAsStateWithLifecycle()
+    val sharedToBoard by viewModel.sharedToBoard.collectAsStateWithLifecycle()
     val language = LocaleController.currentTag()
     val context = LocalContext.current
     var showRecommend by remember { mutableStateOf(false) }
+    var showShareBoard by remember { mutableStateOf(false) }
+
+    LaunchedEffect(sharedToBoard) {
+        sharedToBoard?.let {
+            android.widget.Toast.makeText(context, context.getString(R.string.board_shared, it), android.widget.Toast.LENGTH_SHORT).show()
+            viewModel.clearSharedToBoard()
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         when (val movie = state.movie) {
@@ -127,6 +139,7 @@ fun MovieDetailScreen(
                 ratingCount = ratingAggregate.count,
                 onRate = viewModel::setRating,
                 onRecommend = { viewModel.loadRecipients(); showRecommend = true },
+                onShareToBoard = { showShareBoard = true },
                 onOpenReviews = onOpenReviews,
                 onOpenComments = onOpenComments,
                 downloadState = downloadState,
@@ -165,6 +178,53 @@ fun MovieDetailScreen(
             onDismiss = { showRecommend = false },
         )
     }
+
+    if (showShareBoard) {
+        ShareToBoardDialog(
+            boards = myBoards,
+            onPick = { board ->
+                viewModel.shareToBoard(board)
+                showShareBoard = false
+            },
+            onDismiss = { showShareBoard = false },
+        )
+    }
+}
+
+@Composable
+private fun ShareToBoardDialog(
+    boards: List<com.filmatube.app.data.boards.Board>,
+    onPick: (com.filmatube.app.data.boards.Board) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {},
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.comments_cancel_reply))
+            }
+        },
+        title = { Text(stringResource(R.string.board_share_to)) },
+        text = {
+            if (boards.isEmpty()) {
+                Text(stringResource(R.string.boards_empty), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else {
+                androidx.compose.foundation.lazy.LazyColumn {
+                    items(boards, key = { it.id }) { board ->
+                        Text(
+                            board.title,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onPick(board) }
+                                .padding(vertical = FilmatubeSpacing.md),
+                        )
+                    }
+                }
+            }
+        },
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -184,6 +244,7 @@ private fun DetailContent(
     ratingCount: Int,
     onRate: (Int) -> Unit,
     onRecommend: () -> Unit,
+    onShareToBoard: () -> Unit,
     onOpenReviews: (String) -> Unit,
     onOpenComments: (String) -> Unit,
     downloadState: DownloadUiState,
@@ -339,6 +400,13 @@ private fun DetailContent(
                 text = stringResource(R.string.detail_comments),
                 onClick = { onOpenComments(movie.id) },
                 leadingIcon = Icons.AutoMirrored.Filled.Chat,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            FilmatubeSecondaryButton(
+                text = stringResource(R.string.board_share_to),
+                onClick = onShareToBoard,
+                leadingIcon = Icons.Filled.Groups,
                 modifier = Modifier.fillMaxWidth(),
             )
 
