@@ -36,7 +36,12 @@ service cloud.firestore {
 
       match /notifications/{notificationId} {
         allow read, update, delete: if isSelf(userId);
-        allow create: if isSignedIn(); // actor writes a notification into the recipient's inbox
+        // A signed-in actor may write a notification into a recipient's inbox, but must
+        // stamp their own uid as actor and may NOT forge a `system` (broadcast) notification —
+        // those are written only by the admin/Cloud-Function server (which bypasses rules).
+        allow create: if isSignedIn()
+          && request.resource.data.actorId == request.auth.uid
+          && request.resource.data.type != 'system';
       }
 
       match /fcmTokens/{tokenId} {
