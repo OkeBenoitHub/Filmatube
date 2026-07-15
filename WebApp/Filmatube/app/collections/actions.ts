@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { FieldValue } from "firebase-admin/firestore";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getAdminDb } from "@/lib/firebase-admin";
@@ -16,7 +17,8 @@ async function assertOwner(id: string, uid: string) {
   if (!doc.exists || doc.get("userId") !== uid) throw new Error("Forbidden");
 }
 
-export async function createCollection(): Promise<string> {
+/** Creates a collection and redirects to its editor in the SAME action round-trip. */
+export async function createCollection(): Promise<never> {
   const user = await requireUser();
   const ref = await getAdminDb().collection("collections").add({
     userId: user.uid,
@@ -26,7 +28,8 @@ export async function createCollection(): Promise<string> {
     createdAt: FieldValue.serverTimestamp(),
   });
   revalidatePath("/collections");
-  return ref.id;
+  // redirect() throws NEXT_REDIRECT — the client transition navigates without a second round-trip.
+  redirect(`/collections/${ref.id}`);
 }
 
 export async function saveCollection(
