@@ -59,9 +59,11 @@ class TasteViewModel @Inject constructor(
                     language = current.appLanguage,
                 )
             }.onSuccess {
-                // Apply chosen UI language (recreates the activity if it changed).
-                LocaleController.apply(current.appLanguage)
+                // Mark saved first so the finish navigation is queued, THEN apply the UI
+                // language — a language change recreates the activity, which would otherwise
+                // race the navigation (on recreation the splash routes to main anyway).
                 _state.update { it.copy(isSaving = false, isSaved = true) }
+                LocaleController.apply(current.appLanguage)
             }.onFailure {
                 _state.update { it.copy(isSaving = false, errorRes = R.string.taste_save_error) }
             }
