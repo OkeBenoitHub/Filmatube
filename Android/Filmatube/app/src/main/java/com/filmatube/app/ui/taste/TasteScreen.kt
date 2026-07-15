@@ -114,6 +114,18 @@ fun TasteScreen(
             Spacer(Modifier.height(FilmatubeSpacing.md))
         }
 
+        state.errorRes?.let { errorRes ->
+            Text(
+                text = stringResource(errorRes),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = FilmatubeSpacing.xl)
+                    .padding(bottom = FilmatubeSpacing.sm),
+            )
+        }
+
         FilmatubePrimaryButton(
             text = stringResource(R.string.taste_continue),
             onClick = viewModel::save,

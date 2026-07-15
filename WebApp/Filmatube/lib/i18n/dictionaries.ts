@@ -83,6 +83,7 @@ const en = {
     contentFr: "French",
     contentBoth: "Both",
     continue: "Continue",
+    saveError: "Couldn't save your preferences. Please try again.",
   },
   genres: {
     action: "Action", adventure: "Adventure", animation: "Animation", comedy: "Comedy",
@@ -734,6 +735,7 @@ const fr: Dictionary = {
     contentFr: "Français",
     contentBoth: "Les deux",
     continue: "Continuer",
+    saveError: "Impossible d'enregistrer vos préférences. Veuillez réessayer.",
   },
   genres: {
     action: "Action", adventure: "Aventure", animation: "Animation", comedy: "Comédie",

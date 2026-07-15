@@ -307,6 +307,7 @@
     <string name="taste_section_genres">Your favorite genres</string>
     <string name="taste_genre_hint">Choose at least one</string>
     <string name="taste_continue">Continue</string>
+    <string name="taste_save_error">Couldn\'t save your preferences. Please try again.</string>
 
     <!-- Language names (autonyms — same in both locales) -->
     <string name="lang_english">English</string>

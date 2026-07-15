@@ -2,6 +2,7 @@ package com.filmatube.app.ui.taste
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.filmatube.app.R
 import com.filmatube.app.domain.repository.AuthRepository
 import com.filmatube.app.domain.repository.UserRepository
 import com.filmatube.app.util.LocaleController
@@ -18,6 +19,7 @@ data class TasteUiState(
     val contentLanguage: String = "both",
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
+    val errorRes: Int? = null,
 ) {
     val canContinue: Boolean get() = selectedGenres.isNotEmpty()
 }
@@ -48,7 +50,7 @@ class TasteViewModel @Inject constructor(
         val uid = authRepository.currentUser()?.uid ?: return
 
         viewModelScope.launch {
-            _state.update { it.copy(isSaving = true) }
+            _state.update { it.copy(isSaving = true, errorRes = null) }
             runCatching {
                 userRepository.saveTaste(
                     uid = uid,
@@ -61,7 +63,7 @@ class TasteViewModel @Inject constructor(
                 LocaleController.apply(current.appLanguage)
                 _state.update { it.copy(isSaving = false, isSaved = true) }
             }.onFailure {
-                _state.update { it.copy(isSaving = false) }
+                _state.update { it.copy(isSaving = false, errorRes = R.string.taste_save_error) }
             }
         }
     }

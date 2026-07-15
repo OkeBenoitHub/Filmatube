@@ -304,6 +304,7 @@
     <string name="taste_section_genres">Vos genres préférés</string>
     <string name="taste_genre_hint">Choisissez-en au moins un</string>
     <string name="taste_continue">Continuer</string>
+    <string name="taste_save_error">Impossible d\'enregistrer vos préférences. Veuillez réessayer.</string>
 
     <!-- Noms de langue (autonymes) -->
     <string name="lang_english">English</string>

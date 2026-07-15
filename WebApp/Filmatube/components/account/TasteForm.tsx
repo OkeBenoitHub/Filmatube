@@ -27,6 +27,7 @@ export function TasteForm({
   const [appLang, setAppLang] = useState<Locale>(locale);
   const [contentLang, setContentLang] = useState("both");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function toggle(key: string) {
     setSelected((prev) => {
@@ -39,6 +40,7 @@ export function TasteForm({
   async function save() {
     if (selected.size === 0) return;
     setSaving(true);
+    setError(null);
     try {
       await updateDoc(doc(db, "users", uid), {
         genrePreferences: [...selected],
@@ -47,9 +49,11 @@ export function TasteForm({
         tasteCompleted: true,
       });
       if (appLang !== locale) setLocale(appLang);
-      router.push("/");
+      // Enter the app after onboarding (not the marketing landing page).
+      router.push("/home");
       router.refresh();
     } catch {
+      setError(dict.saveError);
       setSaving(false);
     }
   }
@@ -78,6 +82,9 @@ export function TasteForm({
         ))}
       </Section>
 
+      {error && (
+        <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</p>
+      )}
       <Button onClick={save} loading={saving} disabled={selected.size === 0} className="w-full">
         {dict.continue}
       </Button>
