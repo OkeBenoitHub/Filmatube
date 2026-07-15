@@ -92,6 +92,17 @@
     <string name="board_official">Official</string>
     <string name="board_open">Open board</string>
     <string name="board_chat_soon">Discussion coming soon.</string>
+    <string name="boards_my">My boards</string>
+    <string name="board_new">New board</string>
+    <string name="create_board_title">Create a board</string>
+    <string name="board_field_title">Board title</string>
+    <string name="board_field_description">Description (optional)</string>
+    <string name="board_type_label">Type</string>
+    <string name="board_visibility_public">Public</string>
+    <string name="board_visibility_private">Private</string>
+    <string name="board_add_cover">Add cover</string>
+    <string name="board_create">Create</string>
+    <string name="board_create_error">Couldn\'t create the board. Please try again.</string>
     <string name="recommend_title">Recommend to</string>
     <string name="recommend_message_hint">Add a message (optional)</string>
     <string name="recommend_send">Send</string>

@@ -2,6 +2,7 @@ package com.filmatube.app.data.boards
 
 import com.filmatube.app.di.IoDispatcher
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.CoroutineDispatcher
@@ -64,6 +65,53 @@ class BoardRepository @Inject constructor(
         val registration = query
             .orderBy("memberCount", Query.Direction.DESCENDING)
             .limit(limit)
+            .addSnapshotListener { snap, _ -> trySend(snap.toBoards()) }
+        awaitClose { registration.remove() }
+    }
+
+    /** Create a board owned by the current user (added as first member). Returns the new id. */
+    suspend fun createBoard(
+        title: String,
+        description: String,
+        type: String,
+        isPublic: Boolean,
+        coverUrl: String,
+    ): String? = withContext(ioDispatcher) {
+        val uid = myUid ?: return@withContext null
+        val ref = boards.document()
+        ref.set(
+            mapOf(
+                "title" to title.trim(),
+                "description" to description.trim(),
+                "type" to type,
+                "coverUrl" to coverUrl,
+                "isPublic" to isPublic,
+                "isFeatured" to false,
+                "isOfficial" to false,
+                "ownerId" to uid,
+                "memberIds" to listOf(uid),
+                "memberCount" to 1,
+                "createdAt" to FieldValue.serverTimestamp(),
+            ),
+        ).await()
+        ref.collection("members").document(uid).set(
+            mapOf("userId" to uid, "role" to "owner", "joinedAt" to FieldValue.serverTimestamp()),
+        ).await()
+        ref.id
+    }
+
+    /** Boards the current user owns or has joined, newest first. */
+    fun observeMyBoards(): Flow<List<Board>> = callbackFlow {
+        val uid = myUid
+        if (uid == null) {
+            trySend(emptyList())
+            awaitClose { }
+            return@callbackFlow
+        }
+        val registration = boards
+            .whereArrayContains("memberIds", uid)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .limit(50)
             .addSnapshotListener { snap, _ -> trySend(snap.toBoards()) }
         awaitClose { registration.remove() }
     }

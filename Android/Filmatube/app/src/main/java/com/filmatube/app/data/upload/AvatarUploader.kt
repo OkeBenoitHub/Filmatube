@@ -32,7 +32,12 @@ class AvatarUploader @Inject constructor(
     private val auth: FirebaseAuth,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
-    suspend fun uploadAvatar(uri: Uri): String = withContext(ioDispatcher) {
+    suspend fun uploadAvatar(uri: Uri): String = upload(uri, "avatar")
+
+    /** Uploads a board cover to R2 (avatars bucket — user-writable) and returns its public URL. */
+    suspend fun uploadBoardCover(uri: Uri): String = upload(uri, "board")
+
+    private suspend fun upload(uri: Uri, name: String): String = withContext(ioDispatcher) {
         val user = auth.currentUser ?: error("Not signed in")
         val idToken = user.getIdToken(false).await().token ?: error("Missing ID token")
 
@@ -43,7 +48,7 @@ class AvatarUploader @Inject constructor(
 
         val presign = requestPresign(
             idToken = idToken,
-            filename = "avatar.$extension",
+            filename = "$name.$extension",
             contentType = contentType,
         )
 

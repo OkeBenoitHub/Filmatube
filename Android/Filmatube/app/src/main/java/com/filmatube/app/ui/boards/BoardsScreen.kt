@@ -19,10 +19,13 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,15 +51,26 @@ import com.filmatube.app.ui.theme.FilmatubeSpacing
 @Composable
 fun BoardsScreen(
     onBoardClick: (String) -> Unit,
+    onCreateBoard: () -> Unit,
     viewModel: BoardsViewModel = hiltViewModel(),
 ) {
     val filter by viewModel.filter.collectAsStateWithLifecycle()
     val featured by viewModel.featured.collectAsStateWithLifecycle()
     val boards by viewModel.boards.collectAsStateWithLifecycle()
+    val myBoards by viewModel.myBoards.collectAsStateWithLifecycle()
 
+    Scaffold(
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = onCreateBoard,
+                icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                text = { Text(stringResource(R.string.board_new)) },
+            )
+        },
+    ) { padding ->
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = FilmatubeSpacing.xxl),
+        modifier = Modifier.fillMaxSize().padding(padding),
+        contentPadding = PaddingValues(bottom = 96.dp),
         verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
     ) {
         item {
@@ -67,6 +81,26 @@ fun BoardsScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+        }
+
+        if (myBoards.isNotEmpty()) {
+            item {
+                Text(
+                    stringResource(R.string.boards_my),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(horizontal = FilmatubeSpacing.lg),
+                )
+            }
+            item {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = FilmatubeSpacing.lg),
+                    horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
+                ) {
+                    items(myBoards, key = { it.id }) { board ->
+                        FeaturedBoardCard(board, onClick = { onBoardClick(board.id) })
+                    }
+                }
             }
         }
 
@@ -131,6 +165,7 @@ fun BoardsScreen(
                 BoardRow(board, onClick = { onBoardClick(board.id) })
             }
         }
+    }
     }
 }
 

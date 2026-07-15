@@ -92,6 +92,17 @@
     <string name="board_official">Officiel</string>
     <string name="board_open">Ouvrir le forum</string>
     <string name="board_chat_soon">Discussion bientôt disponible.</string>
+    <string name="boards_my">Mes forums</string>
+    <string name="board_new">Nouveau forum</string>
+    <string name="create_board_title">Créer un forum</string>
+    <string name="board_field_title">Titre du forum</string>
+    <string name="board_field_description">Description (facultatif)</string>
+    <string name="board_type_label">Type</string>
+    <string name="board_visibility_public">Public</string>
+    <string name="board_visibility_private">Privé</string>
+    <string name="board_add_cover">Ajouter une couverture</string>
+    <string name="board_create">Créer</string>
+    <string name="board_create_error">Impossible de créer le forum. Veuillez réessayer.</string>
     <string name="recommend_title">Recommander à</string>
     <string name="recommend_message_hint">Ajouter un message (facultatif)</string>
     <string name="recommend_send">Envoyer</string>

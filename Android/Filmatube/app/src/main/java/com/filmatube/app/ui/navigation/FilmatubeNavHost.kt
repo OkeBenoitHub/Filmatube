@@ -12,6 +12,7 @@ import android.net.Uri
 import com.filmatube.app.ui.browse.BrowseScreen
 import com.filmatube.app.ui.boards.BoardDetailScreen
 import com.filmatube.app.ui.boards.BoardsScreen
+import com.filmatube.app.ui.boards.CreateBoardScreen
 import com.filmatube.app.ui.community.CommunityScreen
 import com.filmatube.app.ui.social.CommentsScreen
 import com.filmatube.app.ui.detail.ActorScreen
@@ -50,6 +51,7 @@ private const val ROUTE_REVIEWS = "reviews/{movieId}"
 private const val ROUTE_COMMENTS = "comments/{movieId}"
 private const val ROUTE_BOARDS = "boards"
 private const val ROUTE_BOARD = "board/{boardId}"
+private const val ROUTE_CREATE_BOARD = "boards/create"
 fun boardRoute(boardId: String) = "board/$boardId"
 
 fun followsRoute(mode: String) = "follows/$mode"
@@ -236,7 +238,20 @@ fun FilmatubeNavHost(
             )
         }
         composable(ROUTE_BOARDS) {
-            BoardsScreen(onBoardClick = { navController.navigate(boardRoute(it)) })
+            BoardsScreen(
+                onBoardClick = { navController.navigate(boardRoute(it)) },
+                onCreateBoard = { navController.navigate(ROUTE_CREATE_BOARD) },
+            )
+        }
+        composable(ROUTE_CREATE_BOARD) {
+            CreateBoardScreen(
+                onBack = { navController.popBackStack() },
+                onCreated = { boardId ->
+                    navController.navigate(boardRoute(boardId)) {
+                        popUpTo(ROUTE_CREATE_BOARD) { inclusive = true }
+                    }
+                },
+            )
         }
         composable(
             route = ROUTE_BOARD,

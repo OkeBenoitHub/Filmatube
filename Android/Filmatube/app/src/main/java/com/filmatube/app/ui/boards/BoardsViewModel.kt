@@ -33,6 +33,9 @@ class BoardsViewModel @Inject constructor(
     val featured = boardRepository.observeFeatured()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    val myBoards = boardRepository.observeMyBoards()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     val boards = _filter
         .flatMapLatest { f -> boardRepository.observeBoards(f.type) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<Board>())

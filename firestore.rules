@@ -164,7 +164,11 @@ service cloud.firestore {
 
     // ───────── community boards (v1.1) ─────────
     match /boards/{boardId} {
-      allow read: if isSignedIn() && (resource.data.isPublic == true || resource.data.ownerId == request.auth.uid);
+      allow read: if isSignedIn() && (
+        resource.data.isPublic == true
+        || resource.data.ownerId == request.auth.uid
+        || request.auth.uid in resource.data.memberIds
+      );
       allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
 
