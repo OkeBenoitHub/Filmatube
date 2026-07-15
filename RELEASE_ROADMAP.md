@@ -233,7 +233,7 @@
 *Real-time discussion + watch together (private). Delivers the "discuss movies in real time" pillar.*
 
 ### Week 19 — Android Boards & Chat (Days 127–133) (A)
-- **Day 127** — Boards discovery (tabs + featured); board types (movies/general).
+- **Day 127** ✅ — Boards discovery (tabs + featured); board types (movies/general).
 - **Day 128** — Create board (title/desc/cover → R2, public/private); My Boards.
 - **Day 129** — Join/leave; invite followers (FCM).
 - **Day 130** — Real-time board chat (Firestore listener); send/typing; spoiler tag.

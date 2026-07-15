@@ -162,6 +162,24 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ───────── community boards (v1.1) ─────────
+    match /boards/{boardId} {
+      allow read: if isSignedIn() && (resource.data.isPublic == true || resource.data.ownerId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
+
+      // members + messages rules are added with join (Day 129) and chat (Day 130)
+      match /members/{userId} {
+        allow read: if isSignedIn();
+        allow write: if isSelf(userId) || isAdmin();
+      }
+      match /messages/{messageId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+        allow update, delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      }
+    }
+
     // ───────── content requests ─────────
     match /requests/{requestId} {
       allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);

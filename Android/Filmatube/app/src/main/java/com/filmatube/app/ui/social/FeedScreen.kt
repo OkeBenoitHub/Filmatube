@@ -6,12 +6,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,6 +39,7 @@ import com.filmatube.app.ui.theme.FilmatubeSpacing
 fun FeedScreen(
     onMovieClick: (String) -> Unit,
     onUserClick: (String) -> Unit,
+    onOpenBoards: () -> Unit,
     viewModel: FeedViewModel = hiltViewModel(),
 ) {
     val feed by viewModel.feed.collectAsStateWithLifecycle()
@@ -50,6 +53,14 @@ fun FeedScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(stringResource(R.string.feed_title), style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.weight(1f))
+            IconButton(onClick = onOpenBoards) {
+                Icon(
+                    Icons.Filled.Groups,
+                    contentDescription = stringResource(R.string.boards_title),
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
         }
 
         Row(

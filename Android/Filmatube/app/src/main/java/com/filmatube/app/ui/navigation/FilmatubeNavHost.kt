@@ -10,6 +10,8 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import android.net.Uri
 import com.filmatube.app.ui.browse.BrowseScreen
+import com.filmatube.app.ui.boards.BoardDetailScreen
+import com.filmatube.app.ui.boards.BoardsScreen
 import com.filmatube.app.ui.community.CommunityScreen
 import com.filmatube.app.ui.social.CommentsScreen
 import com.filmatube.app.ui.detail.ActorScreen
@@ -46,6 +48,9 @@ private const val ROUTE_NOTIFICATION_PREFS = "settings/notifications"
 private const val ROUTE_PUBLIC_PROFILE = "user/{userId}"
 private const val ROUTE_REVIEWS = "reviews/{movieId}"
 private const val ROUTE_COMMENTS = "comments/{movieId}"
+private const val ROUTE_BOARDS = "boards"
+private const val ROUTE_BOARD = "board/{boardId}"
+fun boardRoute(boardId: String) = "board/$boardId"
 
 fun followsRoute(mode: String) = "follows/$mode"
 fun publicProfileRoute(userId: String) = "user/$userId"
@@ -136,6 +141,7 @@ fun FilmatubeNavHost(
             FeedScreen(
                 onMovieClick = { navController.navigate(movieRoute(it)) },
                 onUserClick = { navController.navigate(publicProfileRoute(it)) },
+                onOpenBoards = { navController.navigate(ROUTE_BOARDS) },
             )
         }
         composable(TopLevelDestination.PROFILE.route) {
@@ -228,6 +234,15 @@ fun FilmatubeNavHost(
                 onBack = { navController.popBackStack() },
                 onUserClick = { navController.navigate(publicProfileRoute(it)) },
             )
+        }
+        composable(ROUTE_BOARDS) {
+            BoardsScreen(onBoardClick = { navController.navigate(boardRoute(it)) })
+        }
+        composable(
+            route = ROUTE_BOARD,
+            arguments = listOf(navArgument("boardId") { type = NavType.StringType }),
+        ) {
+            BoardDetailScreen(onBack = { navController.popBackStack() })
         }
     }
 }
