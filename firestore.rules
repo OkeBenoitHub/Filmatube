@@ -170,7 +170,17 @@ service cloud.firestore {
         || request.auth.uid in resource.data.memberIds
       );
       allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
-      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
+      // Owner/admin may edit the board; any signed-in user may join/leave — a membership-only
+      // update (memberIds + memberCount) that adds or removes *their own* uid.
+      allow update: if isAdmin()
+        || (isSignedIn() && resource.data.ownerId == request.auth.uid)
+        || (isSignedIn()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds', 'memberCount'])
+          && (
+            (!(request.auth.uid in resource.data.memberIds) && request.auth.uid in request.resource.data.memberIds)
+            || (request.auth.uid in resource.data.memberIds && !(request.auth.uid in request.resource.data.memberIds))
+          ));
 
       // members + messages rules are added with join (Day 129) and chat (Day 130)
       match /members/{userId} {

@@ -1,10 +1,13 @@
 package com.filmatube.app.data.boards
 
+import com.filmatube.app.data.social.FollowRepository
 import com.filmatube.app.di.IoDispatcher
+import com.filmatube.app.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -42,6 +45,8 @@ data class Board(
 class BoardRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth,
+    private val userRepository: UserRepository,
+    private val followRepository: FollowRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
     private val boards get() = firestore.collection("boards")
@@ -114,6 +119,70 @@ class BoardRepository @Inject constructor(
             .limit(50)
             .addSnapshotListener { snap, _ -> trySend(snap.toBoards()) }
         awaitClose { registration.remove() }
+    }
+
+    /** Whether the current user is a member of [boardId] (realtime). */
+    fun observeMembership(boardId: String): Flow<Boolean> = callbackFlow {
+        val uid = myUid
+        if (uid == null) {
+            trySend(false)
+            awaitClose { }
+            return@callbackFlow
+        }
+        val registration = boards.document(boardId).collection("members").document(uid)
+            .addSnapshotListener { snap, _ -> trySend(snap?.exists() == true) }
+        awaitClose { registration.remove() }
+    }
+
+    /** Join [boardId]: add self to members + memberIds and bump the count. */
+    suspend fun joinBoard(boardId: String) = withContext(ioDispatcher) {
+        val uid = myUid ?: return@withContext
+        val board = boards.document(boardId)
+        val batch = firestore.batch()
+        batch.update(board, mapOf("memberIds" to FieldValue.arrayUnion(uid), "memberCount" to FieldValue.increment(1)))
+        batch.set(
+            board.collection("members").document(uid),
+            mapOf("userId" to uid, "role" to "member", "joinedAt" to FieldValue.serverTimestamp()),
+        )
+        runCatching { batch.commit().await() }
+    }
+
+    /** Leave [boardId] (owners can't leave their own board). */
+    suspend fun leaveBoard(boardId: String) = withContext(ioDispatcher) {
+        val uid = myUid ?: return@withContext
+        val doc = boards.document(boardId)
+        val ownerId = runCatching { doc.get().await().getString("ownerId") }.getOrNull()
+        if (ownerId == uid) return@withContext
+        val batch = firestore.batch()
+        batch.update(doc, mapOf("memberIds" to FieldValue.arrayRemove(uid), "memberCount" to FieldValue.increment(-1)))
+        batch.delete(doc.collection("members").document(uid))
+        runCatching { batch.commit().await() }
+    }
+
+    /** Invite the current user's followers to [boardId] — writes a notification into each inbox. */
+    suspend fun inviteFollowers(boardId: String, boardTitle: String): Int = withContext(ioDispatcher) {
+        val uid = myUid ?: return@withContext 0
+        val me = runCatching { userRepository.getUser(uid) }.getOrNull()
+        val followerIds = runCatching { followRepository.observeFollowerIds(uid).first() }.getOrDefault(emptyList())
+        var invited = 0
+        for (followerId in followerIds) {
+            val ok = runCatching {
+                firestore.collection("users").document(followerId).collection("notifications").add(
+                    mapOf(
+                        "type" to "board_invite",
+                        "actorId" to uid,
+                        "actorName" to (me?.displayName ?: ""),
+                        "actorAvatar" to (me?.avatarUrl ?: ""),
+                        "boardId" to boardId,
+                        "boardTitle" to boardTitle,
+                        "read" to false,
+                        "createdAt" to FieldValue.serverTimestamp(),
+                    ),
+                ).await()
+            }.isSuccess
+            if (ok) invited++
+        }
+        invited
     }
 
     /** Single board by id (for the board detail header). */

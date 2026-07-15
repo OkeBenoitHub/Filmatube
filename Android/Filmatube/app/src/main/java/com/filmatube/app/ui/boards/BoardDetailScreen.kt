@@ -13,16 +13,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -35,6 +40,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.filmatube.app.R
 import com.filmatube.app.data.boards.BoardTypes
+import com.filmatube.app.ui.components.FilmatubePrimaryButton
+import com.filmatube.app.ui.components.FilmatubeSecondaryButton
 import com.filmatube.app.ui.theme.FilmatubeSpacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,8 +51,20 @@ fun BoardDetailScreen(
     viewModel: BoardDetailViewModel = hiltViewModel(),
 ) {
     val board by viewModel.board.collectAsStateWithLifecycle()
+    val isMember by viewModel.isMember.collectAsStateWithLifecycle()
+    val invitedCount by viewModel.invitedCount.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val invitedManyMsg = invitedCount?.let { stringResource(R.string.board_invited, it) }
+    val invitedNoneMsg = stringResource(R.string.board_invited_none)
+    LaunchedEffect(invitedCount) {
+        val count = invitedCount ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(if (count > 0) invitedManyMsg!! else invitedNoneMsg)
+        viewModel.clearInvited()
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(board?.title ?: stringResource(R.string.boards_title)) },
@@ -115,6 +134,40 @@ fun BoardDetailScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+
+                if (b != null) {
+                    Row(
+                        modifier = Modifier.padding(top = FilmatubeSpacing.xs),
+                        horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm),
+                    ) {
+                        if (viewModel.isOwner) {
+                            FilmatubePrimaryButton(
+                                text = stringResource(R.string.board_invite),
+                                onClick = viewModel::invite,
+                                leadingIcon = Icons.Filled.PersonAdd,
+                                modifier = Modifier.weight(1f),
+                            )
+                        } else if (isMember) {
+                            FilmatubeSecondaryButton(
+                                text = stringResource(R.string.board_leave),
+                                onClick = viewModel::toggleMembership,
+                                modifier = Modifier.weight(1f),
+                            )
+                            FilmatubePrimaryButton(
+                                text = stringResource(R.string.board_invite),
+                                onClick = viewModel::invite,
+                                leadingIcon = Icons.Filled.PersonAdd,
+                                modifier = Modifier.weight(1f),
+                            )
+                        } else {
+                            FilmatubePrimaryButton(
+                                text = stringResource(R.string.board_join),
+                                onClick = viewModel::toggleMembership,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                    }
                 }
             }
 

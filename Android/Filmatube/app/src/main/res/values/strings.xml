@@ -103,6 +103,11 @@
     <string name="board_add_cover">Add cover</string>
     <string name="board_create">Create</string>
     <string name="board_create_error">Couldn\'t create the board. Please try again.</string>
+    <string name="board_join">Join</string>
+    <string name="board_leave">Leave</string>
+    <string name="board_invite">Invite followers</string>
+    <string name="board_invited">Invited %1$d followers</string>
+    <string name="board_invited_none">You have no followers to invite yet</string>
     <string name="recommend_title">Recommend to</string>
     <string name="recommend_message_hint">Add a message (optional)</string>
     <string name="recommend_send">Send</string>

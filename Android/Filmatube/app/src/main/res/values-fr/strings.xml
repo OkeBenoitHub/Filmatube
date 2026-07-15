@@ -103,6 +103,11 @@
     <string name="board_add_cover">Ajouter une couverture</string>
     <string name="board_create">Créer</string>
     <string name="board_create_error">Impossible de créer le forum. Veuillez réessayer.</string>
+    <string name="board_join">Rejoindre</string>
+    <string name="board_leave">Quitter</string>
+    <string name="board_invite">Inviter des abonnés</string>
+    <string name="board_invited">%1$d abonnés invités</string>
+    <string name="board_invited_none">Vous n\'avez pas encore d\'abonnés à inviter</string>
     <string name="recommend_title">Recommander à</string>
     <string name="recommend_message_hint">Ajouter un message (facultatif)</string>
     <string name="recommend_send">Envoyer</string>
