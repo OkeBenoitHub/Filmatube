@@ -211,6 +211,7 @@ fun FilmatubeNavHost(
                 onBack = { navController.popBackStack() },
                 onOpenMovie = { navController.navigate(movieRoute(it)) },
                 onOpenUser = { navController.navigate(publicProfileRoute(it)) },
+                onOpenBoard = { navController.navigate(boardRoute(it)) },
             )
         }
         composable(ROUTE_NOTIFICATION_PREFS) {
@@ -259,6 +260,7 @@ fun FilmatubeNavHost(
         composable(
             route = ROUTE_BOARD,
             arguments = listOf(navArgument("boardId") { type = NavType.StringType }),
+            deepLinks = listOf(navDeepLink { uriPattern = "filmatube://board/{boardId}" }),
         ) { entry ->
             val boardId = entry.arguments?.getString("boardId").orEmpty()
             BoardDetailScreen(

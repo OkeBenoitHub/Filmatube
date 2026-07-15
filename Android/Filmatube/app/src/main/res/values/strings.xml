@@ -77,6 +77,7 @@
     <string name="notif_recommendation">recommended a movie</string>
     <string name="notif_reply">replied to you</string>
     <string name="notif_review_like">liked your review</string>
+    <string name="notif_board_invite">invited you to a board</string>
     <string name="notif_prefs_title">Notification preferences</string>
     <string name="settings_notifications">Notifications</string>
     <string name="boards_title">Boards</string>

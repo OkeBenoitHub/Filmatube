@@ -23,6 +23,7 @@ object NotificationTypes {
     const val RECOMMENDATION = "recommendation"
     const val REPLY = "reply"
     const val REVIEW_LIKE = "review_like"
+    const val BOARD_INVITE = "board_invite"
     const val SYSTEM = "system"
 
     /** Push channel category for a given in-app notification type. */
@@ -41,6 +42,8 @@ data class AppNotification(
     val actorAvatar: String,
     val movieId: String,
     val movieTitle: String,
+    val boardId: String,
+    val boardTitle: String,
     val message: String,
     val read: Boolean,
     val createdAtMs: Long,
@@ -122,6 +125,8 @@ class NotificationRepository @Inject constructor(
                                 actorAvatar = d.getString("actorAvatar") ?: "",
                                 movieId = d.getString("movieId") ?: "",
                                 movieTitle = d.getString("movieTitle") ?: "",
+                                boardId = d.getString("boardId") ?: "",
+                                boardTitle = d.getString("boardTitle") ?: "",
                                 message = d.getString("message") ?: "",
                                 read = d.getBoolean("read") ?: false,
                                 createdAtMs = d.getTimestamp("createdAt")?.toDate()?.time ?: 0L,

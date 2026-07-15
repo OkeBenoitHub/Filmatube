@@ -77,6 +77,7 @@
     <string name="notif_recommendation">a recommandé un film</string>
     <string name="notif_reply">vous a répondu</string>
     <string name="notif_review_like">a aimé votre avis</string>
+    <string name="notif_board_invite">vous a invité à un forum</string>
     <string name="notif_prefs_title">Préférences de notification</string>
     <string name="settings_notifications">Notifications</string>
     <string name="boards_title">Forums</string>

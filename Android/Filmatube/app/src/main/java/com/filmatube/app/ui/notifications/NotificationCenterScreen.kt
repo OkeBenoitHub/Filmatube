@@ -47,6 +47,7 @@ fun NotificationCenterScreen(
     onBack: () -> Unit,
     onOpenMovie: (String) -> Unit,
     onOpenUser: (String) -> Unit,
+    onOpenBoard: (String) -> Unit,
     viewModel: NotificationCenterViewModel = hiltViewModel(),
 ) {
     val notifications by viewModel.notifications.collectAsStateWithLifecycle()
@@ -90,13 +91,13 @@ fun NotificationCenterScreen(
             if (today.isNotEmpty()) {
                 item { SectionHeader(stringResource(R.string.notifications_today)) }
                 items(today, key = { it.id }) { n ->
-                    NotificationRow(n, onOpen = { openTarget(n, viewModel, onOpenMovie, onOpenUser) })
+                    NotificationRow(n, onOpen = { openTarget(n, viewModel, onOpenMovie, onOpenUser, onOpenBoard) })
                 }
             }
             if (earlier.isNotEmpty()) {
                 item { SectionHeader(stringResource(R.string.notifications_earlier)) }
                 items(earlier, key = { it.id }) { n ->
-                    NotificationRow(n, onOpen = { openTarget(n, viewModel, onOpenMovie, onOpenUser) })
+                    NotificationRow(n, onOpen = { openTarget(n, viewModel, onOpenMovie, onOpenUser, onOpenBoard) })
                 }
             }
         }
@@ -108,9 +109,14 @@ private fun openTarget(
     viewModel: NotificationCenterViewModel,
     onOpenMovie: (String) -> Unit,
     onOpenUser: (String) -> Unit,
+    onOpenBoard: (String) -> Unit,
 ) {
     viewModel.markRead(n.id)
-    if (n.movieId.isNotBlank()) onOpenMovie(n.movieId) else if (n.actorId.isNotBlank()) onOpenUser(n.actorId)
+    when {
+        n.boardId.isNotBlank() -> onOpenBoard(n.boardId)
+        n.movieId.isNotBlank() -> onOpenMovie(n.movieId)
+        n.actorId.isNotBlank() -> onOpenUser(n.actorId)
+    }
 }
 
 @Composable
@@ -142,9 +148,10 @@ private fun NotificationRow(n: AppNotification, onOpen: () -> Unit) {
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
-            if (n.movieTitle.isNotBlank()) {
+            val subtitle = n.boardTitle.ifBlank { n.movieTitle }
+            if (subtitle.isNotBlank()) {
                 Text(
-                    n.movieTitle,
+                    subtitle,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -170,6 +177,7 @@ private fun actionText(type: String): String = stringResource(
         NotificationTypes.RECOMMENDATION -> R.string.notif_recommendation
         NotificationTypes.REPLY -> R.string.notif_reply
         NotificationTypes.REVIEW_LIKE -> R.string.notif_review_like
+        NotificationTypes.BOARD_INVITE -> R.string.notif_board_invite
         else -> R.string.notif_recommendation
     },
 )
