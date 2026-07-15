@@ -216,7 +216,7 @@
 - **Day 116** ✅ — Unit tests (ViewModels/repos) + critical UI/E2E flows; CI gating.
 - **Day 117** ✅ — Security: App Check enforcement; download-encryption verification; rules audit.
 - **Day 118** ✅ — Accessibility pass (TalkBack, contrast, touch targets); FR localization sweep.
-- **Day 119** — Android release-candidate build; week review.
+- **Day 119** ✅ — Android release-candidate build; week review.
 
 ### Week 18 — Web Hardening + Beta + **v1.0 LAUNCH** (Days 120–126) (W/B)
 - **Day 120** — Web performance (code-split, image optimization, caching headers, Lighthouse).

@@ -18,3 +18,8 @@ google-services.json
 # Secrets / env
 *.env
 secrets.properties
+
+# Release signing (never commit)
+keystore.properties
+*.jks
+*.keystore
