@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { getAdminAuth } from "@/lib/firebase-admin";
 
@@ -27,14 +28,23 @@ export async function clearSession(): Promise<void> {
   store.delete(SESSION_COOKIE);
 }
 
-/** Returns the decoded session (uid, claims) if a valid cookie is present, else null. */
-export async function getCurrentUser() {
+/**
+ * Returns the decoded session (uid, claims) if a valid cookie is present, else null.
+ *
+ * - `cache()` memoizes the result per request, so the layout + page calling this in one
+ *   navigation only verify once.
+ * - Verification is **local** (no `checkRevoked`) so page gating doesn't make a Firebase
+ *   network round-trip on every navigation. Sign-out clears the cookie; sensitive server
+ *   actions/routes re-assert the admin claim independently. (Revocation lands within the
+ *   5-day cookie lifetime.)
+ */
+export const getCurrentUser = cache(async () => {
   const store = await cookies();
   const cookie = store.get(SESSION_COOKIE)?.value;
   if (!cookie) return null;
   try {
-    return await getAdminAuth().verifySessionCookie(cookie, true);
+    return await getAdminAuth().verifySessionCookie(cookie);
   } catch {
     return null;
   }
-}
+});
