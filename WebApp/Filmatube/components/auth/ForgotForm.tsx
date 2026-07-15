@@ -20,7 +20,8 @@ export function ForgotForm({ dict }: { dict: Dictionary["auth"] }) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!email) return setError(dict.errors.emailRequired);
+    if (!email.trim()) return setError(dict.errors.emailRequired);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return setError(dict.errors.emailInvalid);
     setLoading(true);
     try {
       await sendReset(email.trim());
