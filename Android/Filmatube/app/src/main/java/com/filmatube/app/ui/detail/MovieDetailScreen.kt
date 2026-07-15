@@ -44,6 +44,7 @@ import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -394,17 +395,18 @@ private fun RatingBar(myRating: Int?, onRate: (Int) -> Unit) {
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xs)) {
+        Row {
             (1..5).forEach { star ->
                 val filled = myRating != null && star <= myRating
-                Icon(
-                    imageVector = if (filled) Icons.Filled.Star else Icons.Filled.StarBorder,
-                    contentDescription = stringResource(R.string.detail_rate_star, star),
-                    tint = if (filled) FilmatubeGold else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .width(32.dp)
-                        .clickable { onRate(star) },
-                )
+                // IconButton gives each star a 48dp touch target (a11y minimum).
+                IconButton(onClick = { onRate(star) }) {
+                    Icon(
+                        imageVector = if (filled) Icons.Filled.Star else Icons.Filled.StarBorder,
+                        contentDescription = stringResource(R.string.detail_rate_star, star),
+                        tint = if (filled) FilmatubeGold else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(30.dp),
+                    )
+                }
             }
         }
     }
