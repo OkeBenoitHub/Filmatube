@@ -220,7 +220,7 @@
 
 ### Week 18 — Web Hardening + Beta + **v1.0 LAUNCH** (Days 120–126) (W/B)
 - **Day 120** ✅ — Web performance (code-split, image optimization, caching headers, Lighthouse).
-- **Day 121** — Security (web): App Check, session hardening, presign rate-limiting, R2 anti-hotlink/expiry audit.
+- **Day 121** ✅ — Security (web): App Check, session hardening, presign rate-limiting, R2 anti-hotlink/expiry audit.
 - **Day 122** — Web E2E tests + CI gating; Firestore rules final audit; cost review.
 - **Day 123** — Closed beta (Play Internal Testing + web preview); Crashlytics monitoring; feedback intake.
 - **Day 124** — Beta fixes; landing page final (hero/features/screenshots/store buttons), SEO/OG, privacy + terms.

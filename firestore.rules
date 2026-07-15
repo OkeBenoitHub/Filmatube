@@ -157,6 +157,11 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // ───────── server-only rate-limit counters (admin SDK bypasses rules) ─────────
+    match /rateLimits/{id} {
+      allow read, write: if false;
+    }
+
     // ───────── content requests ─────────
     match /requests/{requestId} {
       allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);

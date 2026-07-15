@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestUser } from "@/lib/auth/request-user";
+import { allowRequest } from "@/lib/rate-limit";
 import { R2_BUCKETS, r2PublicUrl, type R2Bucket } from "@/lib/r2";
 import { presignUpload } from "@/lib/r2-presign";
 
@@ -23,6 +24,11 @@ export async function POST(request: NextRequest) {
   const user = await getRequestUser(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Throttle presign requests per user (30/min) to limit upload-URL minting abuse.
+  if (!(await allowRequest("presign", user.uid, 30, 60_000))) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
   const { bucket, filename, contentType, prefix } = (await request
