@@ -108,6 +108,12 @@
     <string name="board_invite">Inviter des abonnés</string>
     <string name="board_invited">%1$d abonnés invités</string>
     <string name="board_invited_none">Vous n\'avez pas encore d\'abonnés à inviter</string>
+    <string name="board_message_hint">Message…</string>
+    <string name="board_send">Envoyer</string>
+    <string name="board_join_to_chat">Rejoignez pour envoyer des messages</string>
+    <string name="board_typing_one">%1$s est en train d\'écrire…</string>
+    <string name="board_typing_many">Plusieurs personnes écrivent…</string>
+    <string name="board_no_messages">Aucun message. Dites bonjour !</string>
     <string name="recommend_title">Recommander à</string>
     <string name="recommend_message_hint">Ajouter un message (facultatif)</string>
     <string name="recommend_send">Envoyer</string>

@@ -108,6 +108,12 @@
     <string name="board_invite">Invite followers</string>
     <string name="board_invited">Invited %1$d followers</string>
     <string name="board_invited_none">You have no followers to invite yet</string>
+    <string name="board_message_hint">Message…</string>
+    <string name="board_send">Send</string>
+    <string name="board_join_to_chat">Join to send messages</string>
+    <string name="board_typing_one">%1$s is typing…</string>
+    <string name="board_typing_many">Several people are typing…</string>
+    <string name="board_no_messages">No messages yet. Say hi!</string>
     <string name="recommend_title">Recommend to</string>
     <string name="recommend_message_hint">Add a message (optional)</string>
     <string name="recommend_send">Send</string>

@@ -23,6 +23,18 @@ object BoardTypes {
     const val GENERAL = "general"
 }
 
+/** A chat message in a board. */
+data class BoardMessage(
+    val id: String,
+    val userId: String,
+    val userName: String,
+    val userAvatar: String,
+    val text: String,
+    val hasSpoiler: Boolean,
+    val createdAtMs: Long,
+    val isMine: Boolean,
+)
+
 /** A community board (discussion space). */
 data class Board(
     val id: String,
@@ -183,6 +195,84 @@ class BoardRepository @Inject constructor(
             if (ok) invited++
         }
         invited
+    }
+
+    // ── chat ──────────────────────────────────────────────────────────────
+    private fun messages(boardId: String) = boards.document(boardId).collection("messages")
+    private fun typing(boardId: String) = boards.document(boardId).collection("typing")
+
+    /** Realtime messages for [boardId], oldest first (capped). */
+    fun observeMessages(boardId: String, limit: Long = 100): Flow<List<BoardMessage>> = callbackFlow {
+        val uid = myUid
+        val registration = messages(boardId)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .limit(limit)
+            .addSnapshotListener { snap, _ ->
+                val list = snap?.documents?.map { d ->
+                    BoardMessage(
+                        id = d.id,
+                        userId = d.getString("userId") ?: "",
+                        userName = d.getString("userName") ?: "",
+                        userAvatar = d.getString("userAvatar") ?: "",
+                        text = d.getString("text") ?: "",
+                        hasSpoiler = d.getBoolean("hasSpoiler") ?: false,
+                        createdAtMs = d.getTimestamp("createdAt")?.toDate()?.time ?: 0L,
+                        isMine = uid != null && d.getString("userId") == uid,
+                    )
+                }?.reversed() ?: emptyList()
+                trySend(list)
+            }
+        awaitClose { registration.remove() }
+    }
+
+    suspend fun sendMessage(boardId: String, text: String, hasSpoiler: Boolean) = withContext(ioDispatcher) {
+        val uid = myUid ?: return@withContext
+        if (text.isBlank()) return@withContext
+        val me = runCatching { userRepository.getUser(uid) }.getOrNull()
+        runCatching {
+            messages(boardId).add(
+                mapOf(
+                    "userId" to uid,
+                    "userName" to (me?.displayName ?: ""),
+                    "userAvatar" to (me?.avatarUrl ?: ""),
+                    "text" to text.trim(),
+                    "hasSpoiler" to hasSpoiler,
+                    "createdAt" to FieldValue.serverTimestamp(),
+                ),
+            ).await()
+        }
+        runCatching { typing(boardId).document(uid).delete().await() }
+    }
+
+    suspend fun deleteMessage(boardId: String, messageId: String) = withContext(ioDispatcher) {
+        runCatching { messages(boardId).document(messageId).delete().await() }
+    }
+
+    /** Mark the current user as typing (or clear it). */
+    suspend fun setTyping(boardId: String, isTyping: Boolean) = withContext(ioDispatcher) {
+        val uid = myUid ?: return@withContext
+        val doc = typing(boardId).document(uid)
+        if (isTyping) {
+            val me = runCatching { userRepository.getUser(uid) }.getOrNull()
+            runCatching {
+                doc.set(mapOf("name" to (me?.displayName ?: ""), "updatedAt" to FieldValue.serverTimestamp())).await()
+            }
+        } else {
+            runCatching { doc.delete().await() }
+        }
+    }
+
+    /** Names of other users typing in the last 6 seconds. */
+    fun observeTyping(boardId: String): Flow<List<String>> = callbackFlow {
+        val uid = myUid
+        val registration = typing(boardId).addSnapshotListener { snap, _ ->
+            val now = System.currentTimeMillis()
+            val names = snap?.documents.orEmpty()
+                .filter { it.id != uid && (now - (it.getTimestamp("updatedAt")?.toDate()?.time ?: 0L)) < 6_000 }
+                .mapNotNull { it.getString("name")?.ifBlank { null } }
+            trySend(names)
+        }
+        awaitClose { registration.remove() }
     }
 
     /** Single board by id (for the board detail header). */

@@ -192,6 +192,10 @@ service cloud.firestore {
         allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
         allow update, delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       }
+      match /typing/{userId} {
+        allow read: if isSignedIn();
+        allow write: if isSelf(userId);
+      }
     }
 
     // ───────── content requests ─────────
