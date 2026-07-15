@@ -42,7 +42,7 @@ object DownloadUtil {
 
     /** Stable per-movie cache key: the URL path, ignoring the expiring signature query. */
     private val cacheKeyFactory = CacheKeyFactory { dataSpec ->
-        dataSpec.key ?: dataSpec.uri.buildUpon().clearQuery().build().toString()
+        dataSpec.key ?: DownloadKeys.stableCacheKey(dataSpec.uri.toString())
     }
 
     @Synchronized

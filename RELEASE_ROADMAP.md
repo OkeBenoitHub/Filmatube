@@ -213,7 +213,7 @@
 - **Day 113** ✅ — Firestore query optimization + composite indexes (Android paths); pagination audit.
 - **Day 114** ✅ — Image/caching audit (Coil); memory/leak audit; APK size; cold-start.
 - **Day 115** ✅ — Crashlytics + Performance review; fix top issues.
-- **Day 116** — Unit tests (ViewModels/repos) + critical UI/E2E flows; CI gating.
+- **Day 116** ✅ — Unit tests (ViewModels/repos) + critical UI/E2E flows; CI gating.
 - **Day 117** — Security: App Check enforcement; download-encryption verification; rules audit.
 - **Day 118** — Accessibility pass (TalkBack, contrast, touch targets); FR localization sweep.
 - **Day 119** — Android release-candidate build; week review.

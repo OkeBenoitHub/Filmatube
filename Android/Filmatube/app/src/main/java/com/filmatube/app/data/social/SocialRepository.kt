@@ -42,12 +42,8 @@ class SocialRepository @Inject constructor(
     /** Jaccard overlap of the current user's taste with [theirGenres], as a percentage. */
     suspend fun tasteMatch(theirGenres: List<String>): Int = tasteMatch(myGenres(), theirGenres.toSet())
 
-    private fun tasteMatch(mine: Set<String>, theirs: Set<String>): Int {
-        if (mine.isEmpty() || theirs.isEmpty()) return 0
-        val intersection = mine.intersect(theirs).size
-        val union = mine.union(theirs).size
-        return if (union == 0) 0 else intersection * 100 / union
-    }
+    private fun tasteMatch(mine: Set<String>, theirs: Set<String>): Int =
+        TasteMatch.jaccardPercent(mine, theirs)
 
     /** People to follow, ranked by taste overlap (excludes self + already-followed). */
     suspend fun suggestedUsers(limit: Int = 20): List<SuggestedUser> = withContext(ioDispatcher) {
