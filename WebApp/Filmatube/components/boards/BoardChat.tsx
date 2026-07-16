@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Flag, Send, SmilePlus, Trash2 } from "lucide-react";
+import { Flag, Pin, Send, SmilePlus, Trash2, Users } from "lucide-react";
 import {
   addDoc,
   arrayRemove,
@@ -73,6 +73,7 @@ export function BoardChat({
   const [typing, setTyping] = useState<TypingUser[]>([]);
   const [now, setNow] = useState(0);
   const [isMember, setIsMember] = useState(initialIsMember);
+  const [pinnedId, setPinnedId] = useState(board.pinnedMessageId);
   const [muted, setMuted] = useState(false);
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
@@ -108,6 +109,11 @@ export function BoardChat({
       );
     });
   }, [board.id, user]);
+
+  // ── Pinned message (realtime — the owner can pin from either client) ──
+  useEffect(() => {
+    return onSnapshot(doc(db, "boards", board.id), (snap) => setPinnedId(snap.get("pinnedMessageId") ?? ""));
+  }, [board.id]);
 
   // ── My membership + mute state (realtime) ──────────────────
   useEffect(() => {
@@ -194,6 +200,14 @@ export function BoardChat({
     await deleteDoc(doc(db, "boards", board.id, "messages", m.id));
   };
 
+  /** Owner-only: the board update rule lets the owner write any field. */
+  const togglePin = async (m: ChatMessage) => {
+    if (!isOwner) return;
+    await updateDoc(doc(db, "boards", board.id), {
+      pinnedMessageId: pinnedId === m.id ? "" : m.id,
+    });
+  };
+
   const report = async (m: ChatMessage) => {
     if (!user) return;
     await addDoc(collection(db, "reports"), {
@@ -248,6 +262,8 @@ export function BoardChat({
   };
 
   // ── Render ─────────────────────────────────────────────────
+  const pinned = messages.find((m) => m.id === pinnedId);
+
   const reactionSummary = (m: ChatMessage) => {
     const counts = new Map<string, number>();
     Object.values(m.reactions).forEach((e) => counts.set(e, (counts.get(e) ?? 0) + 1));
@@ -256,24 +272,46 @@ export function BoardChat({
 
   return (
     <section className="mt-8 space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-bold text-ink">{board.title}</h2>
-        {user && !isOwner && (
-          <button
-            type="button"
-            onClick={isMember ? leave : join}
-            disabled={busy}
-            className={cn(
-              "h-9 rounded-full px-5 text-sm font-semibold transition-colors disabled:opacity-60",
-              isMember
-                ? "border border-surface-border text-ink hover:bg-surface-hover"
-                : "bg-brand-500 text-white hover:bg-brand-600",
-            )}
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href={`/boards/${board.id}/members`}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-surface-border px-4 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
           >
-            {isMember ? dict.boardLeave : dict.boardJoin}
-          </button>
-        )}
+            <Users className="h-4 w-4" aria-hidden />
+            {dict.membersAction}
+          </Link>
+          {user && !isOwner && (
+            <button
+              type="button"
+              onClick={isMember ? leave : join}
+              disabled={busy}
+              className={cn(
+                "h-9 rounded-full px-5 text-sm font-semibold transition-colors disabled:opacity-60",
+                isMember
+                  ? "border border-surface-border text-ink hover:bg-surface-hover"
+                  : "bg-brand-500 text-white hover:bg-brand-600",
+              )}
+            >
+              {isMember ? dict.boardLeave : dict.boardJoin}
+            </button>
+          )}
+        </div>
       </div>
+
+      {pinned && (
+        <div className="flex items-start gap-2 rounded-xl border border-brand-500/40 bg-brand-500/10 p-3">
+          <Pin className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" aria-hidden />
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">{dict.pinnedLabel}</p>
+            <p className="truncate text-sm text-ink">
+              <span className="font-semibold">{pinned.userName}</span>{" "}
+              {pinned.hasSpoiler ? dict.spoilerHidden : pinned.text || pinned.movieTitle}
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-5 rounded-xl border border-surface-border p-4">
         {messages.length === 0 ? (
@@ -381,6 +419,16 @@ export function BoardChat({
                     {isMember && !muted && (
                       <button type="button" onClick={() => setReplyTo(m)} className="hover:text-ink">
                         {dict.replyAction}
+                      </button>
+                    )}
+                    {isOwner && (
+                      <button
+                        type="button"
+                        onClick={() => togglePin(m)}
+                        className="inline-flex items-center gap-1 hover:text-ink"
+                      >
+                        <Pin className="h-3.5 w-3.5" aria-hidden />
+                        {pinnedId === m.id ? dict.unpinAction : dict.pinAction}
                       </button>
                     )}
                     {m.isMine || isOwner ? (

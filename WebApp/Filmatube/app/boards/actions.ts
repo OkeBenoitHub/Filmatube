@@ -13,6 +13,13 @@ async function requireUser() {
   return user;
 }
 
+/** Board owners (and admins) may moderate a board — mirrors the isBoardOwner() rule. */
+async function assertCanModerate(boardId: string, user: { uid: string; admin?: unknown }) {
+  if (user.admin === true) return;
+  const doc = await getAdminDb().collection("boards").doc(boardId).get();
+  if (!doc.exists || doc.get("ownerId") !== user.uid) throw new Error("Forbidden");
+}
+
 export interface NewBoard {
   title: string;
   description: string;
@@ -56,4 +63,30 @@ export async function createBoard(values: NewBoard): Promise<never> {
   revalidatePath("/boards");
   // redirect() throws NEXT_REDIRECT — the client transition navigates without a second round-trip.
   redirect(`/boards/${ref.id}`);
+}
+
+/** Owner/admin: mute or unmute a member. A muted member can't post (enforced by canPost()). */
+export async function setBoardMemberMuted(boardId: string, uid: string, muted: boolean): Promise<void> {
+  const user = await requireUser();
+  await assertCanModerate(boardId, user);
+  await getAdminDb().collection("boards").doc(boardId).collection("members").doc(uid).set({ muted }, { merge: true });
+  revalidatePath(`/boards/${boardId}/members`);
+}
+
+/** Owner/admin: remove a member — deletes the member doc and drops them from memberIds. */
+export async function removeBoardMember(boardId: string, uid: string): Promise<void> {
+  const user = await requireUser();
+  await assertCanModerate(boardId, user);
+
+  const db = getAdminDb();
+  const board = db.collection("boards").doc(boardId);
+  if ((await board.get()).get("ownerId") === uid) throw new Error("Cannot remove the owner");
+
+  const batch = db.batch();
+  batch.update(board, { memberIds: FieldValue.arrayRemove(uid), memberCount: FieldValue.increment(-1) });
+  batch.delete(board.collection("members").doc(uid));
+  await batch.commit();
+
+  revalidatePath(`/boards/${boardId}/members`);
+  revalidatePath(`/boards/${boardId}`);
 }

@@ -67,6 +67,12 @@ export async function getBoards(type?: string, limit = 50): Promise<Board[]> {
   return snap.docs.map((d) => mapBoard(d.id, d.data()));
 }
 
+/** Every board, public or not, newest first — admin only (the CMS gates on the admin claim). */
+export async function getAllBoards(limit = 200): Promise<Board[]> {
+  const snap = await getAdminDb().collection("boards").orderBy("createdAt", "desc").limit(limit).get();
+  return snap.docs.map((d) => mapBoard(d.id, d.data()));
+}
+
 /** Boards the user owns or has joined, newest first. */
 export async function getMyBoards(uid: string, limit = 50): Promise<Board[]> {
   const snap = await getAdminDb()
@@ -88,6 +94,41 @@ export async function getBoard(id: string, uid?: string): Promise<Board | null> 
     if (!uid || (board.ownerId !== uid && !members.includes(uid))) return null;
   }
   return board;
+}
+
+/** A board member, joined with their user profile (the member doc holds only uid/role/muted). */
+export interface BoardMember {
+  uid: string;
+  name: string;
+  avatar: string;
+  role: string;
+  muted: boolean;
+}
+
+/** Members of [boardId], owner first then alphabetical. */
+export async function getBoardMembers(boardId: string, limit = 200): Promise<BoardMember[]> {
+  const db = getAdminDb();
+  const snap = await db.collection("boards").doc(boardId).collection("members").limit(limit).get();
+  if (snap.empty) return [];
+
+  const profiles = await db.getAll(...snap.docs.map((d) => db.collection("users").doc(d.id)));
+  const byId = new Map(profiles.map((p) => [p.id, p]));
+
+  return snap.docs
+    .map((d) => {
+      const profile = byId.get(d.id);
+      return {
+        uid: d.id,
+        name: (profile?.get("displayName") as string) ?? "",
+        avatar: (profile?.get("avatarUrl") as string) ?? "",
+        role: (d.get("role") as string) ?? "member",
+        muted: d.get("muted") === true,
+      };
+    })
+    .sort((a, b) => {
+      if (a.role !== b.role) return a.role === "owner" ? -1 : b.role === "owner" ? 1 : 0;
+      return a.name.localeCompare(b.name);
+    });
 }
 
 /** Whether [uid] is a member of [boardId] — mirrors the Android membership check. */
