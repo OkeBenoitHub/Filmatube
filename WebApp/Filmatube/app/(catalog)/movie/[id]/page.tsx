@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Play, Film } from "lucide-react";
+import { Play } from "lucide-react";
 import { MovieRow } from "@/components/catalog/MovieRow";
 import { ShareBar } from "@/components/catalog/ShareBar";
+import { TrailerButton } from "@/components/catalog/TrailerButton";
 import { SaveButton } from "@/components/catalog/SaveButton";
 import { ReactionBar } from "@/components/social/ReactionBar";
 import { RecommendButton } from "@/components/social/RecommendButton";
@@ -53,19 +54,21 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
   return (
     <div className="pb-8">
       {/* Backdrop */}
-      <div className="relative h-[46vh] min-h-[280px] w-full overflow-hidden">
+      <div className="relative h-[42vh] min-h-[240px] w-full overflow-hidden">
         {movie.backdropUrl && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={movie.backdropUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <img src={movie.backdropUrl} alt="" className="absolute inset-0 h-full w-full object-cover object-top" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/60 to-transparent" />
+        {/* Fade fully to the page background so the overlapping poster + title always land on a solid base. */}
+        <div className="absolute inset-0 bg-gradient-to-t from-surface from-40% via-surface/85 to-transparent" />
       </div>
 
-      <div className="mx-auto -mt-28 max-w-5xl px-4 md:px-6">
-        <div className="flex flex-col gap-6 md:flex-row">
+      <div className="mx-auto max-w-5xl px-4 md:px-6">
+        {/* Poster overlaps the banner; the title sits beside it — both on the solid gradient base. */}
+        <div className="-mt-24 flex flex-col gap-5 sm:flex-row sm:items-end md:-mt-28">
           {/* Poster */}
-          <div className="w-36 shrink-0 md:w-48">
-            <div className="aspect-[2/3] overflow-hidden rounded-xl border border-surface-border bg-surface-hover shadow-lg">
+          <div className="w-32 shrink-0 sm:w-40 md:w-48">
+            <div className="aspect-[2/3] overflow-hidden rounded-xl border border-surface-border bg-surface-hover shadow-2xl shadow-black/40">
               {movie.posterUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={movie.posterUrl} alt="" className="h-full w-full object-cover" />
@@ -73,9 +76,9 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
             </div>
           </div>
 
-          {/* Meta */}
-          <div className="flex-1 space-y-4 pt-2 md:pt-24">
-            <h1 className="text-3xl font-extrabold text-ink md:text-4xl">{title}</h1>
+          {/* Title + key facts */}
+          <div className="min-w-0 flex-1 space-y-3 pb-1">
+            <h1 className="text-3xl font-extrabold leading-tight text-ink md:text-4xl">{title}</h1>
             <div className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
               {movie.year > 0 && <span>{movie.year}</span>}
               {movie.ageRating && (
@@ -94,55 +97,48 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
                 ))}
               </div>
             )}
-
-            <div className="flex flex-wrap items-center gap-3">
-              {movie.isComingSoon ? (
-                <span className="inline-flex h-11 items-center rounded-lg bg-surface-hover px-6 text-sm font-semibold text-ink-muted">
-                  {c.comingSoon}
-                </span>
-              ) : (
-                <Link
-                  href={`/watch/${movie.id}`}
-                  className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand-500 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
-                >
-                  <Play className="h-4 w-4 fill-current" aria-hidden />
-                  {c.play}
-                </Link>
-              )}
-              {movie.trailerUrl && (
-                <a
-                  href={movie.trailerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-11 items-center gap-2 rounded-lg border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
-                >
-                  <Film className="h-4 w-4" aria-hidden />
-                  {c.trailer}
-                </a>
-              )}
-              <SaveButton movieId={movie.id} dict={c} />
-              <RecommendButton movieId={movie.id} movieTitle={title} dict={c} />
-              <ShareToBoardButton movieId={movie.id} movieTitle={title} moviePoster={movie.posterUrl} dict={c} />
-              <ShareBar movieId={movie.id} title={title} dict={c} />
-            </div>
-
-            <ReactionBar movieId={movie.id} dict={c} />
-
-            <StarRating movieId={movie.id} dict={c} />
-
-            {localized(movie.description, locale) && (
-              <p className="max-w-2xl text-sm leading-relaxed text-ink-muted md:text-base">
-                {localized(movie.description, locale)}
-              </p>
-            )}
-
-            {movie.directors.length > 0 && (
-              <p className="text-sm text-ink-muted">
-                <span className="text-ink-faint">{c.directedBy} </span>
-                {movie.directors.join(", ")}
-              </p>
-            )}
           </div>
+        </div>
+
+        {/* Actions + details, full width below the header */}
+        <div className="mt-6 space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            {movie.isComingSoon ? (
+              <span className="inline-flex h-11 items-center rounded-lg bg-surface-hover px-6 text-sm font-semibold text-ink-muted">
+                {c.comingSoon}
+              </span>
+            ) : (
+              <Link
+                href={`/watch/${movie.id}`}
+                className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand-500 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+              >
+                <Play className="h-4 w-4 fill-current" aria-hidden />
+                {c.play}
+              </Link>
+            )}
+            {movie.trailerUrl && <TrailerButton url={movie.trailerUrl} dict={c} />}
+            <SaveButton movieId={movie.id} dict={c} />
+            <RecommendButton movieId={movie.id} movieTitle={title} dict={c} />
+            <ShareToBoardButton movieId={movie.id} movieTitle={title} moviePoster={movie.posterUrl} dict={c} />
+            <ShareBar movieId={movie.id} title={title} dict={c} />
+          </div>
+
+          <ReactionBar movieId={movie.id} dict={c} />
+
+          <StarRating movieId={movie.id} dict={c} />
+
+          {localized(movie.description, locale) && (
+            <p className="max-w-2xl text-sm leading-relaxed text-ink-muted md:text-base">
+              {localized(movie.description, locale)}
+            </p>
+          )}
+
+          {movie.directors.length > 0 && (
+            <p className="text-sm text-ink-muted">
+              <span className="text-ink-faint">{c.directedBy} </span>
+              {movie.directors.join(", ")}
+            </p>
+          )}
         </div>
 
         {/* Cast */}
