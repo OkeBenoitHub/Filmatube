@@ -142,6 +142,8 @@ fun PlayerControls(
     onSetSleepTimer: (SleepTimerOption?) -> Unit,
     onInteract: () -> Unit,
     modifier: Modifier = Modifier,
+    /** False for watch-party guests: the host drives playback, so transport is read-only. */
+    transportEnabled: Boolean = true,
 ) {
     val shown = if (state.isScrubbing) state.scrubPosition else state.position
     val fraction = if (state.duration > 0) shown.toFloat() / state.duration else 0f
@@ -183,40 +185,53 @@ fun PlayerControls(
             )
         }
 
-        // Centre transport.
-        Row(
-            modifier = Modifier.align(Alignment.Center),
-            horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xl),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            ControlIcon(Icons.Filled.Replay10, R.string.player_rewind, size = 44.dp) {
-                onInteract()
-                player.seekTo((player.currentPosition - SEEK_STEP_MS).coerceAtLeast(0L))
-            }
-            ControlIcon(
-                imageVector = when {
-                    state.isEnded -> Icons.Filled.Replay
-                    state.isPlaying -> Icons.Filled.Pause
-                    else -> Icons.Filled.PlayArrow
-                },
-                contentDescription = if (state.isPlaying) R.string.player_pause else R.string.player_play,
-                size = 64.dp,
+        // Centre transport — hidden for party guests; the host is the single source of truth.
+        if (transportEnabled) {
+            Row(
+                modifier = Modifier.align(Alignment.Center),
+                horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xl),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                onInteract()
-                when {
-                    state.isEnded -> {
-                        player.seekTo(0L)
-                        player.play()
+                ControlIcon(Icons.Filled.Replay10, R.string.player_rewind, size = 44.dp) {
+                    onInteract()
+                    player.seekTo((player.currentPosition - SEEK_STEP_MS).coerceAtLeast(0L))
+                }
+                ControlIcon(
+                    imageVector = when {
+                        state.isEnded -> Icons.Filled.Replay
+                        state.isPlaying -> Icons.Filled.Pause
+                        else -> Icons.Filled.PlayArrow
+                    },
+                    contentDescription = if (state.isPlaying) R.string.player_pause else R.string.player_play,
+                    size = 64.dp,
+                ) {
+                    onInteract()
+                    when {
+                        state.isEnded -> {
+                            player.seekTo(0L)
+                            player.play()
+                        }
+                        state.isPlaying -> player.pause()
+                        else -> player.play()
                     }
-                    state.isPlaying -> player.pause()
-                    else -> player.play()
+                }
+                ControlIcon(Icons.Filled.Forward10, R.string.player_forward, size = 44.dp) {
+                    onInteract()
+                    val max = if (state.duration > 0) state.duration else Long.MAX_VALUE
+                    player.seekTo((player.currentPosition + SEEK_STEP_MS).coerceAtMost(max))
                 }
             }
-            ControlIcon(Icons.Filled.Forward10, R.string.player_forward, size = 44.dp) {
-                onInteract()
-                val max = if (state.duration > 0) state.duration else Long.MAX_VALUE
-                player.seekTo((player.currentPosition + SEEK_STEP_MS).coerceAtMost(max))
-            }
+        } else {
+            Text(
+                text = stringResource(R.string.party_host_controls),
+                style = MaterialTheme.typography.labelLarge,
+                color = Color.White.copy(alpha = 0.85f),
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .clip(RoundedCornerShape(50))
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .padding(horizontal = FilmatubeSpacing.md, vertical = FilmatubeSpacing.sm),
+            )
         }
 
         // Bottom scrubber.
@@ -232,6 +247,8 @@ fun PlayerControls(
             Text(formatTime(shown), color = Color.White, style = MaterialTheme.typography.labelMedium)
             Slider(
                 value = fraction.coerceIn(0f, 1f),
+                // Guests see progress but can't scrub — the drift loop would only undo it.
+                enabled = transportEnabled,
                 onValueChange = { value ->
                     onInteract()
                     state.isScrubbing = true

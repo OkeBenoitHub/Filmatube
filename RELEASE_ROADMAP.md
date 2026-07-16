@@ -255,7 +255,7 @@
 - **Day 142** ✅ — Create party (pick movie, set time); invite board members/followers (FCM).
 - **Day 143** ✅ — Synced playback room; drift correction; guest catch-up.
 - **Day 144** ✅ — Floating chat + emoji reactions overlay during playback.
-- **Day 145** — Host controls (pause/seek/skip); guest follow.
+- **Day 145** ✅ — Host controls (pause/seek/skip); guest follow.
 - **Day 146** — Leave/end party; edge cases (host drops → handoff/end).
 - **Day 147** — Week review.
 

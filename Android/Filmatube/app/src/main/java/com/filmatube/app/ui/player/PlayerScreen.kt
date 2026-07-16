@@ -64,6 +64,7 @@ fun PlayerScreen(
     viewModel: PlayerViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isPartyHost by viewModel.isPartyHost.collectAsStateWithLifecycle()
     val partyMessages by viewModel.partyMessages.collectAsStateWithLifecycle()
     val partyReactions by viewModel.partyReactions.collectAsStateWithLifecycle()
     // Emoji already animated away — kept out of the render so they don't replay on recomposition.
@@ -217,6 +218,8 @@ fun PlayerScreen(
                     sleepOption = sleepOption,
                     sleepRemainingMs = sleepRemainingMs,
                     onSetSleepTimer = viewModel::setSleepTimer,
+                    // Party guests follow the host: transport is read-only for them.
+                    transportEnabled = !viewModel.isParty || isPartyHost,
                     onInteract = { interaction++ },
                 )
             }

@@ -428,6 +428,7 @@
     <string name="party_my_parties">Mes séances partagées</string>
     <string name="party_chat_hint">Dites quelque chose…</string>
     <string name="party_chat_send">Envoyer</string>
+    <string name="party_host_controls">L\'organisateur contrôle la lecture</string>
     <!-- Écran de présentation / à propos dans l'app -->
     <string name="landing_topbar">À propos de Filmatube</string>
     <string name="landing_badge">Les films + ceux qui les aiment</string>
