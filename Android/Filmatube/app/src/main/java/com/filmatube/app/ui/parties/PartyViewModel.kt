@@ -64,6 +64,9 @@ class PartyViewModel @Inject constructor(
     fun start() = launchBusy { partyRepository.startParty(partyId) }
     fun end() = launchBusy { partyRepository.endParty(partyId) }
 
+    /** Host hands the room to a guest and steps down (so the party survives them leaving). */
+    fun makeHost(uid: String) = launchBusy { partyRepository.transferHost(partyId, uid) }
+
     fun inviteFollowers() {
         val p = party.value ?: return
         launchBusy { _inviteResult.value = InviteResult(partyRepository.inviteFollowers(p.id, p)) }

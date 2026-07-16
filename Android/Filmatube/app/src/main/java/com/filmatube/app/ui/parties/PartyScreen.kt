@@ -221,7 +221,7 @@ fun PartyScreen(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     UserAvatar(url = member.avatar, name = member.name, size = 40.dp)
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(member.name, style = MaterialTheme.typography.bodyLarge)
                         Text(
                             text = if (member.role == "host") {
@@ -232,6 +232,12 @@ fun PartyScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                    }
+                    // Handoff: lets the host leave without killing the room.
+                    if (isHost && member.role != "host" && !p.isEnded) {
+                        TextButton(onClick = { viewModel.makeHost(member.uid) }, enabled = !busy) {
+                            Text(stringResource(R.string.party_make_host))
+                        }
                     }
                 }
             }

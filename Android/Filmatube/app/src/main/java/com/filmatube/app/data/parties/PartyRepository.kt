@@ -153,6 +153,29 @@ class PartyRepository @Inject constructor(
         runCatching { parties.document(partyId).update("status", PartyStatus.ENDED).await() }
     }
 
+    /**
+     * Host only: hand the room to another member and step down to guest.
+     *
+     * Handoff is an explicit host action rather than an automatic claim: rules can't verify
+     * "the old host is really gone", so letting any member seize hostId would let a guest
+     * hijack the room. If a host drops without handing off, guests see the room go stale and
+     * the party is simply ended (by the host later, or left to expire).
+     */
+    suspend fun transferHost(partyId: String, newHostId: String) = withContext(ioDispatcher) {
+        val uid = myUid ?: return@withContext
+        val doc = parties.document(partyId)
+        val party = runCatching { doc.get().await() }.getOrNull() ?: return@withContext
+        if (party.getString("hostId") != uid) return@withContext
+        if (newHostId == uid) return@withContext
+
+        val newHost = runCatching { userRepository.getUser(newHostId) }.getOrNull()
+        val batch = firestore.batch()
+        batch.update(doc, mapOf("hostId" to newHostId, "hostName" to (newHost?.displayName ?: "")))
+        batch.set(doc.collection("members").document(newHostId), mapOf("role" to "host"), com.google.firebase.firestore.SetOptions.merge())
+        batch.set(doc.collection("members").document(uid), mapOf("role" to "guest"), com.google.firebase.firestore.SetOptions.merge())
+        runCatching { batch.commit().await() }
+    }
+
     // ── reads ─────────────────────────────────────────────────────────────
 
     fun observeParty(partyId: String): Flow<Party?> = callbackFlow {

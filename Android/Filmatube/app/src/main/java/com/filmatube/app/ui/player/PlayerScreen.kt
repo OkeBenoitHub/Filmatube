@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
@@ -65,6 +66,7 @@ fun PlayerScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isPartyHost by viewModel.isPartyHost.collectAsStateWithLifecycle()
+    val partyEnded by viewModel.partyEnded.collectAsStateWithLifecycle()
     val partyMessages by viewModel.partyMessages.collectAsStateWithLifecycle()
     val partyReactions by viewModel.partyReactions.collectAsStateWithLifecycle()
     // Emoji already animated away — kept out of the render so they don't replay on recomposition.
@@ -243,8 +245,28 @@ fun PlayerScreen(
                 )
             }
 
+            // Host ended the room: tell everyone, then bow out of the player.
+            if (partyEnded) {
+                LaunchedEffect(Unit) {
+                    kotlinx.coroutines.delay(2500)
+                    onBack()
+                }
+                Text(
+                    text = stringResource(R.string.party_ended_notice),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .windowInsetsPadding(WindowInsets.systemBars)
+                        .padding(top = 72.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(Color.Black.copy(alpha = 0.7f))
+                        .padding(horizontal = FilmatubeSpacing.lg, vertical = FilmatubeSpacing.sm),
+                )
+            }
+
             // ── Watch-party overlay (Day 144) ─────────────────────
-            if (viewModel.isParty) {
+            if (viewModel.isParty && !partyEnded) {
                 // Floating emoji rise from the bottom-right, fresh ones only.
                 val now = System.currentTimeMillis()
                 Column(

@@ -80,6 +80,10 @@ class PlayerViewModel @Inject constructor(
     val isParty: Boolean get() = partyId != null
     private var partyHeartbeat: Job? = null
 
+    /** True once the host ends the room — the screen shows a notice and leaves. */
+    private val _partyEnded = MutableStateFlow(false)
+    val partyEnded: StateFlow<Boolean> = _partyEnded.asStateFlow()
+
     /** Party overlay: chat lines + floating emoji (empty outside party mode). */
     private val _partyMessages = MutableStateFlow<List<PartyMessage>>(emptyList())
     val partyMessages: StateFlow<List<PartyMessage>> = _partyMessages.asStateFlow()
@@ -237,6 +241,18 @@ class PlayerViewModel @Inject constructor(
         // Overlay streams run for everyone in the room, host or guest.
         viewModelScope.launch { partyRepository.observeMessages(pid).collect { _partyMessages.value = it } }
         viewModelScope.launch { partyRepository.observeReactions(pid).collect { _partyReactions.value = it } }
+
+        // Watch the room itself: an ended party (or a handoff) must take effect live.
+        viewModelScope.launch {
+            partyRepository.observeParty(pid).collect { p ->
+                if (p == null) return@collect
+                _isPartyHost.value = p.hostId == partyRepository.myUid
+                if (p.isEnded && !_partyEnded.value) {
+                    _partyEnded.value = true
+                    player.pause()
+                }
+            }
+        }
 
         viewModelScope.launch {
             val party = partyRepository.observeParty(pid).first() ?: return@launch

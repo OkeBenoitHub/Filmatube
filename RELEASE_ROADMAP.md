@@ -256,7 +256,7 @@
 - **Day 143** ✅ — Synced playback room; drift correction; guest catch-up.
 - **Day 144** ✅ — Floating chat + emoji reactions overlay during playback.
 - **Day 145** ✅ — Host controls (pause/seek/skip); guest follow.
-- **Day 146** — Leave/end party; edge cases (host drops → handoff/end).
+- **Day 146** ✅ — Leave/end party; edge cases (host drops → handoff/end).
 - **Day 147** — Week review.
 
 ### Week 22 — Web Watch Parties + **v1.1 Release** (Days 148–154) (W)
