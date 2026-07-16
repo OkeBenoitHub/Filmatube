@@ -54,16 +54,20 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
   return (
     <div className="pb-8">
       {/* Backdrop */}
-      <div className="relative h-[42vh] min-h-[240px] w-full overflow-hidden">
+      <div className="relative h-[46vh] min-h-[280px] w-full overflow-hidden">
         {movie.backdropUrl && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={movie.backdropUrl} alt="" className="absolute inset-0 h-full w-full object-cover object-top" />
+          <img src={movie.backdropUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
         )}
-        {/* Fade fully to the page background so the overlapping poster + title always land on a solid base. */}
-        <div className="absolute inset-0 bg-gradient-to-t from-surface from-40% via-surface/85 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/60 to-transparent" />
       </div>
 
-      <div className="mx-auto max-w-5xl px-4 md:px-6">
+      {/*
+        `relative z-10` is load-bearing: the gradient above is absolutely positioned, and
+        positioned elements paint above static ones whatever the DOM order — without this, the
+        gradient's opaque bottom covers the top of the poster and the title.
+      */}
+      <div className="relative z-10 mx-auto max-w-5xl px-4 md:px-6">
         {/* Poster overlaps the banner; the title sits beside it — both on the solid gradient base. */}
         <div className="-mt-24 flex flex-col gap-5 sm:flex-row sm:items-end md:-mt-28">
           {/* Poster */}
