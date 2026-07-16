@@ -3,6 +3,14 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  experimental: {
+    // Next 15 defaults the client Router Cache to 0s for dynamic pages, so every revisit
+    // (including Back) refetches from the server. Firestore lives in nam5 (US), so each of
+    // those round-trips costs ~300-500ms from Europe. Reusing a page's payload for 30s makes
+    // repeat navigation instant, the way an SPA's query cache does. Mutations still call
+    // router.refresh(), which busts this cache, so post-write views stay correct.
+    staleTimes: { dynamic: 30, static: 180 },
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "image.tmdb.org" }, // TMDB artwork
