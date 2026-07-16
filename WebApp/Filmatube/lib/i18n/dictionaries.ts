@@ -431,6 +431,11 @@ const en = {
     boardFeatured: "Featured",
     boardDelete: "Delete board",
     boardDeleteConfirm: "Delete this board and all of its messages?",
+    reportScopeAll: "All",
+    reportScopePending: "Pending",
+    reportScopeBoards: "Boards",
+    reportMuteMember: "Mute in board",
+    reportRemoveMember: "Remove from board",
   },
   adminMovies: {
     add: "Add movie",
@@ -1166,6 +1171,11 @@ const fr: Dictionary = {
     boardFeatured: "À la une",
     boardDelete: "Supprimer le forum",
     boardDeleteConfirm: "Supprimer ce forum et tous ses messages ?",
+    reportScopeAll: "Tous",
+    reportScopePending: "En attente",
+    reportScopeBoards: "Forums",
+    reportMuteMember: "Réduire au silence",
+    reportRemoveMember: "Retirer du forum",
   },
   adminMovies: {
     add: "Ajouter un film",
