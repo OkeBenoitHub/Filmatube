@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MessagesSquare, Plus } from "lucide-react";
 import { BoardCard } from "@/components/boards/BoardCard";
+import { BoardSearch } from "@/components/boards/BoardSearch";
 import { PageHero } from "@/components/ui/PageHero";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getBoards, getFeaturedBoards, getMyBoards, BOARD_TYPES } from "@/lib/boards";
@@ -17,12 +18,21 @@ export default async function BoardsPage({
 
   const raw = typeof sp.type === "string" ? sp.type : "";
   const type = raw === BOARD_TYPES.MOVIE || raw === BOARD_TYPES.GENERAL ? raw : undefined;
+  const q = (typeof sp.q === "string" ? sp.q : "").trim();
 
-  const [featured, boards, mine] = await Promise.all([
+  const [featured, allBoards, mine] = await Promise.all([
     getFeaturedBoards(),
-    getBoards(type),
+    getBoards(type, 200),
     user ? getMyBoards(user.uid) : Promise.resolve([]),
   ]);
+
+  // Firestore has no substring search — match title/description/movie over the fetched page.
+  const needle = q.toLowerCase();
+  const boards = needle
+    ? allBoards.filter((b) =>
+        [b.title, b.description, b.movieTitle].some((f) => f.toLowerCase().includes(needle)),
+      )
+    : allBoards;
 
   const filters = [
     { value: "", label: c.boardsFilterAll },
@@ -42,7 +52,7 @@ export default async function BoardsPage({
         </Link>
       </PageHero>
 
-      {featured.length > 0 && (
+      {featured.length > 0 && !q && (
         <section className="mt-12">
           <h2 className="text-lg font-bold text-ink">{c.boardsFeatured}</h2>
           <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
@@ -53,7 +63,7 @@ export default async function BoardsPage({
         </section>
       )}
 
-      {mine.length > 0 && (
+      {mine.length > 0 && !q && (
         <section className="mt-12">
           <h2 className="text-lg font-bold text-ink">{c.boardsMine}</h2>
           <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
@@ -67,13 +77,20 @@ export default async function BoardsPage({
       <section className="mt-12">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-lg font-bold text-ink">{c.boardsAll}</h2>
+          <div className="order-last w-full sm:order-none sm:ml-auto sm:w-auto">
+            <BoardSearch initialQuery={q} type={type} placeholder={c.boardSearchPlaceholder} />
+          </div>
           <div className="flex gap-1.5">
             {filters.map((f) => {
               const active = (type ?? "") === f.value;
+              const params = new URLSearchParams();
+              if (f.value) params.set("type", f.value);
+              if (q) params.set("q", q);
+              const qs = params.toString();
               return (
                 <Link
                   key={f.value || "all"}
-                  href={f.value ? `/boards?type=${f.value}` : "/boards"}
+                  href={qs ? `/boards?${qs}` : "/boards"}
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
@@ -90,7 +107,7 @@ export default async function BoardsPage({
         </div>
 
         {boards.length === 0 ? (
-          <p className="py-16 text-center text-ink-muted">{c.boardsEmpty}</p>
+          <p className="py-16 text-center text-ink-muted">{q ? c.boardsNoResults : c.boardsEmpty}</p>
         ) : (
           <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
             {boards.map((b) => (

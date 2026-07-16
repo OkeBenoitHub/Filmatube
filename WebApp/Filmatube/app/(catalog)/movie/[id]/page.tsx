@@ -7,6 +7,7 @@ import { ShareBar } from "@/components/catalog/ShareBar";
 import { SaveButton } from "@/components/catalog/SaveButton";
 import { ReactionBar } from "@/components/social/ReactionBar";
 import { RecommendButton } from "@/components/social/RecommendButton";
+import { ShareToBoardButton } from "@/components/boards/ShareToBoardButton";
 import { StarRating } from "@/components/social/StarRating";
 import { ReviewsSection } from "@/components/social/ReviewsSection";
 import { CommentsSection } from "@/components/social/CommentsSection";
@@ -121,6 +122,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
               )}
               <SaveButton movieId={movie.id} dict={c} />
               <RecommendButton movieId={movie.id} movieTitle={title} dict={c} />
+              <ShareToBoardButton movieId={movie.id} movieTitle={title} moviePoster={movie.posterUrl} dict={c} />
               <ShareBar movieId={movie.id} title={title} dict={c} />
             </div>
 

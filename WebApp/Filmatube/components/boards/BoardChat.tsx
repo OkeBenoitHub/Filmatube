@@ -77,6 +77,7 @@ export function BoardChat({
   const [muted, setMuted] = useState(false);
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
+  const [spoiler, setSpoiler] = useState(false);
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [reported, setReported] = useState<Record<string, boolean>>({});
   const [pickerFor, setPickerFor] = useState<string | null>(null);
@@ -172,13 +173,15 @@ export function BoardChat({
     const body = text.trim();
     setText("");
     const quoted = replyTo;
+    const marked = spoiler;
     setReplyTo(null);
+    setSpoiler(false);
     await addDoc(collection(db, "boards", board.id, "messages"), {
       userId: user.uid,
       userName: user.displayName ?? "",
       userAvatar: user.photoURL ?? "",
       text: body,
-      hasSpoiler: false,
+      hasSpoiler: marked,
       replyToName: quoted?.userName ?? "",
       replyToText: quoted?.text ?? "",
       createdAt: serverTimestamp(),
@@ -513,6 +516,15 @@ export function BoardChat({
               <Send className="h-4 w-4" aria-hidden />
             </button>
           </div>
+          <label className="flex items-center gap-2 text-sm text-ink-muted">
+            <input
+              type="checkbox"
+              checked={spoiler}
+              onChange={(e) => setSpoiler(e.target.checked)}
+              className="h-4 w-4 accent-brand-500"
+            />
+            {dict.spoilerToggle}
+          </label>
         </div>
       )}
     </section>
