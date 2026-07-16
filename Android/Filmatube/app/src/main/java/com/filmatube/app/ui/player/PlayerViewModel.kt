@@ -21,6 +21,8 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.filmatube.app.data.analytics.PlaybackAnalytics
 import com.filmatube.app.data.download.DownloadRepository
 import com.filmatube.app.data.download.DownloadUtil
+import com.filmatube.app.data.parties.PartyRepository
+import com.filmatube.app.data.parties.PartySyncState
 import com.filmatube.app.data.playback.PlaybackRepository
 import com.filmatube.app.data.playback.WatchProgressRepository
 import com.filmatube.app.data.preferences.UserPreferencesRepository
@@ -62,11 +64,19 @@ class PlayerViewModel @Inject constructor(
     private val feedRepository: FeedRepository,
     private val analytics: PlaybackAnalytics,
     private val crashReporter: CrashReporter,
+    private val partyRepository: PartyRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val movieId: String = checkNotNull(savedStateHandle["movieId"])
     private var movieTitle: String = ""
+
+    /** Watch-party mode: non-null when launched from a live party lobby. */
+    private val partyId: String? = savedStateHandle["party"]
+    private val _isPartyHost = MutableStateFlow(false)
+    val isPartyHost: StateFlow<Boolean> = _isPartyHost.asStateFlow()
+    val isParty: Boolean get() = partyId != null
+    private var partyHeartbeat: Job? = null
 
     private val _uiState = MutableStateFlow<PlayerUiState>(PlayerUiState.Loading)
     val uiState: StateFlow<PlayerUiState> = _uiState.asStateFlow()
@@ -144,6 +154,15 @@ class PlayerViewModel @Inject constructor(
                     analytics.pause(movieId)
                     persistProgress() // save on pause/background
                 }
+                publishPartyState() // host mirrors play/pause to the party (no-op otherwise)
+            }
+
+            override fun onPositionDiscontinuity(
+                oldPosition: Player.PositionInfo,
+                newPosition: Player.PositionInfo,
+                reason: Int,
+            ) {
+                if (reason == Player.DISCONTINUITY_REASON_SEEK) publishPartyState()
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
@@ -181,12 +200,77 @@ class PlayerViewModel @Inject constructor(
     init {
         load()
         registerNetworkCallback()
+        initPartySync()
         // Periodically checkpoint the watch position while playing.
         viewModelScope.launch {
             while (true) {
                 delay(SAVE_INTERVAL_MS)
                 if (player.isPlaying) persistProgress()
             }
+        }
+    }
+
+    // ── watch-party sync (Day 143) ─────────────────────────────────────────
+
+    private var lastPartyState: PartySyncState? = null
+
+    private fun initPartySync() {
+        val pid = partyId ?: return
+        viewModelScope.launch {
+            val party = partyRepository.observeParty(pid).first() ?: return@launch
+            val isHost = party.hostId == partyRepository.myUid
+            _isPartyHost.value = isHost
+
+            if (isHost) {
+                // HOST: heartbeat while playing; play/pause/seek publish via the player listener.
+                partyHeartbeat = viewModelScope.launch {
+                    while (true) {
+                        delay(PARTY_HEARTBEAT_MS)
+                        if (player.isPlaying) publishPartyState()
+                    }
+                }
+            } else {
+                // GUEST: follow the host's writes, and re-check drift between them so a
+                // locally-paused (or slow-buffering) guest converges back to the host.
+                launch {
+                    partyRepository.observeSync(pid).collect { state ->
+                        if (state != null) {
+                            lastPartyState = state
+                            applyPartyState(state)
+                        }
+                    }
+                }
+                launch {
+                    while (true) {
+                        delay(PARTY_HEARTBEAT_MS)
+                        lastPartyState?.let { applyPartyState(it) }
+                    }
+                }
+            }
+        }
+    }
+
+    /** HOST: push the authoritative position/state. */
+    private fun publishPartyState() {
+        val pid = partyId ?: return
+        if (!_isPartyHost.value) return
+        val position = player.currentPosition
+        val playing = player.isPlaying
+        viewModelScope.launch { partyRepository.publishSync(pid, position, playing) }
+    }
+
+    /**
+     * GUEST: converge on the host. Guest catch-up falls out of the same math — on join,
+     * the first snapshot's expected position is far from 0, so we hard-seek to it.
+     */
+    private fun applyPartyState(state: PartySyncState) {
+        if (state.isPlaying != player.isPlaying) {
+            if (state.isPlaying) player.play() else player.pause()
+        }
+        val expected = state.expectedPositionMs()
+        val drift = expected - player.currentPosition
+        if (kotlin.math.abs(drift) > PARTY_DRIFT_TOLERANCE_MS) {
+            player.seekTo(expected.coerceAtLeast(0))
         }
     }
 
@@ -251,7 +335,8 @@ class PlayerViewModel @Inject constructor(
                     _introEndMs.value = (media.movie?.introEndSec ?: 0) * 1000L
                     movieTitle = media.movie?.title?.get("en") ?: ""
                     viewModelScope.launch { feedRepository.publish(FeedEventTypes.WATCHING, movieId, movieTitle) }
-                    val resumeMs = watchProgressRepository.resumePosition(movieId)
+                    // Party playback is host-synced — solo resume would fight the sync engine.
+                    val resumeMs = if (partyId == null) watchProgressRepository.resumePosition(movieId) else 0L
                     if (resumeMs > 0L) {
                         player.seekTo(resumeMs)
                         _resumePrompt.value = resumeMs
@@ -348,12 +433,24 @@ class PlayerViewModel @Inject constructor(
 
     override fun onCleared() {
         sleepJob?.cancel()
+        partyHeartbeat?.cancel()
+        // Host leaving the player pauses the room where it stands (GlobalScope-free: the
+        // repository call must outlive this ViewModel, so it uses its own SupervisorJob).
+        if (_isPartyHost.value && partyId != null) {
+            val pid = partyId
+            val position = player.currentPosition
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.IO).launch {
+                partyRepository.publishSync(pid, position, isPlaying = false)
+            }
+        }
         networkCallback?.let { cb -> runCatching { connectivityManager?.unregisterNetworkCallback(cb) } }
         player.release()
     }
 
     private companion object {
         const val SAVE_INTERVAL_MS = 10_000L
+        const val PARTY_HEARTBEAT_MS = 5_000L
+        const val PARTY_DRIFT_TOLERANCE_MS = 2_500L
     }
 }
 

@@ -36,6 +36,7 @@
                 <data android:scheme="filmatube" android:host="movie" />
                 <data android:scheme="filmatube" android:host="watch" />
                 <data android:scheme="filmatube" android:host="board" />
+                <data android:scheme="filmatube" android:host="party" />
             </intent-filter>
         </activity>
 

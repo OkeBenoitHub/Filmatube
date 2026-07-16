@@ -48,6 +48,7 @@ fun NotificationCenterScreen(
     onOpenMovie: (String) -> Unit,
     onOpenUser: (String) -> Unit,
     onOpenBoard: (String) -> Unit,
+    onOpenParty: (String) -> Unit,
     viewModel: NotificationCenterViewModel = hiltViewModel(),
 ) {
     val notifications by viewModel.notifications.collectAsStateWithLifecycle()
@@ -91,13 +92,13 @@ fun NotificationCenterScreen(
             if (today.isNotEmpty()) {
                 item { SectionHeader(stringResource(R.string.notifications_today)) }
                 items(today, key = { it.id }) { n ->
-                    NotificationRow(n, onOpen = { openTarget(n, viewModel, onOpenMovie, onOpenUser, onOpenBoard) })
+                    NotificationRow(n, onOpen = { openTarget(n, viewModel, onOpenMovie, onOpenUser, onOpenBoard, onOpenParty) })
                 }
             }
             if (earlier.isNotEmpty()) {
                 item { SectionHeader(stringResource(R.string.notifications_earlier)) }
                 items(earlier, key = { it.id }) { n ->
-                    NotificationRow(n, onOpen = { openTarget(n, viewModel, onOpenMovie, onOpenUser, onOpenBoard) })
+                    NotificationRow(n, onOpen = { openTarget(n, viewModel, onOpenMovie, onOpenUser, onOpenBoard, onOpenParty) })
                 }
             }
         }
@@ -110,9 +111,11 @@ private fun openTarget(
     onOpenMovie: (String) -> Unit,
     onOpenUser: (String) -> Unit,
     onOpenBoard: (String) -> Unit,
+    onOpenParty: (String) -> Unit,
 ) {
     viewModel.markRead(n.id)
     when {
+        n.partyId.isNotBlank() -> onOpenParty(n.partyId)
         n.boardId.isNotBlank() -> onOpenBoard(n.boardId)
         n.movieId.isNotBlank() -> onOpenMovie(n.movieId)
         n.actorId.isNotBlank() -> onOpenUser(n.actorId)
@@ -178,6 +181,7 @@ private fun actionText(type: String): String = stringResource(
         NotificationTypes.REPLY -> R.string.notif_reply
         NotificationTypes.REVIEW_LIKE -> R.string.notif_review_like
         NotificationTypes.BOARD_INVITE -> R.string.notif_board_invite
+        NotificationTypes.PARTY_INVITE -> R.string.notif_party_invite
         else -> R.string.notif_recommendation
     },
 )

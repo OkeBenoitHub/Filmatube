@@ -78,6 +78,7 @@
     <string name="notif_reply">replied to you</string>
     <string name="notif_review_like">liked your review</string>
     <string name="notif_board_invite">invited you to a board</string>
+    <string name="notif_party_invite">invited you to a watch party</string>
     <string name="notif_prefs_title">Notification preferences</string>
     <string name="settings_notifications">Notifications</string>
     <string name="boards_title">Boards</string>
@@ -399,4 +400,33 @@
     <string name="error_network">No internet connection</string>
     <string name="error_not_found">Not found</string>
     <string name="error_unauthorized">Please sign in again</string>
+    <!-- Watch parties (Week 21) -->
+    <string name="party_create_title">New watch party</string>
+    <string name="party_create_subtitle">Watch it together, perfectly in sync.</string>
+    <string name="party_create_action">Watch party</string>
+    <string name="party_when">When does it start?</string>
+    <string name="party_start_now">Now</string>
+    <string name="party_start_30m">In 30 minutes</string>
+    <string name="party_start_1h">In 1 hour</string>
+    <string name="party_start_2h">In 2 hours</string>
+    <string name="party_create_button">Create party</string>
+    <string name="party_create_error">Couldn0027t create the party. Try again.</string>
+    <string name="party_title">Watch party</string>
+    <string name="party_hosted_by">Hosted by %1$s</string>
+    <string name="party_status_live">Live now</string>
+    <string name="party_status_ended">Ended</string>
+    <string name="party_over">This party is over.</string>
+    <string name="party_watch_together">Watch together</string>
+    <string name="party_start">Start the party</string>
+    <string name="party_end">End the party</string>
+    <string name="party_join">Join party</string>
+    <string name="party_leave">Leave party</string>
+    <string name="party_waiting_host">Waiting for the host to start…</string>
+    <string name="party_invite_followers">Invite followers</string>
+    <string name="party_invite_board">Invite a board</string>
+    <string name="party_invited_count">Invitations sent:</string>
+    <string name="party_members">Guests (%1$d)</string>
+    <string name="party_role_host">Host</string>
+    <string name="party_role_guest">Guest</string>
+    <string name="party_my_parties">My watch parties</string>
 </resources>

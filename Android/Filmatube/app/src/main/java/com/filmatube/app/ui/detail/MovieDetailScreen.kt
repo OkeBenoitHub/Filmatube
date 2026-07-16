@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.material.icons.filled.Downloading
+import androidx.compose.material.icons.filled.ConnectedTv
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.PlayArrow
@@ -94,6 +95,7 @@ fun MovieDetailScreen(
     onActorClick: (String) -> Unit,
     onOpenReviews: (String) -> Unit,
     onOpenComments: (String) -> Unit,
+    onCreateParty: (String) -> Unit,
     viewModel: MovieDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -140,6 +142,7 @@ fun MovieDetailScreen(
                 onRate = viewModel::setRating,
                 onRecommend = { viewModel.loadRecipients(); showRecommend = true },
                 onShareToBoard = { showShareBoard = true },
+                onCreateParty = { onCreateParty(movie.data.id) },
                 onOpenReviews = onOpenReviews,
                 onOpenComments = onOpenComments,
                 downloadState = downloadState,
@@ -245,6 +248,7 @@ private fun DetailContent(
     onRate: (Int) -> Unit,
     onRecommend: () -> Unit,
     onShareToBoard: () -> Unit,
+    onCreateParty: () -> Unit,
     onOpenReviews: (String) -> Unit,
     onOpenComments: (String) -> Unit,
     downloadState: DownloadUiState,
@@ -407,6 +411,13 @@ private fun DetailContent(
                 text = stringResource(R.string.board_share_to),
                 onClick = onShareToBoard,
                 leadingIcon = Icons.Filled.Groups,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            FilmatubeSecondaryButton(
+                text = stringResource(R.string.party_create_action),
+                onClick = onCreateParty,
+                leadingIcon = Icons.Filled.ConnectedTv,
                 modifier = Modifier.fillMaxWidth(),
             )
 

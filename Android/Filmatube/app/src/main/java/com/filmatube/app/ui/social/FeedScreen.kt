@@ -33,6 +33,7 @@ import com.filmatube.app.R
 import com.filmatube.app.data.social.FeedEventTypes
 import com.filmatube.app.ui.components.FilmatubeFilterChip
 import com.filmatube.app.ui.components.UserAvatar
+import com.filmatube.app.ui.parties.MyPartiesRow
 import com.filmatube.app.ui.theme.FilmatubeSpacing
 
 @Composable
@@ -40,6 +41,7 @@ fun FeedScreen(
     onMovieClick: (String) -> Unit,
     onUserClick: (String) -> Unit,
     onOpenBoards: () -> Unit,
+    onOpenParty: (String) -> Unit,
     viewModel: FeedViewModel = hiltViewModel(),
 ) {
     val feed by viewModel.feed.collectAsStateWithLifecycle()
@@ -62,6 +64,8 @@ fun FeedScreen(
                 )
             }
         }
+
+        MyPartiesRow(onOpenParty = onOpenParty)
 
         Row(
             modifier = Modifier

@@ -14,6 +14,8 @@ import com.filmatube.app.ui.boards.BoardDetailScreen
 import com.filmatube.app.ui.boards.BoardsScreen
 import com.filmatube.app.ui.boards.CreateBoardScreen
 import com.filmatube.app.ui.boards.MembersScreen
+import com.filmatube.app.ui.parties.CreatePartyScreen
+import com.filmatube.app.ui.parties.PartyScreen
 import com.filmatube.app.ui.community.CommunityScreen
 import com.filmatube.app.ui.social.CommentsScreen
 import com.filmatube.app.ui.detail.ActorScreen
@@ -57,17 +59,23 @@ private const val ROUTE_BOARD_MEMBERS = "board/{boardId}/members"
 fun boardRoute(boardId: String) = "board/$boardId"
 fun boardMembersRoute(boardId: String) = "board/$boardId/members"
 
+private const val ROUTE_PARTY = "party/{partyId}"
+private const val ROUTE_CREATE_PARTY = "party/create/{movieId}"
+fun partyRoute(partyId: String) = "party/$partyId"
+fun createPartyRoute(movieId: String) = "party/create/$movieId"
+
 fun followsRoute(mode: String) = "follows/$mode"
 fun publicProfileRoute(userId: String) = "user/$userId"
 fun reviewsRoute(movieId: String) = "reviews/$movieId"
 fun commentsRoute(movieId: String) = "comments/$movieId"
 private const val ROUTE_MOVIE = "movie/{movieId}"
-private const val ROUTE_PLAYER = "player/{movieId}"
+private const val ROUTE_PLAYER = "player/{movieId}?party={party}"
 private const val ROUTE_BROWSE = "browse?genre={genre}"
 private const val ROUTE_ACTOR = "actor/{name}"
 
 fun movieRoute(movieId: String) = "movie/$movieId"
 fun playerRoute(movieId: String) = "player/$movieId"
+fun partyPlayerRoute(movieId: String, partyId: String) = "player/$movieId?party=$partyId"
 fun browseRoute(genre: String?) = if (genre == null) "browse" else "browse?genre=$genre"
 fun actorRoute(name: String) = "actor/${Uri.encode(name)}"
 
@@ -104,11 +112,15 @@ fun FilmatubeNavHost(
                 onActorClick = { navController.navigate(actorRoute(it)) },
                 onOpenReviews = { navController.navigate(reviewsRoute(it)) },
                 onOpenComments = { navController.navigate(commentsRoute(it)) },
+                onCreateParty = { navController.navigate(createPartyRoute(it)) },
             )
         }
         composable(
             route = ROUTE_PLAYER,
-            arguments = listOf(navArgument("movieId") { type = NavType.StringType }),
+            arguments = listOf(
+                navArgument("movieId") { type = NavType.StringType },
+                navArgument("party") { type = NavType.StringType; nullable = true; defaultValue = null },
+            ),
             deepLinks = listOf(navDeepLink { uriPattern = "filmatube://watch/{movieId}" }),
         ) {
             PlayerScreen(
@@ -147,6 +159,7 @@ fun FilmatubeNavHost(
                 onMovieClick = { navController.navigate(movieRoute(it)) },
                 onUserClick = { navController.navigate(publicProfileRoute(it)) },
                 onOpenBoards = { navController.navigate(ROUTE_BOARDS) },
+                onOpenParty = { navController.navigate(partyRoute(it)) },
             )
         }
         composable(TopLevelDestination.PROFILE.route) {
@@ -212,6 +225,7 @@ fun FilmatubeNavHost(
                 onOpenMovie = { navController.navigate(movieRoute(it)) },
                 onOpenUser = { navController.navigate(publicProfileRoute(it)) },
                 onOpenBoard = { navController.navigate(boardRoute(it)) },
+                onOpenParty = { navController.navigate(partyRoute(it)) },
             )
         }
         composable(ROUTE_NOTIFICATION_PREFS) {
@@ -276,6 +290,29 @@ fun FilmatubeNavHost(
             MembersScreen(
                 onBack = { navController.popBackStack() },
                 onUserClick = { navController.navigate(publicProfileRoute(it)) },
+            )
+        }
+        composable(
+            route = ROUTE_CREATE_PARTY,
+            arguments = listOf(navArgument("movieId") { type = NavType.StringType }),
+        ) {
+            CreatePartyScreen(
+                onBack = { navController.popBackStack() },
+                onCreated = { partyId ->
+                    navController.navigate(partyRoute(partyId)) {
+                        popUpTo(ROUTE_CREATE_PARTY) { inclusive = true }
+                    }
+                },
+            )
+        }
+        composable(
+            route = ROUTE_PARTY,
+            arguments = listOf(navArgument("partyId") { type = NavType.StringType }),
+            deepLinks = listOf(navDeepLink { uriPattern = "filmatube://party/{partyId}" }),
+        ) {
+            PartyScreen(
+                onBack = { navController.popBackStack() },
+                onWatch = { movieId, partyId -> navController.navigate(partyPlayerRoute(movieId, partyId)) },
             )
         }
     }

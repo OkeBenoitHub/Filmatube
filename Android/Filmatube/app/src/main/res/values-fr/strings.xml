@@ -78,6 +78,7 @@
     <string name="notif_reply">vous a répondu</string>
     <string name="notif_review_like">a aimé votre avis</string>
     <string name="notif_board_invite">vous a invité à un forum</string>
+    <string name="notif_party_invite">vous a invité à une séance partagée</string>
     <string name="notif_prefs_title">Préférences de notification</string>
     <string name="settings_notifications">Notifications</string>
     <string name="boards_title">Forums</string>
@@ -396,4 +397,33 @@
     <string name="error_network">Pas de connexion Internet</string>
     <string name="error_not_found">Introuvable</string>
     <string name="error_unauthorized">Veuillez vous reconnecter</string>
+    <!-- Watch parties (Week 21) -->
+    <string name="party_create_title">Nouvelle séance partagée</string>
+    <string name="party_create_subtitle">Regardez-le ensemble, parfaitement synchronisés.</string>
+    <string name="party_create_action">Séance partagée</string>
+    <string name="party_when">Quand commence-t-elle ?</string>
+    <string name="party_start_now">Maintenant</string>
+    <string name="party_start_30m">Dans 30 minutes</string>
+    <string name="party_start_1h">Dans 1 heure</string>
+    <string name="party_start_2h">Dans 2 heures</string>
+    <string name="party_create_button">Créer la séance</string>
+    <string name="party_create_error">Impossible de créer la séance. Réessayez.</string>
+    <string name="party_title">Séance partagée</string>
+    <string name="party_hosted_by">Organisée par %1$s</string>
+    <string name="party_status_live">En direct</string>
+    <string name="party_status_ended">Terminée</string>
+    <string name="party_over">Cette séance est terminée.</string>
+    <string name="party_watch_together">Regarder ensemble</string>
+    <string name="party_start">Lancer la séance</string>
+    <string name="party_end">Terminer la séance</string>
+    <string name="party_join">Rejoindre la séance</string>
+    <string name="party_leave">Quitter la séance</string>
+    <string name="party_waiting_host">En attente du lancement par l0027organisateur…</string>
+    <string name="party_invite_followers">Inviter vos abonnés</string>
+    <string name="party_invite_board">Inviter un forum</string>
+    <string name="party_invited_count">Invitations envoyées :</string>
+    <string name="party_members">Invités (%1$d)</string>
+    <string name="party_role_host">Organisateur</string>
+    <string name="party_role_guest">Invité</string>
+    <string name="party_my_parties">Mes séances partagées</string>
 </resources>
