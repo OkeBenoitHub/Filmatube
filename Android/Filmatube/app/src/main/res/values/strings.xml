@@ -441,6 +441,8 @@
     <string name="landing_tagline">Stream films, follow friends, react and review, and watch together — all in one place.</string>
     <string name="landing_cta_primary">Start watching</string>
     <string name="landing_cta_secondary">Explore the community</string>
+    <string name="landing_cta_get_started">Get started</string>
+    <string name="landing_cta_sign_in">I already have an account</string>
     <string name="landing_features_kicker">Everything you need</string>
     <string name="landing_features_title">A cinema and a community</string>
     <string name="landing_feat_watch_title">Watch in HD</string>

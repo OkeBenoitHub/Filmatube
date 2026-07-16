@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import android.net.Uri
+import com.filmatube.app.R
 import com.filmatube.app.ui.browse.BrowseScreen
 import com.filmatube.app.ui.boards.BoardDetailScreen
 import com.filmatube.app.ui.boards.BoardsScreen
@@ -190,10 +191,13 @@ fun FilmatubeNavHost(
             )
         }
         composable(ROUTE_ABOUT) {
+            // Signed-in context: back arrow + in-app CTAs (the signed-out entry copy differs).
             LandingScreen(
                 onBack = { navController.popBackStack() },
-                onBrowse = { navController.navigate(TopLevelDestination.HOME.route) },
-                onCommunity = { navController.navigate(TopLevelDestination.COMMUNITY.route) },
+                primaryLabel = R.string.landing_cta_primary,
+                onPrimary = { navController.navigate(TopLevelDestination.HOME.route) },
+                secondaryLabel = R.string.landing_cta_secondary,
+                onSecondary = { navController.navigate(TopLevelDestination.COMMUNITY.route) },
             )
         }
         composable(ROUTE_PROFILES) {

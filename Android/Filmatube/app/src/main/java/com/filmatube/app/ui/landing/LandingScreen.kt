@@ -70,16 +70,23 @@ private data class Feature(val icon: ImageVector, val title: Int, val desc: Int)
 private data class Faq(val q: Int, val a: Int)
 
 /**
- * In-app landing / "about" screen — mirrors the web marketing landing (hero, features, how it
- * works, social spotlight, player, stats, FAQ) in the Filmatube green theme. Only reachable
- * from inside the signed-in app (Profile → About), so it's authenticated by construction.
+ * Landing screen — mirrors the web marketing landing (hero, features, how it works, player,
+ * social spotlight, FAQ) in the Filmatube green theme.
+ *
+ * Serves two contexts, so the CTAs and the back arrow are injected:
+ *  - **Signed out, first run:** the app's entry screen (Landing → Get started → Login).
+ *    No back arrow — there's nothing behind it.
+ *  - **Signed in:** Settings → About, with a back arrow and in-app CTAs.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LandingScreen(
-    onBack: () -> Unit,
-    onBrowse: () -> Unit,
-    onCommunity: () -> Unit,
+    primaryLabel: Int,
+    onPrimary: () -> Unit,
+    secondaryLabel: Int,
+    onSecondary: () -> Unit,
+    /** Null on the entry screen — renders no navigation icon. */
+    onBack: (() -> Unit)? = null,
 ) {
     val features = listOf(
         Feature(Icons.Filled.Movie, R.string.landing_feat_watch_title, R.string.landing_feat_watch_desc),
@@ -101,8 +108,13 @@ fun LandingScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.landing_topbar)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.detail_back))
+                    if (onBack != null) {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.detail_back),
+                            )
+                        }
                     }
                 },
             )
@@ -143,16 +155,16 @@ fun LandingScreen(
                         modifier = Modifier.padding(top = FilmatubeSpacing.md),
                     )
                     FilmatubePrimaryButton(
-                        text = stringResource(R.string.landing_cta_primary),
-                        onClick = onBrowse,
+                        text = stringResource(primaryLabel),
+                        onClick = onPrimary,
                         leadingIcon = Icons.Filled.PlayArrow,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = FilmatubeSpacing.xl),
                     )
                     FilmatubeSecondaryButton(
-                        text = stringResource(R.string.landing_cta_secondary),
-                        onClick = onCommunity,
+                        text = stringResource(secondaryLabel),
+                        onClick = onSecondary,
                         leadingIcon = Icons.Filled.Groups,
                         modifier = Modifier
                             .fillMaxWidth()

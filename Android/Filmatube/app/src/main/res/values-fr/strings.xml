@@ -438,6 +438,8 @@
     <string name="landing_tagline">Regardez des films, suivez vos amis, réagissez, publiez des avis et regardez ensemble — au même endroit.</string>
     <string name="landing_cta_primary">Commencer à regarder</string>
     <string name="landing_cta_secondary">Explorer la communauté</string>
+    <string name="landing_cta_get_started">Commencer</string>
+    <string name="landing_cta_sign_in">J\'ai déjà un compte</string>
     <string name="landing_features_kicker">Tout ce qu\'il vous faut</string>
     <string name="landing_features_title">Un cinéma et une communauté</string>
     <string name="landing_feat_watch_title">Regardez en HD</string>
