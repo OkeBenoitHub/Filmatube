@@ -27,7 +27,9 @@ const db = getFirestore();
  * Source:  ratings/{movieId}/items/{userId} = { value: 1..5, ... }
  * Target:  movies/{movieId}.averageRating (rounded to 1 dp) + ratingsCount
  */
-exports.aggregateRatings = onDocumentWritten("ratings/{movieId}/items/{userId}", async (event) => {
+// region must match the Firestore database location (eur3 since the 2026-07 migration) —
+// gen-2 Firestore triggers refuse to deploy when the trigger location differs from the DB.
+exports.aggregateRatings = onDocumentWritten({ document: "ratings/{movieId}/items/{userId}", region: "europe-west4" }, async (event) => {
   const movieId = event.params.movieId;
   const itemsSnap = await db.collection("ratings").doc(movieId).collection("items").get();
 
