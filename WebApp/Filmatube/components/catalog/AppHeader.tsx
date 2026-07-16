@@ -37,6 +37,9 @@ export function AppHeader({ dict }: { dict: Dictionary["catalog"] }) {
                 <Link
                   key={href}
                   href={href}
+                  // Full prefetch: dynamic routes otherwise only prefetch their loading shell.
+                  // Combined with staleTimes, the payload is already local when clicked.
+                  prefetch={true}
                   className={cn(
                     "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors md:px-3",
                     active ? "bg-surface-hover text-ink" : "text-ink-muted hover:text-ink",

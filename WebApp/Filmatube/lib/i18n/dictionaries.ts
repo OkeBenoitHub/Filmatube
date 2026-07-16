@@ -834,6 +834,7 @@ const en = {
     inviteFollowers: "Invite followers",
     invitedCount: "Invited",
     notifBoardInvite: "invited you to a board",
+    homeSignInAgain: "Your session needs a refresh — please sign in again.",
   },
   player: {
     back: "Back",
@@ -1708,6 +1709,7 @@ const fr: Dictionary = {
     inviteFollowers: "Inviter vos abonnés",
     invitedCount: "Invités",
     notifBoardInvite: "vous a invité à un forum",
+    homeSignInAgain: "Votre session doit être actualisée — veuillez vous reconnecter.",
   },
   player: {
     back: "Retour",

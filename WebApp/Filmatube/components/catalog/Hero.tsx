@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Play, Info } from "lucide-react";
-import { localized, type CatalogMovie } from "@/lib/movies";
+import { localized, type CatalogMovie } from "@/lib/catalog";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 

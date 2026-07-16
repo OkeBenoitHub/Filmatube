@@ -1,5 +1,5 @@
 import { MovieCard } from "@/components/catalog/MovieCard";
-import type { CatalogMovie } from "@/lib/movies";
+import type { CatalogMovie } from "@/lib/catalog";
 import type { Locale } from "@/lib/i18n/config";
 
 /** Horizontally scrolling row of poster tiles under a section title. */

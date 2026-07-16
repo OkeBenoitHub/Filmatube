@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { localized, type ContinueWatchingItem } from "@/lib/movies";
+import { localized, type ContinueWatchingItem } from "@/lib/catalog";
 import type { Locale } from "@/lib/i18n/config";
 
 /** Continue Watching row: posters with a progress bar, linking straight to the player (resume). */

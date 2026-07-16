@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { localized, type CatalogMovie } from "@/lib/movies";
+import { localized, type CatalogMovie } from "@/lib/catalog";
 import type { Locale } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
 
