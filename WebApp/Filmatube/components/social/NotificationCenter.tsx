@@ -98,20 +98,19 @@ export function NotificationCenter({ dict }: { dict: Dictionary["catalog"] }) {
   const earlier = items.filter((n) => n.createdAtMs < dayAgo);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 md:px-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-ink">{dict.notificationsTitle}</h1>
-        {items.some((n) => !n.read) && (
-          <button type="button" onClick={markAllRead} className="text-sm text-brand-400 hover:underline">
+    <div>
+      {items.some((n) => !n.read) && (
+        <div className="mb-4 flex justify-end">
+          <button type="button" onClick={markAllRead} className="text-sm font-medium text-brand-400 hover:underline">
             {dict.markAllRead}
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {items.length === 0 ? (
         <p className="py-12 text-center text-ink-muted">{dict.notificationsEmpty}</p>
       ) : (
-        <div className="mt-6 space-y-6">
+        <div className="space-y-6">
           {today.length > 0 && <Group title={dict.filterToday} items={today} dict={dict} onOpen={open} />}
           {earlier.length > 0 && <Group title={dict.notifEarlier} items={earlier} dict={dict} onOpen={open} />}
         </div>

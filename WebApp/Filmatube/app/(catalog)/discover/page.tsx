@@ -10,7 +10,7 @@ export default async function DiscoverPage() {
   const c = dict.catalog;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 md:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-8 md:px-6">
       {/* ── Hero header (Spotitube pattern, green) ─────────────── */}
       <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-end">
         <div className="flex h-36 w-36 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-900 shadow-2xl shadow-brand-900/50 sm:h-48 sm:w-48">

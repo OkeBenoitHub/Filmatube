@@ -7,9 +7,9 @@ export default async function InboxPage() {
   const dict = await getDict();
   const c = dict.catalog;
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 md:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-8 md:px-6">
       <PageHero icon={Mail} eyebrow={c.inboxEyebrow} title={c.inbox} subtitle={c.inboxSubtitle} />
-      <div className="mx-auto mt-10 max-w-2xl">
+      <div className="mt-10">
         <RecommendationInbox dict={c} />
       </div>
     </div>
