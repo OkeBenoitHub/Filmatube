@@ -1,8 +1,9 @@
-# Week 21 QA — Watch Parties (Android)
+# QA — Watch Parties (Android + Web)
 
-Covers **v1.1 Week 21 (Days 141–147)** — private, host-synced watch parties on Android.
-Data lives in `parties/*` in project **filmatubelive** (eur3); rules + index deployed.
-Week 22 (Days 148–151) mirrors this on Web off the same schema.
+Covers **v1.1 Week 21 (Days 141–147, Android)** and **Week 22 (Days 148–151, Web)** — private,
+host-synced watch parties. Both clients read/write the same `parties/*` documents in project
+**filmatubelive** (eur3), with the **same engine constants**, so a room can mix platforms: an
+Android host can drive a web guest and vice-versa. Rules + index deployed.
 
 ## Data model
 | Path | Purpose |
@@ -39,6 +40,42 @@ One tiny document keeps the room aligned — there is no per-frame traffic:
 | 145 | Host controls; guests follow (transport read-only) |
 | 146 | Leave/end; host handoff ("Make host") |
 | 147 | Week review |
+| 148 | **Web:** create/invite + live lobby (`/parties/[id]`) |
+| 149 | **Web:** synced room (`/watch/[id]?party=…`) + floating chat/reactions |
+| 150 | **Web:** host controls; guest follow |
+| 151 | Parity QA + sync stress analysis |
+
+## Parity notes (Day 151)
+Engine constants are identical on both platforms — change one, change both:
+`DRIFT_TOLERANCE_MS = 2500`, `HEARTBEAT_MS = 5000`, `REACTION_TTL_MS = 4000`, and the same
+six reaction emoji.
+
+Web-only differences, all deliberate:
+1. **Autoplay gesture.** Browsers refuse `play()` without a user gesture. A guest has no
+   transport, so a blocked autoplay would strand them on a frozen frame — `usePartySync`
+   catches the rejection and shows a one-tap "Watch together" prompt. Android has no such rule.
+2. **`?party=` is validated server-side.** The watch route only enables sync when `getParty`
+   confirms the viewer is a member *and* the party is live for that movie — a guessed id can't
+   drive or observe someone else's room. (Rules would reject the writes regardless; this stops
+   the read too.)
+3. **Guest transport is disabled, not hidden.** Web keeps the scrubber visible (progress is
+   useful) but `seek`/`togglePlay` are no-ops; Android hides the centre transport entirely.
+4. **Lobby names.** Web streams member *roles* live but resolves display names on the server
+   render, so a brand-new joiner shows without a name until the next load. Acceptable for a lobby.
+
+## Sync stress (many guests) — analysis, not yet load-tested
+The engine is **O(1) writes in the number of guests**: only the host writes, at most ~1 write per
+5s plus transport changes. Guests are pure readers on a single document, so 5 or 500 guests cost
+the host the same. Firestore fans the snapshot out.
+
+What *does* scale with guests is **chat + reactions**: every guest write is a document, and every
+guest listens to both collections. A 50-guest room mashing emoji is the realistic hot spot — each
+reaction is a doc write plus a fan-out to every listener. Mitigations if it bites: client-side
+rate-limit the reaction bar, batch emoji into a counter doc, or drop the reactions listener
+`limit` from 12/20.
+
+**Not yet verified under real load** — this is reasoning from the write pattern, not a measured
+test. A scripted N-client harness is the honest next step before claiming a guest ceiling.
 
 ## Rules (deployed)
 - **Party read:** host **or** member only — parties are private by design.
@@ -60,6 +97,9 @@ One tiny document keeps the room aligned — there is no per-frame traffic:
   spent ids so they don't replay on recomposition — the docs themselves accumulate (see gaps).
 
 ## Runtime checklist (needs two accounts)
+**Do at least one pass cross-platform** (Android host + web guest, then swap) — that's the whole
+point of sharing the schema.
+
 - [ ] Movie detail → **Watch party** → pick a start → lobby appears with you as host.
 - [ ] Invite followers / invite a board → each invitee gets a **party invite** → tap opens the lobby.
 - [ ] Guest joins → appears in the guest list; member count increments.
@@ -84,5 +124,6 @@ One tiny document keeps the room aligned — there is no per-frame traffic:
   device drifts by its skew; a server-time offset probe would tighten this.
 
 ## Status
-Android `assembleDebug` green. Parties are end-to-end: create → invite → lobby → start → synced
-playback with chat/reactions → host controls → handoff/end.
+Android `assembleDebug` and web `npm run build` both green. Parties are end-to-end on **both**
+platforms: create → invite → lobby → start → synced playback with chat/reactions → host controls
+→ handoff/end, all off one shared schema.

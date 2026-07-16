@@ -263,7 +263,7 @@
 - **Day 148** ✅ — Watch Parties (web) — reuse sync engine: create/invite.
 - **Day 149** ✅ — Synced playback room (web) + floating chat/reactions.
 - **Day 150** ✅ — Host controls + guest follow (web).
-- **Day 151** — Parties parity QA; sync stress test (many guests).
+- **Day 151** ✅ — Parties parity QA; sync stress test (many guests).
 - **Day 152** — Hardening + Crashlytics review.
 - **Day 153** — Beta + fixes.
 - **Day 154** — **🚀 v1.1 release** (Play + web); monitoring.
