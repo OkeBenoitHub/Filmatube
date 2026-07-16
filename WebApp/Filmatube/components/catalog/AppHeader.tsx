@@ -27,46 +27,46 @@ export function AppHeader({ dict }: { dict: Dictionary["catalog"] }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-surface-border/60 bg-surface/80 backdrop-blur">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 md:px-6">
-        <div className="flex items-center gap-6">
-          <Wordmark href="/home" />
-          <nav className="flex items-center gap-1">
-            {links.map(({ href, label, icon: Icon }) => {
-              const active = pathname === href || pathname.startsWith(`${href}/`);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  // Full prefetch: dynamic routes otherwise only prefetch their loading shell.
-                  // Combined with staleTimes, the payload is already local when clicked.
-                  prefetch={true}
-                  className={cn(
-                    "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors md:px-3",
-                    active ? "bg-surface-hover text-ink" : "text-ink-muted hover:text-ink",
-                  )}
-                >
-                  <Icon className="h-4 w-4" aria-hidden />
-                  <span className="hidden sm:inline">{label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-3 sm:gap-4 sm:px-4 md:px-6">
+        <Wordmark href="/home" />
 
-        <div className="flex items-center gap-2">
+        {/* Primary nav — scrolls horizontally on small screens so it never overflows the bar. */}
+        <nav className="no-scrollbar flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto sm:gap-1">
+          {links.map(({ href, label, icon: Icon }) => {
+            const active = pathname === href || pathname.startsWith(`${href}/`);
+            return (
+              <Link
+                key={href}
+                href={href}
+                // Full prefetch: dynamic routes otherwise only prefetch their loading shell.
+                // Combined with staleTimes, the payload is already local when clicked.
+                prefetch={true}
+                className={cn(
+                  "flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors md:px-3",
+                  active ? "bg-surface-hover text-ink" : "text-ink-muted hover:text-ink",
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0" aria-hidden />
+                <span className="hidden lg:inline">{label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <LanguageSwitcher />
           <NotificationBell dict={dict} />
           <Link
             href="/inbox"
             aria-label={dict.inbox}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-surface-border text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-surface-border text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
           >
             <Mail className="h-4 w-4" aria-hidden />
           </Link>
           <Link
             href="/account"
             aria-label={dict.account}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-surface-border text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-surface-border text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
           >
             <UserRound className="h-4 w-4" aria-hidden />
           </Link>
@@ -77,7 +77,7 @@ export function AppHeader({ dict }: { dict: Dictionary["catalog"] }) {
               router.replace("/");
               router.refresh();
             }}
-            className="hidden h-9 rounded-lg border border-surface-border px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-hover sm:block"
+            className="hidden h-9 shrink-0 whitespace-nowrap rounded-lg border border-surface-border px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-hover lg:block"
           >
             {dict.signOut}
           </button>

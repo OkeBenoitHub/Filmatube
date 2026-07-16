@@ -34,7 +34,7 @@ export function TrailerButton({ url, dict }: { url: string; dict: Dictionary["ca
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-11 items-center gap-2 rounded-lg border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
+        className="inline-flex h-11 items-center whitespace-nowrap gap-2 rounded-lg border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
       >
         <Film className="h-4 w-4" aria-hidden />
         {dict.trailer}

@@ -262,7 +262,7 @@ export function DownloadSection({ t }: { t: Dictionary["landing"] }) {
 
               <Link
                 href="/install"
-                className="inline-flex h-12 items-center gap-2 rounded-2xl border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:border-brand-700/60 hover:text-brand-300"
+                className="inline-flex h-12 items-center whitespace-nowrap gap-2 rounded-2xl border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:border-brand-700/60 hover:text-brand-300"
               >
                 <CircleHelp className="h-4 w-4" aria-hidden />
                 {d.howToInstall}
@@ -270,7 +270,7 @@ export function DownloadSection({ t }: { t: Dictionary["landing"] }) {
 
               <Link
                 href="/home"
-                className="inline-flex h-12 items-center gap-2 rounded-2xl border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:border-brand-700/60 hover:text-brand-300"
+                className="inline-flex h-12 items-center whitespace-nowrap gap-2 rounded-2xl border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:border-brand-700/60 hover:text-brand-300"
               >
                 <Globe className="h-4 w-4" aria-hidden />
                 {d.watchWeb}

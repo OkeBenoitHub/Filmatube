@@ -40,14 +40,14 @@ export function LandingHeader({
           {!hideSignIn && (
             <Link
               href="/login"
-              className="hidden h-9 items-center rounded-lg px-3 text-sm font-medium text-ink-muted transition-colors hover:text-ink sm:inline-flex"
+              className="hidden h-9 items-center whitespace-nowrap rounded-lg px-3 text-sm font-medium text-ink-muted transition-colors hover:text-ink sm:inline-flex"
             >
               {dict.common.signIn}
             </Link>
           )}
           <Link
             href="/home"
-            className="inline-flex h-9 items-center rounded-lg bg-brand-500 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+            className="inline-flex h-9 items-center whitespace-nowrap rounded-lg bg-brand-500 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
           >
             {t.openApp}
           </Link>

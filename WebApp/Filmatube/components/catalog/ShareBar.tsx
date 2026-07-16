@@ -49,14 +49,14 @@ export function ShareBar({
       <button
         type="button"
         onClick={share}
-        className="inline-flex h-11 items-center gap-2 rounded-lg border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
+        className="inline-flex h-11 items-center whitespace-nowrap gap-2 rounded-lg border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
       >
         {copied ? <Check className="h-4 w-4 text-brand-400" aria-hidden /> : <Share2 className="h-4 w-4" aria-hidden />}
         {copied ? dict.copied : dict.share}
       </button>
       <a
         href={appIntentUrl(movieId)}
-        className="inline-flex h-11 items-center gap-2 rounded-lg border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
+        className="inline-flex h-11 items-center whitespace-nowrap gap-2 rounded-lg border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
       >
         <Smartphone className="h-4 w-4" aria-hidden />
         {dict.openInApp}

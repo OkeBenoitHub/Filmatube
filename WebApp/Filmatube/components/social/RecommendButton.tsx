@@ -93,7 +93,7 @@ export function RecommendButton({
       <button
         type="button"
         onClick={openDialog}
-        className="inline-flex h-11 items-center gap-2 rounded-lg border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
+        className="inline-flex h-11 items-center whitespace-nowrap gap-2 rounded-lg border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
       >
         <Send className="h-4 w-4" aria-hidden />
         {dict.recommend}

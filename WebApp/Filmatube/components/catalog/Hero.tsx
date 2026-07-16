@@ -37,14 +37,14 @@ export function Hero({
         <div className="mt-1 flex items-center gap-3">
           <Link
             href={`/watch/${movie.id}`}
-            className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand-500 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+            className="inline-flex h-11 items-center whitespace-nowrap gap-2 rounded-lg bg-brand-500 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
           >
             <Play className="h-4 w-4 fill-current" aria-hidden />
             {dict.play}
           </Link>
           <Link
             href={`/movie/${movie.id}`}
-            className="inline-flex h-11 items-center gap-2 rounded-lg border border-surface-border bg-surface/60 px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
+            className="inline-flex h-11 items-center whitespace-nowrap gap-2 rounded-lg border border-surface-border bg-surface/60 px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
           >
             <Info className="h-4 w-4" aria-hidden />
             {dict.details}

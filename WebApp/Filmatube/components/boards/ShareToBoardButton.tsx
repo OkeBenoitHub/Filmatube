@@ -81,7 +81,7 @@ export function ShareToBoardButton({
       <button
         type="button"
         onClick={openPicker}
-        className="inline-flex h-11 items-center gap-2 rounded-lg border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
+        className="inline-flex h-11 items-center whitespace-nowrap gap-2 rounded-lg border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
       >
         <MessagesSquare className="h-4 w-4" aria-hidden />
         {dict.shareToBoard}

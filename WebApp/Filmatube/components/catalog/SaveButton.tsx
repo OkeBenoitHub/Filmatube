@@ -29,7 +29,7 @@ export function SaveButton({ movieId, dict }: { movieId: string; dict: Dictionar
     <button
       type="button"
       onClick={toggle}
-      className="inline-flex h-11 items-center gap-2 rounded-lg border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
+      className="inline-flex h-11 items-center whitespace-nowrap gap-2 rounded-lg border border-surface-border px-6 text-sm font-semibold text-ink transition-colors hover:bg-surface-hover"
     >
       {saved ? <BookmarkCheck className="h-4 w-4 text-brand-400" aria-hidden /> : <Bookmark className="h-4 w-4" aria-hidden />}
       {saved ? dict.saved : dict.watchLater}

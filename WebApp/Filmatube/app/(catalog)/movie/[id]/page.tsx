@@ -104,13 +104,13 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
         <div className="mt-6 space-y-4">
           <div className="flex flex-wrap items-center gap-3">
             {movie.isComingSoon ? (
-              <span className="inline-flex h-11 items-center rounded-lg bg-surface-hover px-6 text-sm font-semibold text-ink-muted">
+              <span className="inline-flex h-11 items-center whitespace-nowrap rounded-lg bg-surface-hover px-6 text-sm font-semibold text-ink-muted">
                 {c.comingSoon}
               </span>
             ) : (
               <Link
                 href={`/watch/${movie.id}`}
-                className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand-500 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+                className="inline-flex h-11 items-center whitespace-nowrap gap-2 rounded-lg bg-brand-500 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
               >
                 <Play className="h-4 w-4 fill-current" aria-hidden />
                 {c.play}

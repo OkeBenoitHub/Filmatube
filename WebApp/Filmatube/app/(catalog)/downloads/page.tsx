@@ -19,7 +19,7 @@ export default async function DownloadsInfoPage() {
         href={PLAY_STORE}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand-500 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+        className="inline-flex h-11 items-center whitespace-nowrap gap-2 rounded-lg bg-brand-500 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
       >
         <Smartphone className="h-4 w-4" aria-hidden />
         {c.getApp}

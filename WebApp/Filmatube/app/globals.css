@@ -11,3 +11,12 @@
     @apply bg-surface text-ink font-sans antialiased;
   }
 }
+
+/* Hide scrollbars on horizontally-scrollable strips (nav, chip rows) while keeping scroll. */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
