@@ -243,7 +243,7 @@
 
 ### Week 20 — Web Boards & Chat (Days 134–140) (W)
 - **Day 134** ✅ — Boards discovery + create (web).
-- **Day 135** — Real-time chat (web); reactions/threads parity.
+- **Day 135** ✅ — Real-time chat (web); reactions/threads parity.
 - **Day 136** — Member roles + moderation; **admin official boards**.
 - **Day 137** — Share movie card; spoiler tags; board search.
 - **Day 138** — Board moderation queue (admin); report handling.

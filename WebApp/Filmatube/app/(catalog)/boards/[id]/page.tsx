@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { BadgeCheck, Lock, MessagesSquare, Users } from "lucide-react";
+import { BoardChat } from "@/components/boards/BoardChat";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getBoard, isBoardMember } from "@/lib/boards";
 import { getDict } from "@/lib/i18n/server";
@@ -45,10 +46,7 @@ export default async function BoardPage({ params }: { params: Promise<{ id: stri
         </div>
       </header>
 
-      {/* Day 135 mounts the real-time chat here. */}
-      <div className="mt-10 rounded-xl border border-surface-border bg-surface-hover/40 p-10 text-center text-sm text-ink-muted">
-        {isMember ? c.boardsMine : c.boardsSubtitle}
-      </div>
+      <BoardChat board={board} initialIsMember={isMember} dict={c} />
     </div>
   );
 }
