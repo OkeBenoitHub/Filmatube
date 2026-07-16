@@ -66,7 +66,10 @@ class UserRepositoryImpl @Inject constructor(
     private fun defaultUserData(user: AuthUser): Map<String, Any?> {
         val language = if (Locale.getDefault().language == "fr") "fr" else "en"
         return mapOf(
-            "email" to user.email,
+            // NB: the email is deliberately NOT stored here. `users/{uid}` is readable by any
+            // signed-in user (display names/avatars are needed across boards, parties, comments…),
+            // so a copy of the address would leak it to every account. Firebase Auth already holds
+            // it authoritatively.
             "displayName" to (user.displayName ?: user.email?.substringBefore("@") ?: "Filmatube user"),
             "bio" to "",
             "avatarUrl" to (user.photoUrl ?: ""),

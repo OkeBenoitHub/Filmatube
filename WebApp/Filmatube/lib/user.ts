@@ -50,7 +50,10 @@ export async function ensureUserDocument(user: DecodedIdToken): Promise<void> {
 
   if (!snapshot.exists) {
     await ref.set({
-      email: user.email ?? null,
+      // NB: the email is deliberately NOT stored here. `users/{uid}` is world-readable to any
+      // signed-in user (needed for display names/avatars across boards, parties, comments…),
+      // so a copy of the address would leak it to every account. Firebase Auth already holds
+      // it authoritatively; read it from there server-side when it's genuinely needed.
       displayName: user.name ?? user.email?.split("@")[0] ?? "Filmatube user",
       bio: "",
       avatarUrl: user.picture ?? "",
