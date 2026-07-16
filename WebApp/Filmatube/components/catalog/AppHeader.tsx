@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Search, Compass, Bookmark, Users, Mail, UserRound } from "lucide-react";
+import { Home, Search, Compass, Bookmark, Users, Mail, MessagesSquare, UserRound } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { NotificationBell } from "@/components/social/NotificationBell";
 import { Wordmark } from "@/components/Wordmark";
@@ -22,6 +22,7 @@ export function AppHeader({ dict }: { dict: Dictionary["catalog"] }) {
     { href: "/search", label: dict.search, icon: Search },
     { href: "/library", label: dict.library, icon: Bookmark },
     { href: "/activity", label: dict.activity, icon: Users },
+    { href: "/boards", label: dict.boards, icon: MessagesSquare },
   ];
 
   return (
