@@ -71,7 +71,7 @@ export function AppHeader({ dict }: { dict: Dictionary["catalog"] }) {
             type="button"
             onClick={async () => {
               await signOut();
-              router.replace("/login");
+              router.replace("/");
               router.refresh();
             }}
             className="hidden h-9 rounded-lg border border-surface-border px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-hover sm:block"

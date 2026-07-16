@@ -81,7 +81,7 @@ export function AdminShell({
             type="button"
             onClick={async () => {
               await signOut();
-              router.replace("/login");
+              router.replace("/");
               router.refresh();
             }}
             className="h-9 rounded-lg border border-surface-border px-3 text-sm font-medium text-ink hover:bg-surface-hover"

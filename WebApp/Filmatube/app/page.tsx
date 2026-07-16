@@ -24,10 +24,13 @@ import {
 import { DownloadSection } from "@/components/landing/DownloadSection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { LandingHeader } from "@/components/landing/LandingHeader";
+import { redirectIfSignedIn } from "@/lib/auth/guards";
 import { getDict } from "@/lib/i18n/server";
 import { cn } from "@/lib/utils";
 
 export default async function LandingPage() {
+  // Signed-in visitors (e.g. pressing Back after login) belong in the app, not the marketing page.
+  await redirectIfSignedIn();
   const dict = await getDict();
   const t = dict.landing;
 

@@ -2,9 +2,12 @@ import { Bell } from "lucide-react";
 import { AccountHeader } from "@/components/account/AccountHeader";
 import { NotificationPreferences } from "@/components/social/NotificationPreferences";
 import { PageHero } from "@/components/ui/PageHero";
+import { requireUser } from "@/lib/auth/guards";
 import { getDict } from "@/lib/i18n/server";
 
 export default async function AccountNotificationsPage() {
+  // The other /account pages all gate; this one didn't, so signed-out visitors got an empty form.
+  await requireUser();
   const dict = await getDict();
   const c = dict.catalog;
   return (
