@@ -17,6 +17,7 @@ export function LandingFooter({ t }: { t: Dictionary["landing"] }) {
         { label: t.navHow, href: "/#how" },
         { label: l.player, href: "/login" },
         { label: l.download, href: "/#download" },
+        { label: l.changelog, href: "/changelog" },
       ],
     },
     {
@@ -41,7 +42,7 @@ export function LandingFooter({ t }: { t: Dictionary["landing"] }) {
       title: t.footerSupport,
       links: [
         { label: l.faq, href: "/#faq" },
-        { label: l.help, href: "/#faq" },
+        { label: l.installGuide, href: "/install" },
         { label: l.report, href: "mailto:support@filmatube.app", external: true },
         { label: l.status, href: "/#download" },
       ],

@@ -5,7 +5,6 @@ import {
   Download,
   Film,
   Gauge,
-  Globe,
   Heart,
   Languages,
   MessagesSquare,
@@ -22,6 +21,7 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
+import { DownloadSection } from "@/components/landing/DownloadSection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { getDict } from "@/lib/i18n/server";
@@ -234,26 +234,8 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ── Download CTA ─────────────────────────────────────── */}
-        <section id="download" className="scroll-mt-20 px-6 pb-20">
-          <div className="relative mx-auto w-full max-w-5xl overflow-hidden rounded-3xl border border-brand-700/40 bg-gradient-to-br from-brand-900/40 via-surface-card to-surface px-6 py-14 text-center md:py-20">
-            <div aria-hidden className="pointer-events-none absolute left-1/2 top-[-140px] h-[360px] w-[560px] -translate-x-1/2 rounded-full bg-brand-500/15 blur-3xl" />
-            <div className="relative mx-auto max-w-xl">
-              <p className="text-xs font-semibold uppercase tracking-widest text-gold">{t.downloadKicker}</p>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight text-ink md:text-4xl">{t.downloadTitle}</h2>
-              <p className="mt-4 text-sm leading-relaxed text-ink-muted md:text-base">{t.downloadDesc}</p>
-              <div className="mt-8 flex justify-center">
-                <Link
-                  href="/home"
-                  className="inline-flex h-12 items-center gap-2 rounded-lg bg-brand-500 px-7 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
-                >
-                  <Globe className="h-4 w-4" aria-hidden />
-                  {t.downloadWeb}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* ── Download + install guide ─────────────────────────── */}
+        <DownloadSection t={t} />
 
         {/* ── FAQ ──────────────────────────────────────────────── */}
         <section id="faq" className="mx-auto w-full max-w-3xl scroll-mt-20 px-6 pb-24">
