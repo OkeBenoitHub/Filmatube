@@ -21,6 +21,8 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.filmatube.app.data.analytics.PlaybackAnalytics
 import com.filmatube.app.data.download.DownloadRepository
 import com.filmatube.app.data.download.DownloadUtil
+import com.filmatube.app.data.parties.PartyMessage
+import com.filmatube.app.data.parties.PartyReaction
 import com.filmatube.app.data.parties.PartyRepository
 import com.filmatube.app.data.parties.PartySyncState
 import com.filmatube.app.data.playback.PlaybackRepository
@@ -77,6 +79,22 @@ class PlayerViewModel @Inject constructor(
     val isPartyHost: StateFlow<Boolean> = _isPartyHost.asStateFlow()
     val isParty: Boolean get() = partyId != null
     private var partyHeartbeat: Job? = null
+
+    /** Party overlay: chat lines + floating emoji (empty outside party mode). */
+    private val _partyMessages = MutableStateFlow<List<PartyMessage>>(emptyList())
+    val partyMessages: StateFlow<List<PartyMessage>> = _partyMessages.asStateFlow()
+    private val _partyReactions = MutableStateFlow<List<PartyReaction>>(emptyList())
+    val partyReactions: StateFlow<List<PartyReaction>> = _partyReactions.asStateFlow()
+
+    fun sendPartyMessage(text: String) {
+        val pid = partyId ?: return
+        viewModelScope.launch { partyRepository.sendMessage(pid, text) }
+    }
+
+    fun sendPartyReaction(emoji: String) {
+        val pid = partyId ?: return
+        viewModelScope.launch { partyRepository.sendReaction(pid, emoji) }
+    }
 
     private val _uiState = MutableStateFlow<PlayerUiState>(PlayerUiState.Loading)
     val uiState: StateFlow<PlayerUiState> = _uiState.asStateFlow()
@@ -216,6 +234,10 @@ class PlayerViewModel @Inject constructor(
 
     private fun initPartySync() {
         val pid = partyId ?: return
+        // Overlay streams run for everyone in the room, host or guest.
+        viewModelScope.launch { partyRepository.observeMessages(pid).collect { _partyMessages.value = it } }
+        viewModelScope.launch { partyRepository.observeReactions(pid).collect { _partyReactions.value = it } }
+
         viewModelScope.launch {
             val party = partyRepository.observeParty(pid).first() ?: return@launch
             val isHost = party.hostId == partyRepository.myUid

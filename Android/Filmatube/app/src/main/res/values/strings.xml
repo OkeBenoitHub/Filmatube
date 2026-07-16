@@ -429,6 +429,8 @@
     <string name="party_role_host">Host</string>
     <string name="party_role_guest">Guest</string>
     <string name="party_my_parties">My watch parties</string>
+    <string name="party_chat_hint">Say something…</string>
+    <string name="party_chat_send">Send</string>
     <!-- In-app landing / about screen -->
     <string name="landing_topbar">About Filmatube</string>
     <string name="landing_badge">Movies + the people who love them</string>

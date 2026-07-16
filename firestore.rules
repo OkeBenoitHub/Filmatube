@@ -255,6 +255,26 @@ service cloud.firestore {
         allow read: if isSignedIn() && (isPartyMember() || isPartyHost());
         allow write: if isSignedIn() && isPartyHost();
       }
+
+      // Floating chat during playback — members only, author stamps their own uid.
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && (isPartyMember() || isPartyHost());
+        allow create: if isSignedIn() && isPartyMember()
+          && request.resource.data.userId == request.auth.uid;
+        allow delete: if isAdmin()
+          || (isSignedIn() && resource.data.userId == request.auth.uid)
+          || (isSignedIn() && isPartyHost());
+        allow update: if false;
+      }
+
+      // Ephemeral floating emoji — write-once, never edited.
+      match /reactions/{reactionId} {
+        allow read: if isSignedIn() && (isPartyMember() || isPartyHost());
+        allow create: if isSignedIn() && isPartyMember()
+          && request.resource.data.userId == request.auth.uid;
+        allow update: if false;
+        allow delete: if isAdmin() || (isSignedIn() && isPartyHost());
+      }
     }
 
     // ───────── content requests ─────────

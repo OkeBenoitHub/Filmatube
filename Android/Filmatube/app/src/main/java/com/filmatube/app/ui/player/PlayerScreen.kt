@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,7 +26,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -61,6 +64,10 @@ fun PlayerScreen(
     viewModel: PlayerViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val partyMessages by viewModel.partyMessages.collectAsStateWithLifecycle()
+    val partyReactions by viewModel.partyReactions.collectAsStateWithLifecycle()
+    // Emoji already animated away — kept out of the render so they don't replay on recomposition.
+    val spentReactions = remember { mutableStateListOf<String>() }
     val resumePrompt by viewModel.resumePrompt.collectAsStateWithLifecycle()
     val subtitleLanguages by viewModel.subtitleLanguages.collectAsStateWithLifecycle()
     val selectedSubtitle by viewModel.selectedSubtitle.collectAsStateWithLifecycle()
@@ -230,6 +237,37 @@ fun PlayerScreen(
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
                     color = Color.White,
+                )
+            }
+
+            // ── Watch-party overlay (Day 144) ─────────────────────
+            if (viewModel.isParty) {
+                // Floating emoji rise from the bottom-right, fresh ones only.
+                val now = System.currentTimeMillis()
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .windowInsetsPadding(WindowInsets.systemBars)
+                        .padding(end = 16.dp, bottom = 120.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    partyReactions
+                        .filter { it.id !in spentReactions && now - it.createdAtMs < REACTION_TTL_MS }
+                        .takeLast(6)
+                        .forEach { r ->
+                            key(r.id) {
+                                FloatingReaction(reaction = r, onDone = { spentReactions.add(it) })
+                            }
+                        }
+                }
+
+                PartyOverlay(
+                    messages = partyMessages,
+                    onSend = viewModel::sendPartyMessage,
+                    onReact = viewModel::sendPartyReaction,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .windowInsetsPadding(WindowInsets.systemBars),
                 )
             }
 

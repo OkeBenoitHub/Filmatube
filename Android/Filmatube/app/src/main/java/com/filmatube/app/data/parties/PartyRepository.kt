@@ -50,6 +50,27 @@ data class PartyMember(
     val role: String,
 )
 
+/** Emoji available as floating reactions during a party. */
+val PARTY_REACTIONS = listOf("😂", "😮", "❤️", "🔥", "😢", "👏")
+
+/** A chat line in the party's floating overlay. */
+data class PartyMessage(
+    val id: String,
+    val userId: String,
+    val userName: String,
+    val text: String,
+    val createdAtMs: Long,
+    val isMine: Boolean,
+)
+
+/** An ephemeral floating emoji reaction. */
+data class PartyReaction(
+    val id: String,
+    val emoji: String,
+    val userName: String,
+    val createdAtMs: Long,
+)
+
 /**
  * The shared playback state — the heart of the sync engine. The HOST is the single
  * writer (enforced by rules); guests derive their expected position as
@@ -295,6 +316,87 @@ class PartyRepository @Inject constructor(
 
     /** My boards, for the invite picker. */
     fun observeMyBoards() = boardRepository.observeMyBoards()
+
+    // ── party chat + floating reactions (Day 144) ─────────────────────────
+
+    private fun messages(partyId: String) = parties.document(partyId).collection("messages")
+    private fun reactions(partyId: String) = parties.document(partyId).collection("reactions")
+
+    /** Post a chat line into the party's floating overlay. */
+    suspend fun sendMessage(partyId: String, text: String) = withContext(ioDispatcher) {
+        val uid = myUid ?: return@withContext
+        if (text.isBlank()) return@withContext
+        val me = runCatching { userRepository.getUser(uid) }.getOrNull()
+        runCatching {
+            messages(partyId).add(
+                mapOf(
+                    "userId" to uid,
+                    "userName" to (me?.displayName ?: ""),
+                    "text" to text.trim().take(200),
+                    "createdAt" to FieldValue.serverTimestamp(),
+                ),
+            ).await()
+        }
+    }
+
+    /** Newest chat lines (the overlay only ever shows the last few). */
+    fun observeMessages(partyId: String, limit: Long = 30): Flow<List<PartyMessage>> = callbackFlow {
+        val uid = myUid
+        val registration = messages(partyId)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .limit(limit)
+            .addSnapshotListener { snap, _ ->
+                val list = snap?.documents?.map { d ->
+                    PartyMessage(
+                        id = d.id,
+                        userId = d.getString("userId") ?: "",
+                        userName = d.getString("userName") ?: "",
+                        text = d.getString("text") ?: "",
+                        createdAtMs = d.getTimestamp("createdAt")?.toDate()?.time ?: System.currentTimeMillis(),
+                        isMine = uid != null && d.getString("userId") == uid,
+                    )
+                }?.reversed() ?: emptyList()
+                trySend(list)
+            }
+        awaitClose { registration.remove() }
+    }
+
+    /** Fire a floating emoji everyone in the room sees. */
+    suspend fun sendReaction(partyId: String, emoji: String) = withContext(ioDispatcher) {
+        val uid = myUid ?: return@withContext
+        val me = runCatching { userRepository.getUser(uid) }.getOrNull()
+        runCatching {
+            reactions(partyId).add(
+                mapOf(
+                    "userId" to uid,
+                    "userName" to (me?.displayName ?: ""),
+                    "emoji" to emoji,
+                    "createdAt" to FieldValue.serverTimestamp(),
+                ),
+            ).await()
+        }
+    }
+
+    /** Recent reactions; the UI animates each one then drops it. */
+    fun observeReactions(partyId: String, limit: Long = 20): Flow<List<PartyReaction>> = callbackFlow {
+        val registration = reactions(partyId)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .limit(limit)
+            .addSnapshotListener { snap, _ ->
+                val list = snap?.documents?.map { d ->
+                    PartyReaction(
+                        id = d.id,
+                        emoji = d.getString("emoji") ?: "",
+                        userName = d.getString("userName") ?: "",
+                        // Pending server timestamps read null — treat as "just now" so the
+                        // sender sees their own emoji animate immediately.
+                        createdAtMs = d.getTimestamp("createdAt")?.toDate()?.time ?: System.currentTimeMillis(),
+                    )
+                } ?: emptyList()
+                trySend(list)
+            }
+        awaitClose { registration.remove() }
+    }
 
     // ── sync engine ───────────────────────────────────────────────────────
 
