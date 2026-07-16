@@ -17,6 +17,9 @@ import {
 } from "lucide-react";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { PartyPlayerOverlay } from "@/components/parties/PartyPlayerOverlay";
+import { useI18n } from "@/components/providers/LocaleProvider";
+import { usePartySync } from "@/components/parties/usePartySync";
 import { logPlayerEvent } from "@/lib/analytics";
 import { useAuth } from "@/components/providers/AuthProvider";
 import type { ActiveMovie } from "@/components/player/MiniPlayerProvider";
@@ -87,8 +90,12 @@ export function PersistentPlayer({
   const { user } = useAuth();
   const uid = user?.uid;
   const movieId = active.id;
+  // Party copy lives in the catalog dict; this component is only handed the player one.
+  const catalog = useI18n().dict.catalog;
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  // Watch-party sync engine: no-op unless this movie was opened from a live lobby.
+  const party = usePartySync(active.partyId, videoRef);
   const containerRef = useRef<HTMLDivElement>(null);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const appliedResume = useRef(false);
@@ -318,11 +325,13 @@ export function PersistentPlayer({
   }, []);
 
   const togglePlay = useCallback(() => {
+    // Party guests don't drive playback — the host is authoritative (rules enforce it too).
+    if (party.isParty && !party.isHost) return;
     const v = videoRef.current;
     if (!v) return;
     if (v.paused) v.play();
     else v.pause();
-  }, []);
+  }, [party.isParty, party.isHost]);
 
   const toggleMute = useCallback(() => {
     const v = videoRef.current;
@@ -336,10 +345,14 @@ export function PersistentPlayer({
     v.muted = v.volume === 0;
   }, []);
 
-  const seek = useCallback((value: number) => {
-    const v = videoRef.current;
-    if (v) v.currentTime = value;
-  }, []);
+  const seek = useCallback(
+    (value: number) => {
+      if (party.isParty && !party.isHost) return;
+      const v = videoRef.current;
+      if (v) v.currentTime = value;
+    },
+    [party.isParty, party.isHost],
+  );
 
   const startOver = useCallback(() => {
     if (videoRef.current) videoRef.current.currentTime = 0;
@@ -591,6 +604,36 @@ export function PersistentPlayer({
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── Watch party (Days 149-150) ─────────────────────────── */}
+      {party.isParty && !minimized && active.partyId && (
+        <>
+          <PartyPlayerOverlay partyId={active.partyId} dict={catalog} />
+
+          {!party.isHost && (
+            <p className="absolute left-1/2 top-4 z-30 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+              {catalog.partyHostControls}
+            </p>
+          )}
+
+          {/* Autoplay is blocked without a gesture — guests have no transport, so offer one tap. */}
+          {party.needsGesture && (
+            <button
+              type="button"
+              onClick={party.joinPlayback}
+              className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 text-sm font-semibold text-white"
+            >
+              <span className="rounded-full bg-brand-500 px-6 py-3">{catalog.partyWatchTogether}</span>
+            </button>
+          )}
+
+          {party.ended && (
+            <p className="absolute left-1/2 top-16 z-40 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/75 px-4 py-2 text-sm font-semibold text-white">
+              {catalog.partyEndedNotice}
+            </p>
+          )}
+        </>
       )}
 
       {src && (

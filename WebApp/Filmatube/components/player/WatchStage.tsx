@@ -14,18 +14,21 @@ export function WatchStage({
   title,
   subtitles,
   upNext,
+  partyId = null,
 }: {
   movieId: string;
   poster: string;
   title: string;
   subtitles: ActiveSubtitle[];
   upNext: UpNextMovie | null;
+  /** Set when arriving from a live party lobby (`/watch/[id]?party=…`). */
+  partyId?: string | null;
 }) {
   const { open } = useMiniPlayer();
 
   useEffect(() => {
-    open({ id: movieId, poster, title, subtitles, upNext });
-  }, [open, movieId, poster, title, subtitles, upNext]);
+    open({ id: movieId, poster, title, subtitles, upNext, partyId });
+  }, [open, movieId, poster, title, subtitles, upNext, partyId]);
 
   return <div className="min-h-screen bg-black" />;
 }

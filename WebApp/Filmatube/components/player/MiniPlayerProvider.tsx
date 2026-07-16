@@ -22,6 +22,8 @@ export interface ActiveMovie {
   title: string;
   subtitles: ActiveSubtitle[];
   upNext: UpNextMovie | null;
+  /** Non-null when opened from a live watch-party lobby — enables the sync engine. */
+  partyId: string | null;
 }
 
 interface MiniPlayerContext {
