@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { useState, useTransition, type ReactNode } from "react";
+import { saveTaste } from "@/app/account/taste/actions";
 import { GENRE_KEYS } from "@/lib/genres";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -11,22 +9,14 @@ import { useI18n } from "@/components/providers/LocaleProvider";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "./Chip";
 
-export function TasteForm({
-  uid,
-  dict,
-  genres,
-}: {
-  uid: string;
-  dict: Dictionary["taste"];
-  genres: Dictionary["genres"];
-}) {
-  const router = useRouter();
-  const { locale, setLocale } = useI18n();
+export function TasteForm({ dict, genres }: { dict: Dictionary["taste"]; genres: Dictionary["genres"] }) {
+  // The uid is no longer passed in — the action reads it from the session cookie instead.
+  const { locale } = useI18n();
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [appLang, setAppLang] = useState<Locale>(locale);
   const [contentLang, setContentLang] = useState("both");
-  const [saving, setSaving] = useState(false);
+  const [saving, startSaving] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   function toggle(key: string) {
@@ -37,25 +27,25 @@ export function TasteForm({
     });
   }
 
-  async function save() {
+  function save() {
     if (selected.size === 0) return;
-    setSaving(true);
     setError(null);
-    try {
-      await updateDoc(doc(db, "users", uid), {
-        genrePreferences: [...selected],
-        contentLanguage: contentLang,
-        language: appLang,
-        tasteCompleted: true,
-      });
-      if (appLang !== locale) setLocale(appLang);
-      // Enter the app after onboarding (not the marketing landing page).
-      router.push("/home");
-      router.refresh();
-    } catch {
-      setError(dict.saveError);
-      setSaving(false);
-    }
+    startSaving(async () => {
+      try {
+        // Writes the prefs, sets the locale cookie and redirects to /home server-side —
+        // the button's spinner is tied to this transition, so it always resolves.
+        const result = await saveTaste({
+          genres: [...selected],
+          contentLanguage: contentLang,
+          appLanguage: appLang,
+        });
+        if (result?.error) setError(dict.saveError);
+      } catch (e) {
+        // redirect() throws NEXT_REDIRECT — that's the success path, not a failure.
+        if (typeof e === "object" && e !== null && "digest" in e) throw e;
+        setError(dict.saveError);
+      }
+    });
   }
 
   return (
