@@ -43,7 +43,16 @@ export const getCurrentUser = cache(async () => {
   const cookie = store.get(SESSION_COOKIE)?.value;
   if (!cookie) return null;
   try {
-    return await getAdminAuth().verifySessionCookie(cookie);
+    const decoded = await getAdminAuth().verifySessionCookie(cookie);
+    // A banned account is treated as signed out, mirroring the Firestore `isSignedIn()` rule.
+    // Caveat: claims are baked into the cookie when it is minted, so this catches accounts
+    // banned *before* their session started. Banning someone mid-session revokes their refresh
+    // tokens (so they can never mint a new cookie) and Firestore rules reject all their data
+    // access immediately — but this cookie stays technically valid until it expires. Closing
+    // that last gap needs verifySessionCookie(cookie, true), which costs a network round-trip
+    // per navigation; see the note above.
+    if (decoded.banned === true) return null;
+    return decoded;
   } catch {
     return null;
   }

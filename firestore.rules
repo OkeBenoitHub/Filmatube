@@ -8,8 +8,16 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ───────── helpers ─────────
+    // A banned user is treated as not signed in at all. Every other rule builds on this
+    // (isSelf/isAdmin included), so one check here denies a banned account every read and
+    // write in the ruleset. `banned` is a custom CLAIM, not a users-doc field — a user can't
+    // grant themselves a claim, and setting it revokes their refresh tokens so the next token
+    // refresh (<= 1h, immediate on re-auth) locks them out.
+    function isBanned() {
+      return request.auth.token.get('banned', false) == true;
+    }
     function isSignedIn() {
-      return request.auth != null;
+      return request.auth != null && !isBanned();
     }
     function isSelf(userId) {
       return isSignedIn() && request.auth.uid == userId;
