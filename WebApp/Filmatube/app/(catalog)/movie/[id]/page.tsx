@@ -5,6 +5,7 @@ import { Play } from "lucide-react";
 import { MovieRow } from "@/components/catalog/MovieRow";
 import { ShareBar } from "@/components/catalog/ShareBar";
 import { TrailerButton } from "@/components/catalog/TrailerButton";
+import { CreatePartyButton } from "@/components/parties/CreatePartyButton";
 import { SaveButton } from "@/components/catalog/SaveButton";
 import { ReactionBar } from "@/components/social/ReactionBar";
 import { RecommendButton } from "@/components/social/RecommendButton";
@@ -121,6 +122,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
               </Link>
             )}
             {movie.trailerUrl && <TrailerButton url={movie.trailerUrl} dict={c} />}
+            <CreatePartyButton movieId={movie.id} dict={c} />
             <SaveButton movieId={movie.id} dict={c} />
             <RecommendButton movieId={movie.id} movieTitle={title} dict={c} />
             <ShareToBoardButton movieId={movie.id} movieTitle={title} moviePoster={movie.posterUrl} dict={c} />

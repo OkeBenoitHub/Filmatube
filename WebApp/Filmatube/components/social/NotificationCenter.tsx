@@ -20,6 +20,7 @@ interface Notification {
   movieTitle: string;
   boardId: string;
   boardTitle: string;
+  partyId: string;
   read: boolean;
   createdAtMs: number;
 }
@@ -36,6 +37,8 @@ function actionText(type: string, dict: Dictionary["catalog"]): string {
       return dict.notifReviewLike;
     case "board_invite":
       return dict.notifBoardInvite;
+    case "party_invite":
+      return dict.notifPartyInvite;
     default:
       return dict.notifRecommendation;
   }
@@ -70,6 +73,7 @@ export function NotificationCenter({ dict }: { dict: Dictionary["catalog"] }) {
             movieTitle: d.get("movieTitle") ?? "",
             boardId: d.get("boardId") ?? "",
             boardTitle: d.get("boardTitle") ?? "",
+            partyId: d.get("partyId") ?? "",
             read: d.get("read") ?? false,
             createdAtMs: ts ? ts.toMillis() : 0,
           };
@@ -87,8 +91,9 @@ export function NotificationCenter({ dict }: { dict: Dictionary["catalog"] }) {
 
   const open = async (n: Notification) => {
     if (user && !n.read) await updateDoc(doc(db, "users", user.uid, "notifications", n.id), { read: true });
-    // Board invites take priority — same target order as the Android notification center.
-    if (n.boardId) router.push(`/boards/${n.boardId}`);
+    // Party / board invites take priority — same target order as the Android center.
+    if (n.partyId) router.push(`/parties/${n.partyId}`);
+    else if (n.boardId) router.push(`/boards/${n.boardId}`);
     else if (n.movieId) router.push(`/movie/${n.movieId}`);
     else if (n.actorId) router.push(`/u/${n.actorId}`);
   };
