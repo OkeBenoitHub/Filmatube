@@ -432,7 +432,7 @@
     <string name="party_make_host">Passer organisateur</string>
     <string name="party_ended_notice">L\'organisateur a terminé cette séance.</string>
     <!-- Écran de présentation / à propos dans l'app -->
-    <string name="landing_topbar">À propos de Filmatube</string>
+    <string name="landing_topbar">Filmatube</string>
     <string name="landing_badge">Les films + ceux qui les aiment</string>
     <string name="landing_title">Là où les films rencontrent vos proches</string>
     <string name="landing_tagline">Regardez des films, suivez vos amis, réagissez, publiez des avis et regardez ensemble — au même endroit.</string>
@@ -440,6 +440,14 @@
     <string name="landing_cta_secondary">Explorer la communauté</string>
     <string name="landing_cta_get_started">Commencer</string>
     <string name="landing_cta_sign_in">J\'ai déjà un compte</string>
+    <string name="landing_stat_movies_value">500+</string>
+    <string name="landing_stat_movies_label">Films</string>
+    <string name="landing_stat_members_value">10K+</string>
+    <string name="landing_stat_members_label">Membres</string>
+    <string name="landing_stat_reviews_value">50K+</string>
+    <string name="landing_stat_reviews_label">Avis et réactions</string>
+    <string name="landing_stat_countries_value">30+</string>
+    <string name="landing_stat_countries_label">Pays</string>
     <string name="landing_features_kicker">Tout ce qu\'il vous faut</string>
     <string name="landing_features_title">Un cinéma et une communauté</string>
     <string name="landing_feat_watch_title">Regardez en HD</string>

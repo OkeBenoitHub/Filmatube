@@ -1,6 +1,9 @@
 package com.filmatube.app.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -11,6 +14,7 @@ import com.filmatube.app.ui.auth.AuthNavTarget
 import com.filmatube.app.ui.auth.ForgotPasswordScreen
 import com.filmatube.app.ui.auth.LoginScreen
 import com.filmatube.app.ui.auth.RegisterScreen
+import com.filmatube.app.ui.landing.LandingEntryViewModel
 import com.filmatube.app.ui.landing.LandingScreen
 import com.filmatube.app.ui.onboarding.OnboardingScreen
 import com.filmatube.app.ui.splash.SplashDestination
@@ -30,11 +34,11 @@ object RootRoutes {
 }
 
 /**
- * Root navigation: splash → (landing → get-started on first run) → auth → main app.
+ * Root navigation: splash → landing (every signed-out open) → auth → main app.
  *
- * First open while signed out shows the marketing landing (mirrors the web landing page); its
- * CTAs lead into the get-started carousel or straight to sign-in. Returning signed-out users
- * skip it and land on login.
+ * The landing mirrors the web marketing page. "Get started" runs the carousel only on first
+ * open (onboardingCompleted); afterwards both CTAs lead to sign-in. Sign-out also returns to
+ * the landing, matching the web.
  */
 @Composable
 fun RootNavHost() {
@@ -45,8 +49,7 @@ fun RootNavHost() {
             SplashScreen(
                 onNavigate = { destination ->
                     val route = when (destination) {
-                        SplashDestination.ONBOARDING -> RootRoutes.LANDING
-                        SplashDestination.LOGIN -> RootRoutes.LOGIN
+                        SplashDestination.LANDING -> RootRoutes.LANDING
                         SplashDestination.MAIN -> RootRoutes.MAIN
                     }
                     navController.navigate(route) {
@@ -57,16 +60,18 @@ fun RootNavHost() {
         }
 
         composable(RootRoutes.LANDING) {
+            // Every signed-out open starts here; the get-started carousel only runs once.
+            val entryViewModel: LandingEntryViewModel = hiltViewModel()
+            val onboardingCompleted by entryViewModel.onboardingCompleted.collectAsStateWithLifecycle()
             LandingScreen(
                 // Entry screen — nothing behind it, so no back arrow.
                 primaryLabel = R.string.landing_cta_get_started,
-                onPrimary = { navController.navigate(RootRoutes.ONBOARDING) },
-                secondaryLabel = R.string.landing_cta_sign_in,
-                onSecondary = {
-                    navController.navigate(RootRoutes.LOGIN) {
-                        popUpTo(RootRoutes.LANDING) { inclusive = true }
-                    }
+                onPrimary = {
+                    val route = if (onboardingCompleted == true) RootRoutes.LOGIN else RootRoutes.ONBOARDING
+                    navController.navigate(route)
                 },
+                secondaryLabel = R.string.landing_cta_sign_in,
+                onSecondary = { navController.navigate(RootRoutes.LOGIN) },
             )
         }
 
@@ -74,8 +79,8 @@ fun RootNavHost() {
             OnboardingScreen(
                 onFinished = {
                     navController.navigate(RootRoutes.LOGIN) {
-                        // Clear the landing too, so Back from login doesn't re-enter the funnel.
-                        popUpTo(RootRoutes.LANDING) { inclusive = true }
+                        // Drop the carousel; the landing stays beneath login so Back returns to it.
+                        popUpTo(RootRoutes.ONBOARDING) { inclusive = true }
                     }
                 },
             )
@@ -106,7 +111,7 @@ fun RootNavHost() {
 
         composable(RootRoutes.MAIN) {
             FilmatubeAppRoot(
-                onSignedOut = { navController.navigateClearingBackStack(RootRoutes.LOGIN) },
+                onSignedOut = { navController.navigateClearingBackStack(RootRoutes.LANDING) },
             )
         }
     }

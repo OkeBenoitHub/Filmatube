@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 /** Where the splash routes once the app state is resolved. */
-enum class SplashDestination { ONBOARDING, LOGIN, MAIN }
+enum class SplashDestination { LANDING, MAIN }
 
 @HiltViewModel
 class SplashViewModel @Inject constructor(
@@ -20,16 +20,16 @@ class SplashViewModel @Inject constructor(
     authRepository: AuthRepository,
 ) : ViewModel() {
 
-    /** Null while loading; resolves once onboarding flag + auth state are known. */
+    /**
+     * Null while loading; resolves once the auth state is known. Every signed-out open lands
+     * on the marketing landing — the onboarding flag only decides (at the landing's CTA)
+     * whether the get-started carousel still shows.
+     */
     val destination: StateFlow<SplashDestination?> = combine(
         preferences.onboardingCompleted,
         authRepository.authState,
-    ) { onboardingCompleted, user ->
-        when {
-            !onboardingCompleted -> SplashDestination.ONBOARDING
-            user == null -> SplashDestination.LOGIN
-            else -> SplashDestination.MAIN
-        }
+    ) { _, user ->
+        if (user == null) SplashDestination.LANDING else SplashDestination.MAIN
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),

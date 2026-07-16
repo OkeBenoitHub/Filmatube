@@ -435,7 +435,7 @@
     <string name="party_make_host">Make host</string>
     <string name="party_ended_notice">The host ended this watch party.</string>
     <!-- In-app landing / about screen -->
-    <string name="landing_topbar">About Filmatube</string>
+    <string name="landing_topbar">Filmatube</string>
     <string name="landing_badge">Movies + the people who love them</string>
     <string name="landing_title">Where movies meet your people</string>
     <string name="landing_tagline">Stream films, follow friends, react and review, and watch together — all in one place.</string>
@@ -443,6 +443,14 @@
     <string name="landing_cta_secondary">Explore the community</string>
     <string name="landing_cta_get_started">Get started</string>
     <string name="landing_cta_sign_in">I already have an account</string>
+    <string name="landing_stat_movies_value">500+</string>
+    <string name="landing_stat_movies_label">Movies</string>
+    <string name="landing_stat_members_value">10K+</string>
+    <string name="landing_stat_members_label">Members</string>
+    <string name="landing_stat_reviews_value">50K+</string>
+    <string name="landing_stat_reviews_label">Reviews &amp; reactions</string>
+    <string name="landing_stat_countries_value">30+</string>
+    <string name="landing_stat_countries_label">Countries</string>
     <string name="landing_features_kicker">Everything you need</string>
     <string name="landing_features_title">A cinema and a community</string>
     <string name="landing_feat_watch_title">Watch in HD</string>
