@@ -14,6 +14,7 @@ import {
 import { db } from "@/lib/firebase";
 import { Modal } from "@/components/ui/Modal";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useAuthor } from "@/components/boards/useAuthor";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 interface BoardOption {
@@ -37,6 +38,7 @@ export function ShareToBoardButton({
   dict: Dictionary["catalog"];
 }) {
   const { user } = useAuth();
+  const author = useAuthor();
   const [open, setOpen] = useState(false);
   const [boards, setBoards] = useState<BoardOption[] | null>(null);
   const [sending, setSending] = useState(false);
@@ -59,8 +61,8 @@ export function ShareToBoardButton({
     try {
       await addDoc(collection(db, "boards", boardId, "messages"), {
         userId: user.uid,
-        userName: user.displayName ?? "",
-        userAvatar: user.photoURL ?? "",
+        userName: author.name,
+        userAvatar: author.avatar,
         text: "",
         hasSpoiler: false,
         movieId,

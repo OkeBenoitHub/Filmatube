@@ -702,6 +702,9 @@ const en = {
     closeLabel: "Close",
     boardSearchPlaceholder: "Search boards…",
     boardsNoResults: "No boards match your search.",
+    inviteFollowers: "Invite followers",
+    invitedCount: "Invited",
+    notifBoardInvite: "invited you to a board",
   },
   player: {
     back: "Back",
@@ -1442,6 +1445,9 @@ const fr: Dictionary = {
     closeLabel: "Fermer",
     boardSearchPlaceholder: "Rechercher des forums…",
     boardsNoResults: "Aucun forum ne correspond à votre recherche.",
+    inviteFollowers: "Inviter vos abonnés",
+    invitedCount: "Invités",
+    notifBoardInvite: "vous a invité à un forum",
   },
   player: {
     back: "Retour",

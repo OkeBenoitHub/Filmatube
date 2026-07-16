@@ -18,6 +18,8 @@ interface Notification {
   message: string;
   movieId: string;
   movieTitle: string;
+  boardId: string;
+  boardTitle: string;
   read: boolean;
   createdAtMs: number;
 }
@@ -32,6 +34,8 @@ function actionText(type: string, dict: Dictionary["catalog"]): string {
       return dict.notifReply;
     case "review_like":
       return dict.notifReviewLike;
+    case "board_invite":
+      return dict.notifBoardInvite;
     default:
       return dict.notifRecommendation;
   }
@@ -64,6 +68,8 @@ export function NotificationCenter({ dict }: { dict: Dictionary["catalog"] }) {
             message: d.get("message") ?? "",
             movieId: d.get("movieId") ?? "",
             movieTitle: d.get("movieTitle") ?? "",
+            boardId: d.get("boardId") ?? "",
+            boardTitle: d.get("boardTitle") ?? "",
             read: d.get("read") ?? false,
             createdAtMs: ts ? ts.toMillis() : 0,
           };
@@ -81,7 +87,9 @@ export function NotificationCenter({ dict }: { dict: Dictionary["catalog"] }) {
 
   const open = async (n: Notification) => {
     if (user && !n.read) await updateDoc(doc(db, "users", user.uid, "notifications", n.id), { read: true });
-    if (n.movieId) router.push(`/movie/${n.movieId}`);
+    // Board invites take priority — same target order as the Android notification center.
+    if (n.boardId) router.push(`/boards/${n.boardId}`);
+    else if (n.movieId) router.push(`/movie/${n.movieId}`);
     else if (n.actorId) router.push(`/u/${n.actorId}`);
   };
 
@@ -146,7 +154,9 @@ function Group({
                     <p className="truncate text-sm text-ink">
                       <span className="font-semibold">{n.actorName}</span> {actionText(n.type, dict)}
                     </p>
-                    {n.movieTitle && <p className="truncate text-xs text-ink-muted">{n.movieTitle}</p>}
+                    {(n.boardTitle || n.movieTitle) && (
+                      <p className="truncate text-xs text-ink-muted">{n.boardTitle || n.movieTitle}</p>
+                    )}
                   </>
                 )}
               </div>

@@ -247,7 +247,7 @@
 - **Day 136** ✅ — Member roles + moderation; **admin official boards**.
 - **Day 137** ✅ — Share movie card; spoiler tags; board search.
 - **Day 138** ✅ — Board moderation queue (admin); report handling.
-- **Day 139** — Boards parity QA (Android↔web).
+- **Day 139** ✅ — Boards parity QA (Android↔web).
 - **Day 140** — Week review.
 
 ### Week 21 — Android Watch Parties (private) (Days 141–147) (A)

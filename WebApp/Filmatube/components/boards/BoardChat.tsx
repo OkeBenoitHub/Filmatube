@@ -24,6 +24,8 @@ import {
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { UserAvatar } from "@/components/social/UserList";
+import { useAuthor } from "@/components/boards/useAuthor";
+import { InviteFollowersButton } from "@/components/boards/InviteFollowersButton";
 import type { Board } from "@/lib/boards";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { cn } from "@/lib/utils";
@@ -69,6 +71,7 @@ export function BoardChat({
   dict: Dictionary["catalog"];
 }) {
   const { user } = useAuth();
+  const author = useAuthor();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [typing, setTyping] = useState<TypingUser[]>([]);
   const [now, setNow] = useState(0);
@@ -89,10 +92,12 @@ export function BoardChat({
 
   // ── Messages (realtime) ────────────────────────────────────
   useEffect(() => {
-    const q = query(collection(db, "boards", board.id, "messages"), orderBy("createdAt", "asc"), limit(200));
+    // Newest-first + reverse, matching Android: an ascending limit would pin the window to a
+    // busy board's OLDEST messages and never show what was just said.
+    const q = query(collection(db, "boards", board.id, "messages"), orderBy("createdAt", "desc"), limit(100));
     return onSnapshot(q, (snap) => {
       setMessages(
-        snap.docs.map((d) => ({
+        snap.docs.reverse().map((d) => ({
           id: d.id,
           userId: d.get("userId") ?? "",
           userName: d.get("userName") ?? "",
@@ -163,7 +168,7 @@ export function BoardChat({
     if (at - lastTypingAt.current < 3_000) return;
     lastTypingAt.current = at;
     void setDoc(doc(db, "boards", board.id, "typing", user.uid), {
-      name: user.displayName ?? "",
+      name: author.name,
       updatedAt: serverTimestamp(),
     });
   };
@@ -178,12 +183,13 @@ export function BoardChat({
     setSpoiler(false);
     await addDoc(collection(db, "boards", board.id, "messages"), {
       userId: user.uid,
-      userName: user.displayName ?? "",
-      userAvatar: user.photoURL ?? "",
+      userName: author.name,
+      userAvatar: author.avatar,
       text: body,
       hasSpoiler: marked,
       replyToName: quoted?.userName ?? "",
-      replyToText: quoted?.text ?? "",
+      // Android caps the quoted snippet at 120 chars — keep the stored shape identical.
+      replyToText: quoted?.text.slice(0, 120) ?? "",
       createdAt: serverTimestamp(),
     });
     void deleteDoc(doc(db, "boards", board.id, "typing", user.uid));
@@ -278,6 +284,7 @@ export function BoardChat({
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-bold text-ink">{board.title}</h2>
         <div className="flex shrink-0 items-center gap-2">
+          {isMember && <InviteFollowersButton boardId={board.id} boardTitle={board.title} dict={dict} />}
           <Link
             href={`/boards/${board.id}/members`}
             className="inline-flex h-9 items-center gap-1.5 rounded-full border border-surface-border px-4 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
