@@ -34,9 +34,9 @@ env:
   - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
     secret: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
     availability: [BUILD, RUNTIME]
-  # No custom domain yet — updated to the real *.hosted.app URL after the backend is created.
+  # No custom domain yet — the backend's free hosted.app URL. Swap when a domain is attached.
   - variable: NEXT_PUBLIC_SITE_URL
-    value: https://filmatube.app
+    value: https://filmatube--filmatubelive.europe-west4.hosted.app
     availability: [BUILD, RUNTIME]
 
   # Server-only secrets — admin SDK + R2. Never exposed to the client.

@@ -225,7 +225,7 @@
 - **Day 123** ✅ — ⚠️ RE-SCOPED (Play Store dropped) — beta plan + channels + monitoring ready (web preview + sideloaded APK; Crashlytics/Perf). See `docs/BETA_AND_LAUNCH.md`. Tester recruitment ongoing.
 - **Day 124** ✅ — Landing page final + SEO/OG (OG image, sitemap, robots) + privacy + terms. (Play "store buttons" dropped.)
 - **Day 125** — ⚠️ RE-SCOPED (Play Store dropped) — Play Store listing N/A. Only survivor = web hosting deploy → folded into Day 126.
-- **Day 126** — **🚀 v1.0 WEB LAUNCH** — PREP ✅ (apphosting.yaml + launch checklist + prod-hardening list in `docs/BETA_AND_LAUNCH.md`). Pending owner actions: run the App Hosting deploy, apply the PII/ban rule changes, then flip live.
+- **Day 126** ✅ — **🚀 v1.0 WEB LAUNCH** — LIVE at https://filmatube--filmatubelive.europe-west4.hosted.app (App Hosting, europe-west4, local-source deploy). PII (users.email) + ban hardening shipped Day 152+. Custom domain: attach later in console.
 
 ---
 
@@ -265,8 +265,8 @@
 - **Day 150** ✅ — Host controls + guest follow (web).
 - **Day 151** ✅ — Parties parity QA; sync stress test (many guests).
 - **Day 152** ✅ — Hardening + Crashlytics review.
-- **Day 153** — Beta + fixes.
-- **Day 154** — **🚀 v1.1 release** (Play + web); monitoring.
+- **Day 153** ✅ — Beta + fixes (smoke-tested live URL: public pages 200, auth gates redirect, hosted.app domain authorized for sign-in).
+- **Day 154** ✅ RE-SCOPED — **🚀 v1.1 release** (web only; Play dropped) — v1.1 (boards, parties, hardening) is what went live on Day 126 execution; monitoring via Firebase console (Analytics + Crashlytics wired).
 
 ---
 

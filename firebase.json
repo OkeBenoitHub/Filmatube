@@ -5,5 +5,17 @@
   },
   "functions": {
     "source": "functions"
+  },
+  "apphosting": {
+    "backendId": "filmatube",
+    "rootDir": "WebApp/Filmatube",
+    "ignore": [
+      "**/node_modules/**",
+      "**/.next/**",
+      ".git/**",
+      "Android/**",
+      "docs/**",
+      "functions/**"
+    ]
   }
 }
