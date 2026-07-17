@@ -31,6 +31,10 @@ env:
   - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
     secret: NEXT_PUBLIC_FIREBASE_VAPID_KEY
     availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    secret: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    availability: [BUILD, RUNTIME]
+  # No custom domain yet — updated to the real *.hosted.app URL after the backend is created.
   - variable: NEXT_PUBLIC_SITE_URL
     value: https://filmatube.app
     availability: [BUILD, RUNTIME]
@@ -56,4 +60,28 @@ env:
     availability: [RUNTIME]
   - variable: TMDB_API_KEY
     secret: TMDB_API_KEY
+    availability: [RUNTIME]
+
+  # R2 buckets + public base URLs — names/URLs aren't sensitive, but the presign +
+  # playback code fails without them (kept as secrets alongside the keys for one workflow).
+  - variable: R2_BUCKET_VIDEOS
+    secret: R2_BUCKET_VIDEOS
+    availability: [RUNTIME]
+  - variable: R2_BUCKET_IMAGES
+    secret: R2_BUCKET_IMAGES
+    availability: [RUNTIME]
+  - variable: R2_BUCKET_AVATARS
+    secret: R2_BUCKET_AVATARS
+    availability: [RUNTIME]
+  - variable: R2_BUCKET_SUBTITLES
+    secret: R2_BUCKET_SUBTITLES
+    availability: [RUNTIME]
+  - variable: R2_PUBLIC_URL_IMAGES
+    secret: R2_PUBLIC_URL_IMAGES
+    availability: [RUNTIME]
+  - variable: R2_PUBLIC_URL_AVATARS
+    secret: R2_PUBLIC_URL_AVATARS
+    availability: [RUNTIME]
+  - variable: R2_PUBLIC_URL_SUBTITLES
+    secret: R2_PUBLIC_URL_SUBTITLES
     availability: [RUNTIME]
