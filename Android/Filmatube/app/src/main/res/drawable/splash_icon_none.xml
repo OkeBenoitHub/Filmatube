@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  A deliberately empty splash icon.
+
+  Android 12+ always shows a system splash before the Activity exists, and it cannot be
+  turned off — only made invisible. Drawing nothing here, over a background that matches the
+  app's, leaves the OS splash as a plain coloured screen that the animated in-app splash
+  continues from. The result reads as one splash with one logo instead of two.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+</shape>
