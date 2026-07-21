@@ -16,7 +16,7 @@
 const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { initializeApp } = require("firebase-admin/app");
-const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
 
 initializeApp();
@@ -47,6 +47,360 @@ exports.aggregateRatings = onDocumentWritten({ document: "ratings/{movieId}/item
 
   await db.collection("movies").doc(movieId).set({ averageRating, ratingsCount: count }, { merge: true });
 });
+
+/**
+ * Keep `showtimes/{id}.attendeesCount` in step with the attendees subcollection.
+ *
+ * Showtime docs are admin-writable only (a public theater is a bigger spoofing target than
+ * a board), so clients write just their own attendee doc and the count is maintained here.
+ * Incremented by delta rather than recounted: a popular premiere can hold thousands of
+ * attendees, and a full recount on every RSVP would be O(n) writes-per-write.
+ */
+exports.syncShowtimeAttendees = onDocumentWritten(
+  { document: "showtimes/{showtimeId}/attendees/{userId}", region: "europe-west4" },
+  async (event) => {
+    const existedBefore = event.data?.before?.exists === true;
+    const existsAfter = event.data?.after?.exists === true;
+    const delta = (existsAfter ? 1 : 0) - (existedBefore ? 1 : 0);
+    // Field-only edits (a remind toggle, a clock probe) don't move the count.
+    if (delta === 0) return;
+
+    await db
+      .collection("showtimes")
+      .doc(event.params.showtimeId)
+      .set({ attendeesCount: FieldValue.increment(delta) }, { merge: true });
+  },
+);
+
+/** Deliver one notification: inbox doc + FCM push, honoring the channel opt-in. */
+async function notifyUser(uid, { type, category, title, body, route, extra }) {
+  const settings = await db.collection("users").doc(uid).collection("settings").doc("notifications").get();
+  // Absent settings means "not yet configured", which opts in — same as the broadcast path.
+  if (settings.exists && settings.get(category) === false) return false;
+
+  await db.collection("users").doc(uid).collection("notifications").add({
+    type,
+    actorName: "Filmatube",
+    title,
+    message: body,
+    read: false,
+    createdAt: FieldValue.serverTimestamp(),
+    ...extra,
+  });
+
+  const tokens = await db.collection("users").doc(uid).collection("fcmTokens").get();
+  const ids = tokens.docs.map((t) => t.id);
+  if (ids.length > 0) {
+    try {
+      await getMessaging().sendEachForMulticast({
+        tokens: ids,
+        notification: { title, body },
+        data: { category, route },
+      });
+    } catch (e) {
+      /* non-fatal: the inbox doc is already written */
+    }
+  }
+  return true;
+}
+
+/** Doors open this long before the film rolls. */
+const LOBBY_LEAD_MS = 15 * 60e3;
+/** Fallback runtime when a showtime predates the denormalized `durationMs`. */
+const FALLBACK_RUNTIME_MS = 3 * 3600e3;
+
+const RECURRENCE_STEP_MS = {
+  daily: 24 * 3600e3,
+  weekly: 7 * 24 * 3600e3,
+};
+
+/**
+ * Walk showtimes through their lifecycle: scheduled → lobby → live → ended.
+ *
+ * Runs every minute. Late status flips are cosmetic rather than desynchronising: every client
+ * derives its position from `startAt`, not from when the status changed, so a viewer who
+ * joins a minute after the doors open still lands a minute into the film.
+ *
+ * Ending is `startAt + durationMs`, which stays correct across an admin pause for free —
+ * resuming shifts `startAt` forward by the paused duration, carrying the end with it.
+ */
+exports.processTheaterSchedule = onSchedule(
+  // Co-located with the eur3 database like the triggers are. A scheduled function doesn't
+  // *require* it the way a Firestore trigger does, but this one runs every minute and does
+  // several queries per run — from us-central1 each of those crossed the Atlantic.
+  { schedule: "every 1 minutes", region: "europe-west4" },
+  async () => {
+  const now = Date.now();
+
+  // Open the doors.
+  const toLobby = await db
+    .collection("showtimes")
+    .where("status", "==", "scheduled")
+    .where("startAt", "<=", new Date(now + LOBBY_LEAD_MS))
+    .limit(20)
+    .get();
+  for (const doc of toLobby.docs) {
+    await doc.ref.update({ status: "lobby" });
+    console.log(`showtime ${doc.id}: scheduled → lobby`);
+  }
+
+  // Roll the film.
+  const toLive = await db
+    .collection("showtimes")
+    .where("status", "==", "lobby")
+    .where("startAt", "<=", new Date(now))
+    .limit(20)
+    .get();
+  for (const doc of toLive.docs) {
+    await doc.ref.update({ status: "live" });
+    console.log(`showtime ${doc.id}: lobby → live`);
+  }
+
+  // Roll the credits. Can't be a range query — the end time is startAt + durationMs, which
+  // Firestore can't compute server-side — so scan live showtimes and check each. There are
+  // only ever a handful genuinely live at once, so the read cost is trivial.
+  const live = await db.collection("showtimes").where("status", "==", "live").limit(50).get();
+  for (const doc of live.docs) {
+    // A paused room is frozen: its scheduled end hasn't arrived yet in effective time.
+    if (doc.get("pausedAt")) continue;
+
+    const startAt = doc.get("startAt");
+    if (!startAt?.toMillis) continue;
+    const runtime = doc.get("durationMs") || FALLBACK_RUNTIME_MS;
+    if (now < startAt.toMillis() + runtime) continue;
+
+    await doc.ref.update({ status: "ended", endedAt: FieldValue.serverTimestamp() });
+    console.log(`showtime ${doc.id}: live → ended`);
+    await spawnRecurrence(doc);
+  }
+  },
+);
+
+/**
+ * Queue the next occurrence of a recurring showtime.
+ *
+ * Guarded by `recurrenceSpawned` on the finished doc rather than by looking for an existing
+ * future showtime: an admin who deliberately deletes the next occurrence shouldn't have it
+ * silently recreated on the following tick.
+ */
+async function spawnRecurrence(doc) {
+  const step = RECURRENCE_STEP_MS[doc.get("recurrence")];
+  if (!step || doc.get("recurrenceSpawned")) return;
+
+  try {
+    await doc.ref.update({ recurrenceSpawned: true });
+    const startAt = doc.get("startAt");
+
+    // Skip forward past any occurrences missed while the automation was down, so a paused
+    // deployment doesn't schedule the next showing in the past.
+    let next = startAt.toMillis() + step;
+    while (next <= Date.now()) next += step;
+
+    await db.collection("showtimes").add({
+      movieId: doc.get("movieId") ?? "",
+      movieTitle: doc.get("movieTitle") ?? "",
+      posterUrl: doc.get("posterUrl") ?? "",
+      backdropUrl: doc.get("backdropUrl") ?? "",
+      startAt: Timestamp.fromMillis(next),
+      status: "scheduled",
+      // A repeat is by definition not a first screening, so the premiere badge doesn't carry.
+      isPremiere: false,
+      capacity: doc.get("capacity") ?? 0,
+      attendeesCount: 0,
+      durationMs: doc.get("durationMs") ?? 0,
+      recurrence: doc.get("recurrence"),
+      createdAt: FieldValue.serverTimestamp(),
+    });
+    console.log(`showtime ${doc.id}: queued next ${doc.get("recurrence")} occurrence`);
+  } catch (e) {
+    console.error(`showtime ${doc.id}: could not queue next occurrence`, e);
+  }
+}
+
+/**
+ * When the credits roll: give the audience somewhere to talk, and ask them to rate it.
+ *
+ * Fires on the status transition rather than from the scheduler, so it also covers an admin
+ * ending a showing by hand from the console.
+ */
+exports.onShowtimeEnded = onDocumentWritten(
+  { document: "showtimes/{showtimeId}", region: "europe-west4" },
+  async (event) => {
+    const before = event.data?.before;
+    const after = event.data?.after;
+    if (!after?.exists) return;
+    // Only the moment it becomes "ended" — not every later write to the doc.
+    if (before?.get("status") === "ended" || after.get("status") !== "ended") return;
+
+    const showtimeId = event.params.showtimeId;
+    const movieId = after.get("movieId") || "";
+    const movieTitle = after.get("movieTitle") || "";
+    if (!movieId) return;
+
+    const boardId = await ensureDiscussionBoard(movieId, movieTitle, after.get("posterUrl") || "");
+
+    // Everyone who actually turned up — presence, not RSVPs. Someone who reserved a seat
+    // and never came has nothing to discuss and nothing to rate.
+    const present = await db.collection("showtimes").doc(showtimeId).collection("presence").limit(500).get();
+    if (present.size === 500) {
+      console.warn(`showtime ${showtimeId}: post-show fan-out capped at 500 attendees`);
+    }
+
+    for (const p of present.docs) {
+      await notifyUser(p.id, {
+        type: "theater_postshow",
+        category: "social",
+        title: movieTitle,
+        body: "The showing has ended — rate it and join the discussion.",
+        route: boardId ? `filmatube://board/${boardId}` : `filmatube://movie/${movieId}`,
+        extra: { movieId, movieTitle, boardId, showtimeId },
+      });
+    }
+    console.log(`showtime ${showtimeId}: post-show sent to ${present.size}, board ${boardId || "none"}`);
+  },
+);
+
+/**
+ * The movie's discussion board, creating it only if the film doesn't already have one.
+ *
+ * Reused rather than created per screening: a film shown weekly would otherwise accumulate a
+ * graveyard of near-empty boards, and the conversation is about the movie, not the session.
+ * Returns "" if it can't be resolved — the caller falls back to linking the movie itself.
+ */
+async function ensureDiscussionBoard(movieId, movieTitle, posterUrl) {
+  try {
+    const existing = await db
+      .collection("boards")
+      .where("type", "==", "movie")
+      .where("movieId", "==", movieId)
+      .limit(1)
+      .get();
+    if (!existing.empty) return existing.docs[0].id;
+
+    const ref = db.collection("boards").doc();
+    await ref.set({
+      title: movieTitle,
+      description: "",
+      type: "movie",
+      movieId,
+      coverUrl: posterUrl,
+      isPublic: true,
+      isFeatured: false,
+      // Marked official: this board is created by the theater itself, not by a member.
+      isOfficial: true,
+      // No human owner — a board the system opened has no one to hand moderation to, so it
+      // stays admin-moderated. Rules treat a missing ownerId as "no member-owner".
+      ownerId: "",
+      memberIds: [],
+      memberCount: 0,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+    return ref.id;
+  } catch (e) {
+    console.error(`could not resolve a discussion board for movie ${movieId}`, e);
+    return "";
+  }
+}
+
+const SOON_WINDOW_MS = 15 * 60e3;
+
+/**
+ * "Starting soon": nudge everyone who RSVP'd with reminders on, ~15 minutes out.
+ *
+ * `remindSentAt` on the showtime is the idempotency guard — this runs every 5 minutes and
+ * the 15-minute window would otherwise match the same showtime three times running.
+ */
+exports.notifyShowtimeStartingSoon = onSchedule(
+  { schedule: "every 5 minutes", region: "europe-west4" },
+  async () => {
+  const now = Date.now();
+  const due = await db
+    .collection("showtimes")
+    .where("status", "in", ["scheduled", "lobby"])
+    .where("startAt", "<=", new Date(now + SOON_WINDOW_MS))
+    .limit(20)
+    .get();
+
+  for (const doc of due.docs) {
+    if (doc.get("remindSentAt")) continue;
+    // Claim it before fanning out, so a slow run can't be double-sent by the next tick.
+    await doc.ref.update({ remindSentAt: FieldValue.serverTimestamp() });
+
+    const title = doc.get("movieTitle") || "";
+    const attendees = await doc.ref.collection("attendees").where("remind", "==", true).limit(500).get();
+    let sent = 0;
+    for (const a of attendees.docs) {
+      const ok = await notifyUser(a.id, {
+        type: "theater_starting",
+        category: "content",
+        title,
+        body: "Starting soon in the theater.",
+        route: `filmatube://showtime/${doc.id}`,
+        extra: { showtimeId: doc.id, movieId: doc.get("movieId") || "" },
+      });
+      if (ok) sent += 1;
+    }
+    if (attendees.size === 500) {
+      console.warn(`showtime ${doc.id}: reminder fan-out hit the 500-attendee cap; some RSVPs were not notified`);
+    }
+    console.log(`showtime ${doc.id}: reminded ${sent}/${attendees.size}`);
+  }
+});
+
+const FRIEND_FANOUT_CAP = 200;
+
+/**
+ * "A friend is in a theater": when someone walks into a live showing, tell their followers.
+ *
+ * Guarded by a marker doc per (showtime, viewer) so leaving and rejoining — or a presence
+ * heartbeat that recreates the doc after a network blip — can't re-notify the same
+ * followers. Fan-out is capped; a very-followed account notifies a slice, not everyone.
+ */
+exports.notifyFriendInTheater = onDocumentWritten(
+  { document: "showtimes/{showtimeId}/presence/{userId}", region: "europe-west4" },
+  async (event) => {
+    // Only on arrival, not on heartbeat updates or departures.
+    if (event.data?.before?.exists || !event.data?.after?.exists) return;
+
+    const { showtimeId, userId } = event.params;
+    const showtime = await db.collection("showtimes").doc(showtimeId).get();
+    if (!showtime.exists || showtime.get("status") !== "live") return;
+
+    // Claim the (showtime, viewer) pair; a second arrival finds the marker and stops.
+    const marker = db.collection("showtimes").doc(showtimeId).collection("friendNotified").doc(userId);
+    try {
+      await marker.create({ at: FieldValue.serverTimestamp() });
+    } catch (e) {
+      return; // already notified for this showing
+    }
+
+    const viewer = await db.collection("users").doc(userId).get();
+    const viewerName = viewer.get("displayName") || "";
+    const movieTitle = showtime.get("movieTitle") || "";
+
+    const followers = await db.collection("follows").where("followedId", "==", userId).limit(FRIEND_FANOUT_CAP).get();
+    if (followers.size === FRIEND_FANOUT_CAP) {
+      console.warn(`user ${userId}: friend-in-theater fan-out capped at ${FRIEND_FANOUT_CAP} followers`);
+    }
+    for (const f of followers.docs) {
+      await notifyUser(f.get("followerId"), {
+        type: "friend_in_theater",
+        category: "social",
+        title: viewerName,
+        body: `is watching ${movieTitle} in the theater.`,
+        route: `filmatube://showtime/${showtimeId}`,
+        extra: {
+          showtimeId,
+          actorId: userId,
+          actorName: viewerName,
+          actorAvatar: viewer.get("avatarUrl") || "",
+          movieId: showtime.get("movieId") || "",
+          movieTitle,
+        },
+      });
+    }
+  },
+);
 
 const ACTIVE_DAYS = 14;
 
@@ -107,7 +461,9 @@ async function deliverBroadcast(uids, title, body, movieId) {
  * Process scheduled broadcasts whose due time has arrived. Immediate sends are handled
  * server-side by the web admin action; this only picks up `status: "scheduled"` docs.
  */
-exports.processScheduledBroadcasts = onSchedule("every 5 minutes", async () => {
+exports.processScheduledBroadcasts = onSchedule(
+  { schedule: "every 5 minutes", region: "europe-west4" },
+  async () => {
   const now = new Date();
   const due = await db
     .collection("broadcasts")

@@ -228,7 +228,7 @@ updatedAt          Timestamp
 
 ---
 
-## `showtimes/{showtimeId}` — Online Movie Theater (built in v1.2; schema reserved now)
+## `showtimes/{showtimeId}` — Online Movie Theater (v1.2; read by the Theater tab since Day 155)
 ```
 movieId         string
 movieTitle      string
@@ -243,8 +243,47 @@ position        number   (seconds — server/host driven)
 attendeesCount  number
 createdAt       Timestamp
 ```
-### `showtimes/{showtimeId}/attendees/{userId}` → `{ rsvp, joinedAt }`
-### `showtimes/{showtimeId}/chat/{messageId}` → `{ userId, userName, userAvatar, text, isSpoiler, reactions, createdAt }`
+Also written by the admin CMS / automation:
+```
+durationMs      number    (denormalized movie runtime — how the automation knows when to end)
+recurrence      string    ("none" | "daily" | "weekly")
+recurrenceSpawned boolean (guard: the next occurrence has already been queued)
+endedAt         Timestamp
+remindSentAt    Timestamp (guard: the "starting soon" reminder has already gone out)
+```
+
+`attendeesCount` is maintained by the `syncShowtimeAttendees` Cloud Function, not by clients —
+showtime docs stay admin-writable, unlike boards where members bump their own `memberCount`.
+
+**Lifecycle** is driven by `processTheaterSchedule` (every minute): `scheduled` → `lobby` at
+`startAt - 15min` → `live` at `startAt` → `ended` at `startAt + durationMs`. Because an admin
+pause shifts `startAt` forward, the end time moves with it and needs no separate bookkeeping.
+A late status flip is cosmetic — clients derive position from `startAt`, not from the flip.
+
+### `showtimes/{showtimeId}/attendees/{userId}` → `{ rsvp, remind, joinedAt }`
+### `showtimes/{showtimeId}/chat/{messageId}` → `{ userId, userName, userAvatar, text, isSpoiler, createdAt }`
+### `showtimes/{showtimeId}/reactions/{reactionId}` → `{ userId, userName, emoji, createdAt }`
+### `showtimes/{showtimeId}/presence/{userId}` → `{ userId, presentAt }`
+Heartbeat while actually watching (~30s), stale after 90s. Deliberately **not** the attendees
+doc: an RSVP is intent, presence is fact, and merging them would let walking into a room
+inflate the `attendeesCount` shown before it starts.
+### `showtimes/{showtimeId}/friendNotified/{userId}` → `{ at }`
+Function-only marker so "a friend is in a theater" fires once per viewer per showing.
+`showtimes.remindSentAt` is the matching guard for the "starting soon" reminder.
+
+Playback position is **not** stored: a showing runs on the wall clock, so every viewer derives
+its position as `(pausedAt ?? serverNow) - startAt`. The `position` field above is reserved for
+the Day 170 automation and is unused by the clients.
+
+`pausedAt` (Timestamp?, admin-written) is how the Day 167 host controls work without a host:
+- **Pause** — set `pausedAt = now`; the effective clock freezes and every viewer holds.
+- **Resume** — `startAt += (now - pausedAt)`, clear `pausedAt`; the room resumes exactly where
+  it froze rather than jumping ahead by the length of the intermission.
+- **Skip ±N** — `startAt ∓= N`; position and start time move in opposite directions.
+
+Because position stays a pure function of `startAt`/`pausedAt`, there is no accumulated pause
+bookkeeping to drift out of step, and one admin write steers the whole room with no per-viewer
+traffic. Both clients implement the same formula (`Showtime.playbackPositionMs`).
 
 ---
 

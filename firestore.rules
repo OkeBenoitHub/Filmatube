@@ -304,7 +304,9 @@ service cloud.firestore {
       allow write: if isSelf(userId) || isAdmin();
     }
 
-    // ───────── online movie theater (v1.2 — reserved) ─────────
+    // ───────── online movie theater (v1.2) ─────────
+    // Showtimes are admin-scheduled and machine-advanced (Day 170); clients only read
+    // the lineup and write their own attendee doc.
     match /showtimes/{showtimeId} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
@@ -316,7 +318,32 @@ service cloud.firestore {
       match /chat/{messageId} {
         allow read: if isSignedIn();
         allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-        allow update, delete: if isAdmin();
+        // Authors may retract their own line; edits are never allowed (an edited chat
+        // line in a live room can rewrite a spoiler into everyone's face after the fact).
+        allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+        allow update: if false;
+      }
+
+      // Ephemeral floating emoji — write-once, never edited.
+      match /reactions/{reactionId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+        allow update: if false;
+        allow delete: if isAdmin();
+      }
+
+      // "I'm in the room": a heartbeat each viewer writes for themselves. Kept apart from
+      // attendees so presence can't inflate the RSVP count.
+      match /presence/{userId} {
+        allow read: if isSignedIn();
+        allow write: if isSelf(userId);
+      }
+
+      // Server-side guard so the friend-in-theater notification fires once per showing.
+      // Cloud Functions bypass rules; clients must not be able to forge or clear it.
+      match /friendNotified/{userId} {
+        allow read: if isSignedIn();
+        allow write: if false;
       }
     }
   }
