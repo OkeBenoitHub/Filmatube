@@ -19,8 +19,14 @@ data class BrowseUiState(
     val sort: MovieSort = MovieSort.NEWEST,
     val genre: String? = null,
     val year: Int? = null,
+    /** True when opened from Home's "Coming soon" row — narrows to unreleased titles. */
+    val comingSoon: Boolean = false,
     val movies: DataState<List<Movie>> = DataState.Loading,
-)
+) {
+    /** Anything narrowed from the default view, which is what "Clear" undoes. */
+    val hasFilters: Boolean
+        get() = genre != null || year != null || comingSoon || sort != MovieSort.NEWEST
+}
 
 @HiltViewModel
 class BrowseViewModel @Inject constructor(
@@ -28,7 +34,16 @@ class BrowseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(BrowseUiState(genre = savedStateHandle["genre"]))
+    // Home's "See all" buttons each land here with the section they came from, so the grid
+    // opens continuing that row rather than on a generic unfiltered catalog.
+    private val _state = MutableStateFlow(
+        BrowseUiState(
+            genre = savedStateHandle["genre"],
+            sort = runCatching { MovieSort.valueOf(savedStateHandle["sort"] ?: "") }
+                .getOrDefault(MovieSort.NEWEST),
+            comingSoon = savedStateHandle["comingSoon"] ?: false,
+        ),
+    )
     val state = _state.asStateFlow()
 
     init {
@@ -45,8 +60,21 @@ class BrowseViewModel @Inject constructor(
         load()
     }
 
+    fun toggleComingSoon() {
+        _state.update { it.copy(comingSoon = !it.comingSoon) }
+        load()
+    }
+
     fun setYear(year: Int?) {
         _state.update { it.copy(year = year) }
+        load()
+    }
+
+    /** Back to the default view — newest first, every genre, every year, released or not. */
+    fun clearFilters() {
+        _state.update {
+            it.copy(sort = MovieSort.NEWEST, genre = null, year = null, comingSoon = false)
+        }
         load()
     }
 
@@ -54,7 +82,14 @@ class BrowseViewModel @Inject constructor(
         val current = _state.value
         viewModelScope.launch {
             _state.update { it.copy(movies = DataState.Loading) }
-            runCatching { movieRepository.browse(current.sort, current.genre, current.year) }
+            runCatching {
+                movieRepository.browse(
+                    sort = current.sort,
+                    genre = current.genre,
+                    year = current.year,
+                    comingSoon = if (current.comingSoon) true else null,
+                )
+            }
                 .fold(
                     onSuccess = { list ->
                         _state.update {

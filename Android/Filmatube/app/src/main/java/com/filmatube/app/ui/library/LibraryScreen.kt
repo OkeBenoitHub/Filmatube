@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.filmatube.app.R
-import com.filmatube.app.ui.components.PosterTile
+import com.filmatube.app.ui.components.MoviePosterTile
 import com.filmatube.app.ui.theme.FilmatubeSpacing
 import com.filmatube.app.util.LocaleController
 
@@ -63,9 +63,9 @@ fun LibraryScreen(
                 verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
             ) {
                 items(movies, key = { it.id }) { movie ->
-                    PosterTile(
-                        posterUrl = movie.posterUrl,
-                        title = movie.title.get(language),
+                    MoviePosterTile(
+                        movie = movie,
+                        language = language,
                         width = null,
                         onClick = { onMovieClick(movie.id) },
                     )

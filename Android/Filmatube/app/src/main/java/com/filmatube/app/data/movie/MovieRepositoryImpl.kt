@@ -63,15 +63,25 @@ class MovieRepositoryImpl @Inject constructor(
         return getByGenre(genre, limit + 1).filter { it.id != movieId }.take(limit)
     }
 
-    override suspend fun browse(sort: MovieSort, genre: String?, year: Int?, limit: Int): List<Movie> {
+    override suspend fun browse(
+        sort: MovieSort,
+        genre: String?,
+        year: Int?,
+        comingSoon: Boolean?,
+        limit: Int,
+    ): List<Movie> {
         // Index-safe: one server-side order, then filter/sort client-side.
         val ordered = when (sort) {
             MovieSort.RATING -> published().orderBy("averageRating", Query.Direction.DESCENDING)
+            // Same ordering the Home "Trending" row uses, so "See all" continues the list
+            // rather than showing an unrelated one.
+            MovieSort.POPULAR -> published().orderBy("viewsCount", Query.Direction.DESCENDING)
             else -> published().orderBy("addedAt", Query.Direction.DESCENDING)
         }
         var result = ordered.limit(200).get().await().toMovies()
         if (genre != null) result = result.filter { genre in it.genres }
         if (year != null) result = result.filter { it.year == year }
+        if (comingSoon != null) result = result.filter { it.isComingSoon == comingSoon }
         if (sort == MovieSort.ALPHA) result = result.sortedBy { it.title.en.lowercase() }
         return result.take(limit)
     }

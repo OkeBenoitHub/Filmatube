@@ -30,7 +30,7 @@ import com.filmatube.app.domain.util.DataState
 import com.filmatube.app.ui.components.EmptyView
 import com.filmatube.app.ui.components.ErrorView
 import com.filmatube.app.ui.components.LoadingView
-import com.filmatube.app.ui.components.PosterTile
+import com.filmatube.app.ui.components.MoviePosterTile
 import com.filmatube.app.ui.theme.FilmatubeSpacing
 import com.filmatube.app.util.LocaleController
 
@@ -68,9 +68,9 @@ fun ActorScreen(
                     verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
                 ) {
                     items(s.data, key = { it.id }) { movie ->
-                        PosterTile(
-                            posterUrl = movie.posterUrl,
-                            title = movie.title.get(language),
+                        MoviePosterTile(
+                            movie = movie,
+                            language = language,
                             width = null,
                             onClick = { onMovieClick(movie.id) },
                         )

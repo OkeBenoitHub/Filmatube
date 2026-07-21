@@ -15,7 +15,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -127,10 +127,13 @@ private fun HeroSlide(movie: Movie, language: String, onClick: (String) -> Unit)
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.85f),
             )
+            // "Info", not "Play": this opens the movie's detail page, and the play action
+            // lives there once you've picked a profile/quality. Labelling it Play promised
+            // playback the tap never delivered.
             FilmatubePrimaryButton(
-                text = stringResource(R.string.detail_play),
+                text = stringResource(R.string.home_hero_info),
                 onClick = { onClick(movie.id) },
-                leadingIcon = Icons.Filled.PlayArrow,
+                leadingIcon = Icons.Outlined.Info,
             )
         }
     }

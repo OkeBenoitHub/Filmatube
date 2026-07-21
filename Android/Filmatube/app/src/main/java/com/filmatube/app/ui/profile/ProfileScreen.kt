@@ -22,8 +22,6 @@ import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.PersonAddAlt
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -34,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -45,6 +42,9 @@ import com.filmatube.app.domain.util.DataState
 import com.filmatube.app.ui.components.ErrorView
 import com.filmatube.app.ui.components.FilmatubeSecondaryButton
 import com.filmatube.app.ui.components.LoadingView
+import com.filmatube.app.ui.components.PageHero
+import com.filmatube.app.ui.components.QuickLinkCard
+import com.filmatube.app.ui.components.StatCard
 import com.filmatube.app.ui.components.UserAvatar
 import com.filmatube.app.ui.theme.FilmatubeGold
 import com.filmatube.app.ui.theme.FilmatubeSpacing
@@ -65,52 +65,7 @@ fun ProfileScreen(
     val followingCount by viewModel.followingCount.collectAsStateWithLifecycle()
     val unreadNotifications by viewModel.unreadNotifications.collectAsStateWithLifecycle()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = FilmatubeSpacing.lg, vertical = FilmatubeSpacing.sm),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(R.string.nav_profile),
-                style = MaterialTheme.typography.titleLarge,
-            )
-            Spacer(Modifier.weight(1f))
-            IconButton(onClick = onOpenNotifications) {
-                BadgedBox(
-                    badge = {
-                        if (unreadNotifications > 0) {
-                            Badge { Text(if (unreadNotifications > 99) "99+" else "$unreadNotifications") }
-                        }
-                    },
-                ) {
-                    Icon(
-                        Icons.Outlined.Notifications,
-                        contentDescription = stringResource(R.string.notifications_title),
-                    )
-                }
-            }
-            IconButton(onClick = onOpenInbox) {
-                Icon(
-                    Icons.Outlined.MailOutline,
-                    contentDescription = stringResource(R.string.inbox_title),
-                )
-            }
-            IconButton(onClick = onOpenSuggestions) {
-                Icon(
-                    Icons.Outlined.PersonAddAlt,
-                    contentDescription = stringResource(R.string.discover_people),
-                )
-            }
-            IconButton(onClick = onOpenSettings) {
-                Icon(
-                    Icons.Outlined.Settings,
-                    contentDescription = stringResource(R.string.settings_title),
-                )
-            }
-        }
-
+    Box(modifier = Modifier.fillMaxSize()) {
         when (val s = state) {
             DataState.Loading -> LoadingView()
             is DataState.Error -> ErrorView(error = s.error, onRetry = {})
@@ -119,9 +74,14 @@ fun ProfileScreen(
                 profile = s.data,
                 followerCount = followerCount,
                 followingCount = followingCount,
+                unreadNotifications = unreadNotifications,
                 onEditProfile = onEditProfile,
+                onOpenSettings = onOpenSettings,
                 onOpenFollowers = onOpenFollowers,
                 onOpenFollowing = onOpenFollowing,
+                onOpenSuggestions = onOpenSuggestions,
+                onOpenInbox = onOpenInbox,
+                onOpenNotifications = onOpenNotifications,
             )
         }
     }
@@ -132,58 +92,122 @@ private fun ProfileContent(
     profile: UserProfile,
     followerCount: Int,
     followingCount: Int,
+    unreadNotifications: Int,
     onEditProfile: () -> Unit,
+    onOpenSettings: () -> Unit,
     onOpenFollowers: () -> Unit,
     onOpenFollowing: () -> Unit,
+    onOpenSuggestions: () -> Unit,
+    onOpenInbox: () -> Unit,
+    onOpenNotifications: () -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = FilmatubeSpacing.lg),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
     ) {
-        Spacer(Modifier.height(FilmatubeSpacing.md))
-
-        UserAvatar(url = profile.avatarUrl, name = profile.displayName, size = 96.dp)
-
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xs)) {
-            Text(profile.displayName, style = MaterialTheme.typography.headlineSmall)
-            if (profile.isAdmin) {
-                Surface(shape = MaterialTheme.shapes.small, color = FilmatubeGold.copy(alpha = 0.18f)) {
-                    Text(
-                        text = stringResource(R.string.profile_admin),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = FilmatubeGold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+        // Hero — the account page's shape, with the avatar standing in for the icon tile.
+        PageHero(
+            eyebrow = stringResource(R.string.profile_eyebrow),
+            title = profile.displayName.ifBlank { stringResource(R.string.nav_profile) },
+            subtitle = profile.bio.ifBlank { stringResource(R.string.profile_subtitle) },
+            tile = {
+                // Matched to PageHero's icon tile so Profile's header is the same weight as
+                // every other screen's, rather than leading with an outsized portrait.
+                UserAvatar(url = profile.avatarUrl, name = profile.displayName, size = 68.dp)
+            },
+            trailing = {
+                IconButton(onClick = onOpenSettings) {
+                    Icon(
+                        Icons.Outlined.Settings,
+                        contentDescription = stringResource(R.string.settings_title),
                     )
                 }
-            }
-            if (profile.bio.isNotBlank()) {
+            },
+        )
+
+        if (profile.isAdmin) {
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                color = FilmatubeGold.copy(alpha = 0.18f),
+                modifier = Modifier.padding(horizontal = FilmatubeSpacing.lg),
+            ) {
                 Text(
-                    text = profile.bio,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
+                    text = stringResource(R.string.profile_admin),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = FilmatubeGold,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                 )
             }
+        }
+
+        // Stats
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = FilmatubeSpacing.lg),
+            horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
+        ) {
+            StatCard(
+                value = followerCount.toString(),
+                label = stringResource(R.string.profile_followers),
+                onClick = onOpenFollowers,
+                modifier = Modifier.weight(1f),
+            )
+            StatCard(
+                value = followingCount.toString(),
+                label = stringResource(R.string.profile_following),
+                onClick = onOpenFollowing,
+                modifier = Modifier.weight(1f),
+            )
+            StatCard(
+                value = "0",
+                label = stringResource(R.string.profile_watched),
+                modifier = Modifier.weight(1f),
+            )
         }
 
         FilmatubeSecondaryButton(
             text = stringResource(R.string.profile_edit),
             onClick = onEditProfile,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = FilmatubeSpacing.lg),
         )
 
-        StatsRow(
-            followerCount = followerCount,
-            followingCount = followingCount,
-            onOpenFollowers = onOpenFollowers,
-            onOpenFollowing = onOpenFollowing,
-        )
+        // Destinations, spelled out. These were four unlabelled icon buttons in the header,
+        // which gave no clue where any of them went.
+        Column(
+            modifier = Modifier.padding(horizontal = FilmatubeSpacing.lg),
+            verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm),
+        ) {
+            QuickLinkCard(
+                icon = Icons.Outlined.Notifications,
+                title = stringResource(R.string.notifications_title),
+                description = stringResource(R.string.profile_link_notifications_desc),
+                badgeCount = unreadNotifications,
+                onClick = onOpenNotifications,
+            )
+            QuickLinkCard(
+                icon = Icons.Outlined.MailOutline,
+                title = stringResource(R.string.inbox_title),
+                description = stringResource(R.string.profile_link_inbox_desc),
+                onClick = onOpenInbox,
+            )
+            QuickLinkCard(
+                icon = Icons.Outlined.PersonAddAlt,
+                title = stringResource(R.string.discover_people),
+                description = stringResource(R.string.profile_link_people_desc),
+                onClick = onOpenSuggestions,
+            )
+            QuickLinkCard(
+                icon = Icons.Outlined.Settings,
+                title = stringResource(R.string.settings_title),
+                description = stringResource(R.string.profile_link_settings_desc),
+                onClick = onOpenSettings,
+            )
+        }
 
         BadgesSection()
 
@@ -192,41 +216,13 @@ private fun ProfileContent(
 }
 
 @Composable
-private fun StatsRow(
-    followerCount: Int,
-    followingCount: Int,
-    onOpenFollowers: () -> Unit,
-    onOpenFollowing: () -> Unit,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-    ) {
-        Stat(count = followerCount.toLong(), label = stringResource(R.string.profile_followers), onClick = onOpenFollowers)
-        Stat(count = followingCount.toLong(), label = stringResource(R.string.profile_following), onClick = onOpenFollowing)
-        Stat(count = 0L, label = stringResource(R.string.profile_watched))
-    }
-}
-
-@Composable
-private fun Stat(count: Long, label: String, onClick: (() -> Unit)? = null) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
-    ) {
-        Text(count.toString(), style = MaterialTheme.typography.titleLarge)
-        Text(
-            label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
 private fun BadgesSection() {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        // The parent Column pads each child individually rather than as a group, so this
+        // needs its own horizontal inset or it sits flush against the screen edge.
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = FilmatubeSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm),
     ) {
         Text(stringResource(R.string.profile_badges), style = MaterialTheme.typography.titleMedium)

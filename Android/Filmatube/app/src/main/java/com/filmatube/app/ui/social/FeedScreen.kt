@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.outlined.RssFeed
 import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.filmatube.app.R
 import com.filmatube.app.data.social.FeedEventTypes
 import com.filmatube.app.ui.components.FilmatubeFilterChip
+import com.filmatube.app.ui.components.PageHero
 import com.filmatube.app.ui.components.UserAvatar
 import com.filmatube.app.ui.parties.MyPartiesRow
 import com.filmatube.app.ui.theme.FilmatubeSpacing
@@ -48,22 +50,21 @@ fun FeedScreen(
     val filter by viewModel.filter.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = FilmatubeSpacing.lg, vertical = FilmatubeSpacing.md),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(stringResource(R.string.feed_title), style = MaterialTheme.typography.titleLarge)
-            Spacer(Modifier.weight(1f))
-            IconButton(onClick = onOpenBoards) {
-                Icon(
-                    Icons.Filled.Groups,
-                    contentDescription = stringResource(R.string.boards_title),
-                    tint = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        }
+        PageHero(
+            eyebrow = stringResource(R.string.feed_eyebrow),
+            title = stringResource(R.string.feed_title),
+            subtitle = stringResource(R.string.feed_subtitle),
+            icon = Icons.Outlined.RssFeed,
+            trailing = {
+                IconButton(onClick = onOpenBoards) {
+                    Icon(
+                        Icons.Filled.Groups,
+                        contentDescription = stringResource(R.string.boards_title),
+                        tint = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            },
+        )
 
         MyPartiesRow(onOpenParty = onOpenParty)
 

@@ -2,7 +2,11 @@ package com.filmatube.app.domain.repository
 
 import com.filmatube.app.domain.model.Movie
 
-enum class MovieSort { NEWEST, RATING, ALPHA }
+/**
+ * Browse orderings. [POPULAR] is what the Home "Trending" row is sorted by — without it,
+ * "See all" under Trending had nowhere to land that actually looked like trending.
+ */
+enum class MovieSort { NEWEST, POPULAR, RATING, ALPHA }
 
 /** Read access to the published movie catalog. */
 interface MovieRepository {
@@ -16,11 +20,17 @@ interface MovieRepository {
     /** Movies sharing a genre with the given one (excludes it). */
     suspend fun getRelated(movieId: String, genres: List<String>, limit: Int = 15): List<Movie>
 
-    /** Grid browse with client-side genre/year filtering + sort. */
+    /**
+     * Grid browse with client-side genre/year filtering + sort.
+     *
+     * [comingSoon] null shows everything, true narrows to unreleased titles — the "See all"
+     * target for Home's Coming Soon row.
+     */
     suspend fun browse(
         sort: MovieSort = MovieSort.NEWEST,
         genre: String? = null,
         year: Int? = null,
+        comingSoon: Boolean? = null,
         limit: Int = 40,
     ): List<Movie>
 

@@ -80,7 +80,7 @@ import com.filmatube.app.ui.components.ErrorView
 import com.filmatube.app.ui.components.FilmatubePrimaryButton
 import com.filmatube.app.ui.components.FilmatubeSecondaryButton
 import com.filmatube.app.ui.components.LoadingView
-import com.filmatube.app.ui.components.PosterTile
+import com.filmatube.app.ui.components.MoviePosterTile
 import com.filmatube.app.ui.components.UserAvatar
 import com.filmatube.app.ui.taste.genreLabel
 import com.filmatube.app.ui.theme.FilmatubeGold
@@ -455,9 +455,9 @@ private fun DetailContent(
                 items = related,
                 key = { it.id },
             ) { related ->
-                PosterTile(
-                    posterUrl = related.posterUrl,
-                    title = related.title.get(language),
+                MoviePosterTile(
+                    movie = related,
+                    language = language,
                     onClick = { onMovieClick(related.id) },
                 )
             }

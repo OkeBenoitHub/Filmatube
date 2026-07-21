@@ -30,4 +30,17 @@ enum class TopLevelDestination(
     THEATER("theater", R.string.nav_theater, Icons.Filled.Theaters, Icons.Outlined.Theaters),
     COMMUNITY("community", R.string.nav_community, Icons.Filled.Groups, Icons.Outlined.Groups),
     PROFILE("profile", R.string.nav_profile, Icons.Filled.Person, Icons.Outlined.Person),
+    ;
+
+    companion object {
+        /**
+         * True only for the five tab roots.
+         *
+         * The bottom bar is a *switcher between these five sections*, so it should only be on
+         * screen where switching is what the tap means. On a pushed screen — a movie, a board,
+         * a showtime — it kept highlighting whichever tab you came from, which reads as "you
+         * are here" when you are in fact one or more levels deeper.
+         */
+        fun isTopLevel(route: String?): Boolean = entries.any { it.route == route }
+    }
 }

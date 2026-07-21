@@ -24,6 +24,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,11 +43,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.filmatube.app.R
 import com.filmatube.app.domain.model.Movie
+import com.filmatube.app.domain.repository.MovieSort
+import com.filmatube.app.ui.navigation.BrowseTarget
 import com.filmatube.app.ui.components.ContentRow
 import com.filmatube.app.ui.components.ContentRowShimmer
 import com.filmatube.app.ui.components.EmptyView
 import com.filmatube.app.ui.components.ErrorView
-import com.filmatube.app.ui.components.PosterTile
+import com.filmatube.app.ui.components.MoviePosterTile
 import com.filmatube.app.ui.taste.Genre
 import com.filmatube.app.ui.theme.FilmatubeSpacing
 import com.filmatube.app.ui.theme.PosterTileWidth
@@ -54,15 +58,17 @@ import com.filmatube.app.util.LocaleController
 @Composable
 fun HomeScreen(
     onMovieClick: (String) -> Unit,
-    onBrowse: (String?) -> Unit,
+    onBrowse: (BrowseTarget) -> Unit,
     onPlay: (String) -> Unit,
+    onOpenNotifications: () -> Unit,
+    onOpenProfile: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val language = LocaleController.currentTag()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        HomeTopBar()
+        HomeTopBar(onOpenNotifications = onOpenNotifications, onOpenProfile = onOpenProfile)
         Box(modifier = Modifier.fillMaxSize()) {
             when {
                 state.isLoading -> HomeLoading()
@@ -82,7 +88,7 @@ private fun HomeContent(
     state: HomeUiState,
     language: String,
     onMovieClick: (String) -> Unit,
-    onBrowse: (String?) -> Unit,
+    onBrowse: (BrowseTarget) -> Unit,
     onPlay: (String) -> Unit,
 ) {
     Column(
@@ -103,17 +109,27 @@ private fun HomeContent(
                 ContinueWatchingTile(item = item, language = language, onPlay = onPlay)
             }
         }
+        // Each "See all" carries its row's own query, so Browse opens continuing that list
+        // rather than dropping every section onto one identical unfiltered grid.
         if (state.trending.isNotEmpty()) {
-            MovieRow(stringResource(R.string.row_trending), state.trending, language, onMovieClick) { onBrowse(null) }
+            MovieRow(stringResource(R.string.row_trending), state.trending, language, onMovieClick) {
+                onBrowse(BrowseTarget(sort = MovieSort.POPULAR))
+            }
         }
         if (state.newReleases.isNotEmpty()) {
-            MovieRow(stringResource(R.string.row_new_releases), state.newReleases, language, onMovieClick) { onBrowse(null) }
+            MovieRow(stringResource(R.string.row_new_releases), state.newReleases, language, onMovieClick) {
+                onBrowse(BrowseTarget(sort = MovieSort.NEWEST))
+            }
         }
         state.genreRows.forEach { row ->
-            MovieRow(genreLabel(row.genreKey), row.movies, language, onMovieClick) { onBrowse(row.genreKey) }
+            MovieRow(genreLabel(row.genreKey), row.movies, language, onMovieClick) {
+                onBrowse(BrowseTarget(genre = row.genreKey))
+            }
         }
         if (state.comingSoon.isNotEmpty()) {
-            MovieRow(stringResource(R.string.row_coming_soon), state.comingSoon, language, onMovieClick) { onBrowse(null) }
+            MovieRow(stringResource(R.string.row_coming_soon), state.comingSoon, language, onMovieClick) {
+                onBrowse(BrowseTarget(comingSoon = true))
+            }
         }
         Spacer(Modifier.height(FilmatubeSpacing.xxl))
     }
@@ -172,9 +188,9 @@ private fun MovieRow(
     onSeeAll: () -> Unit,
 ) {
     ContentRow(title = title, items = movies, key = { it.id }, onSeeAll = onSeeAll) { movie ->
-        PosterTile(
-            posterUrl = movie.posterUrl,
-            title = movie.title.get(language),
+        MoviePosterTile(
+            movie = movie,
+            language = language,
             onClick = { onMovieClick(movie.id) },
         )
     }
@@ -202,7 +218,10 @@ private fun genreLabel(key: String): String {
 }
 
 @Composable
-private fun HomeTopBar() {
+private fun HomeTopBar(
+    onOpenNotifications: () -> Unit,
+    onOpenProfile: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -216,19 +235,31 @@ private fun HomeTopBar() {
         )
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md)) {
-            TopBarIcon(Icons.Outlined.Notifications, stringResource(R.string.notifications))
-            TopBarIcon(Icons.Outlined.Person, stringResource(R.string.nav_profile))
+            TopBarIcon(
+                icon = Icons.Outlined.Notifications,
+                contentDescription = stringResource(R.string.notifications),
+                onClick = onOpenNotifications,
+            )
+            TopBarIcon(
+                icon = Icons.Outlined.Person,
+                contentDescription = stringResource(R.string.nav_profile),
+                onClick = onOpenProfile,
+            )
         }
     }
 }
 
 @Composable
-private fun TopBarIcon(icon: ImageVector, contentDescription: String) {
+private fun TopBarIcon(icon: ImageVector, contentDescription: String, onClick: () -> Unit) {
     Box(
         modifier = Modifier
+            // The circle is a 36dp visual, below the 48dp accessible touch target — this
+            // reserves the extra area around it without growing the drawn chip.
+            .minimumInteractiveComponentSize()
             .size(36.dp)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .clickable(onClick = onClick, role = Role.Button),
         contentAlignment = Alignment.Center,
     ) {
         Icon(

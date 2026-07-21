@@ -1,5 +1,6 @@
 package com.filmatube.app.ui.landing
 
+import android.content.Intent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -34,14 +35,20 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.PictureInPicture
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.RssFeed
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Theaters
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,6 +69,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -72,10 +80,57 @@ import com.filmatube.app.ui.components.FilmatubeSecondaryButton
 import com.filmatube.app.ui.theme.FilmatubeGold
 import com.filmatube.app.ui.theme.FilmatubeGreen
 import com.filmatube.app.ui.theme.FilmatubeSpacing
+import com.filmatube.app.util.FilmatubeLinks
 
 private data class Feature(val icon: ImageVector, val title: Int, val desc: Int)
 private data class Faq(val q: Int, val a: Int)
 private data class Stat(val value: Int, val label: Int)
+
+/**
+ * Overflow menu in the landing header: the legal links and an app share sheet.
+ *
+ * Lives on the landing screen specifically because that is the one surface a signed-out
+ * visitor always sees — terms and privacy have to be reachable before anyone has an account.
+ */
+@Composable
+private fun LandingOverflowMenu() {
+    var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val shareSubject = stringResource(R.string.landing_share_subject)
+    val shareText = stringResource(R.string.landing_share_text, FilmatubeLinks.SITE)
+
+    IconButton(onClick = { expanded = true }) {
+        Icon(
+            Icons.Filled.MoreVert,
+            contentDescription = stringResource(R.string.landing_menu),
+        )
+    }
+    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.landing_terms)) },
+            leadingIcon = { Icon(Icons.Filled.Description, contentDescription = null) },
+            onClick = { expanded = false; FilmatubeLinks.open(context, FilmatubeLinks.TERMS) },
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.landing_privacy)) },
+            leadingIcon = { Icon(Icons.Filled.PrivacyTip, contentDescription = null) },
+            onClick = { expanded = false; FilmatubeLinks.open(context, FilmatubeLinks.PRIVACY) },
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.landing_share)) },
+            leadingIcon = { Icon(Icons.Filled.Share, contentDescription = null) },
+            onClick = {
+                expanded = false
+                val send = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_SUBJECT, shareSubject)
+                    putExtra(Intent.EXTRA_TEXT, shareText)
+                }
+                runCatching { context.startActivity(Intent.createChooser(send, shareSubject)) }
+            },
+        )
+    }
+}
 
 /**
  * Landing screen — mirrors the web marketing landing (hero, stats, features, how it works,
@@ -137,6 +192,7 @@ fun LandingScreen(
                         }
                     }
                 },
+                actions = { LandingOverflowMenu() },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
             )
         },

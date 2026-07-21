@@ -10,7 +10,10 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import android.net.Uri
 import com.filmatube.app.R
+import com.filmatube.app.domain.repository.MovieSort
 import com.filmatube.app.ui.browse.BrowseScreen
+import com.filmatube.app.ui.components.MovieActionHandlers
+import com.filmatube.app.ui.components.ProvideMovieActions
 import com.filmatube.app.ui.boards.BoardDetailScreen
 import com.filmatube.app.ui.boards.BoardsScreen
 import com.filmatube.app.ui.boards.CreateBoardScreen
@@ -39,6 +42,7 @@ import com.filmatube.app.ui.social.ReviewsScreen
 import com.filmatube.app.ui.social.SuggestionsScreen
 import com.filmatube.app.ui.settings.ProfilesScreen
 import com.filmatube.app.ui.settings.SettingsScreen
+import com.filmatube.app.ui.theater.ShowtimeScreen
 import com.filmatube.app.ui.theater.TheaterScreen
 
 private const val ROUTE_PROFILE_EDIT = "profile/edit"
@@ -67,19 +71,41 @@ private const val ROUTE_CREATE_PARTY = "party/create/{movieId}"
 fun partyRoute(partyId: String) = "party/$partyId"
 fun createPartyRoute(movieId: String) = "party/create/$movieId"
 
+private const val ROUTE_SHOWTIME = "showtime/{showtimeId}"
+fun showtimeRoute(showtimeId: String) = "showtime/$showtimeId"
+
 fun followsRoute(mode: String) = "follows/$mode"
 fun publicProfileRoute(userId: String) = "user/$userId"
 fun reviewsRoute(movieId: String) = "reviews/$movieId"
 fun commentsRoute(movieId: String) = "comments/$movieId"
 private const val ROUTE_MOVIE = "movie/{movieId}"
-private const val ROUTE_PLAYER = "player/{movieId}?party={party}"
-private const val ROUTE_BROWSE = "browse?genre={genre}"
+private const val ROUTE_PLAYER = "player/{movieId}?party={party}&showtime={showtime}"
+private const val ROUTE_BROWSE = "browse?genre={genre}&sort={sort}&comingSoon={comingSoon}"
 private const val ROUTE_ACTOR = "actor/{name}"
 
 fun movieRoute(movieId: String) = "movie/$movieId"
 fun playerRoute(movieId: String) = "player/$movieId"
 fun partyPlayerRoute(movieId: String, partyId: String) = "player/$movieId?party=$partyId"
-fun browseRoute(genre: String?) = if (genre == null) "browse" else "browse?genre=$genre"
+fun theaterPlayerRoute(movieId: String, showtimeId: String) = "player/$movieId?showtime=$showtimeId"
+/**
+ * Which slice of the catalog a "See all" should open.
+ *
+ * Every one of Home's rows used to call `onBrowse(null)` or pass only a genre, so Trending,
+ * New Releases and Coming Soon all landed on the same unfiltered grid with nothing to tell
+ * them apart. Carrying the row's own query fixes that.
+ */
+data class BrowseTarget(
+    val genre: String? = null,
+    val sort: MovieSort? = null,
+    val comingSoon: Boolean = false,
+)
+
+fun browseRoute(target: BrowseTarget = BrowseTarget()): String = buildString {
+    append("browse?")
+    target.genre?.let { append("genre=$it&") }
+    target.sort?.let { append("sort=${it.name}&") }
+    if (target.comingSoon) append("comingSoon=true")
+}
 fun actorRoute(name: String) = "actor/${Uri.encode(name)}"
 
 /**
@@ -92,6 +118,15 @@ fun FilmatubeNavHost(
     onSignedOut: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Every poster tile in the app can open a movie options sheet; the sheet's navigation is
+    // provided here so the six screens that render tiles don't each have to thread it down.
+    ProvideMovieActions(
+        MovieActionHandlers(
+            onPlay = { navController.navigate(playerRoute(it)) },
+            onOpenDetails = { navController.navigate(movieRoute(it)) },
+            onCreateParty = { navController.navigate(createPartyRoute(it)) },
+        ),
+    ) {
     NavHost(
         navController = navController,
         startDestination = TopLevelDestination.HOME.route,
@@ -100,8 +135,11 @@ fun FilmatubeNavHost(
         composable(TopLevelDestination.HOME.route) {
             HomeScreen(
                 onMovieClick = { navController.navigate(movieRoute(it)) },
-                onBrowse = { genre -> navController.navigate(browseRoute(genre)) },
+                onBrowse = { target -> navController.navigate(browseRoute(target)) },
                 onPlay = { navController.navigate(playerRoute(it)) },
+                onOpenNotifications = { navController.navigate(ROUTE_NOTIFICATIONS) },
+                // Profile is a bottom-nav tab, so switch tabs rather than stacking a copy.
+                onOpenProfile = { navController.navigateToTopLevel(TopLevelDestination.PROFILE.route) },
             )
         }
         composable(
@@ -123,6 +161,7 @@ fun FilmatubeNavHost(
             arguments = listOf(
                 navArgument("movieId") { type = NavType.StringType },
                 navArgument("party") { type = NavType.StringType; nullable = true; defaultValue = null },
+                navArgument("showtime") { type = NavType.StringType; nullable = true; defaultValue = null },
             ),
             deepLinks = listOf(navDeepLink { uriPattern = "filmatube://watch/{movieId}" }),
         ) {
@@ -146,7 +185,11 @@ fun FilmatubeNavHost(
         }
         composable(
             route = ROUTE_BROWSE,
-            arguments = listOf(navArgument("genre") { type = NavType.StringType; nullable = true; defaultValue = null }),
+            arguments = listOf(
+                navArgument("genre") { type = NavType.StringType; nullable = true; defaultValue = null },
+                navArgument("sort") { type = NavType.StringType; nullable = true; defaultValue = null },
+                navArgument("comingSoon") { type = NavType.BoolType; defaultValue = false },
+            ),
         ) {
             BrowseScreen(
                 onBack = { navController.popBackStack() },
@@ -156,7 +199,21 @@ fun FilmatubeNavHost(
         composable(TopLevelDestination.SEARCH.route) {
             SearchScreen(onMovieClick = { navController.navigate(movieRoute(it)) })
         }
-        composable(TopLevelDestination.THEATER.route) { TheaterScreen() }
+        composable(TopLevelDestination.THEATER.route) {
+            TheaterScreen(onShowtimeClick = { navController.navigate(showtimeRoute(it)) })
+        }
+        composable(
+            route = ROUTE_SHOWTIME,
+            arguments = listOf(navArgument("showtimeId") { type = NavType.StringType }),
+            deepLinks = listOf(navDeepLink { uriPattern = "filmatube://showtime/{showtimeId}" }),
+        ) {
+            ShowtimeScreen(
+                onBack = { navController.popBackStack() },
+                onEnterTheater = { movieId, showtimeId ->
+                    navController.navigate(theaterPlayerRoute(movieId, showtimeId))
+                },
+            )
+        }
         composable(TopLevelDestination.COMMUNITY.route) {
             FeedScreen(
                 onMovieClick = { navController.navigate(movieRoute(it)) },
@@ -240,6 +297,7 @@ fun FilmatubeNavHost(
                 onOpenUser = { navController.navigate(publicProfileRoute(it)) },
                 onOpenBoard = { navController.navigate(boardRoute(it)) },
                 onOpenParty = { navController.navigate(partyRoute(it)) },
+                onOpenShowtime = { navController.navigate(showtimeRoute(it)) },
             )
         }
         composable(ROUTE_NOTIFICATION_PREFS) {
@@ -329,5 +387,6 @@ fun FilmatubeNavHost(
                 onWatch = { movieId, partyId -> navController.navigate(partyPlayerRoute(movieId, partyId)) },
             )
         }
+    }
     }
 }

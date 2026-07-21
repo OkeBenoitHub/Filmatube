@@ -20,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Close
@@ -53,7 +54,9 @@ import com.filmatube.app.ui.components.EmptyView
 import com.filmatube.app.ui.components.ErrorView
 import com.filmatube.app.ui.components.FilmatubeFilterChip
 import com.filmatube.app.ui.components.LoadingView
-import com.filmatube.app.ui.components.PosterTile
+import com.filmatube.app.ui.components.MoviePosterTile
+import com.filmatube.app.ui.components.PageHero
+import com.filmatube.app.ui.theme.FilmatubeShapes
 import com.filmatube.app.ui.taste.Genre
 import com.filmatube.app.ui.theme.FilmatubeSpacing
 import com.filmatube.app.util.LocaleController
@@ -74,12 +77,24 @@ fun SearchScreen(
     val keyboard = LocalSoftwareKeyboardController.current
 
     Column(modifier = Modifier.fillMaxSize()) {
+        // Hero collapses once you start typing: it orients you on arrival, but holding a
+        // third of a phone screen while you're scanning results would be vanity.
+        AnimatedVisibility(visible = query.isBlank()) {
+            PageHero(
+                eyebrow = stringResource(R.string.search_eyebrow),
+                title = stringResource(R.string.nav_search),
+                subtitle = stringResource(R.string.search_subtitle),
+                icon = Icons.Outlined.Search,
+            )
+        }
+
         OutlinedTextField(
             value = query,
             onValueChange = viewModel::onQueryChange,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(FilmatubeSpacing.lg),
+                .padding(horizontal = FilmatubeSpacing.lg, vertical = FilmatubeSpacing.sm),
+            shape = FilmatubeShapes.large,
             placeholder = { Text(stringResource(R.string.search_hint)) },
             singleLine = true,
             leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
@@ -147,9 +162,9 @@ fun SearchScreen(
                         verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
                     ) {
                         items(r.data, key = { it.id }) { movie ->
-                            PosterTile(
-                                posterUrl = movie.posterUrl,
-                                title = movie.title.get(language),
+                            MoviePosterTile(
+                                movie = movie,
+                                language = language,
                                 width = null,
                                 onClick = { onMovieClick(movie.id) },
                             )
