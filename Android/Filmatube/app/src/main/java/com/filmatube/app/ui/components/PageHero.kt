@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.filmatube.app.ui.theme.FilmatubeBrandGreen
@@ -55,11 +56,16 @@ fun PageHero(
     icon: ImageVector? = null,
     tile: (@Composable () -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
+    /**
+     * Set to zero when the hero sits inside a container that already insets it — a grid's
+     * `contentPadding`, say — otherwise the two stack and the header drifts inward.
+     */
+    horizontalPadding: Dp = FilmatubeSpacing.lg,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = FilmatubeSpacing.lg, vertical = FilmatubeSpacing.md),
+            .padding(horizontal = horizontalPadding, vertical = FilmatubeSpacing.md),
         horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.lg),
         verticalAlignment = Alignment.CenterVertically,
     ) {

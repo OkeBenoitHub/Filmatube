@@ -1,53 +1,47 @@
 package com.filmatube.app.ui.boards
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.filmatube.app.R
-import com.filmatube.app.data.boards.Board
-import com.filmatube.app.data.boards.BoardTypes
 import com.filmatube.app.ui.components.FilmatubeFilterChip
+import com.filmatube.app.ui.components.FilmatubeTextField
+import com.filmatube.app.ui.components.PageHero
 import com.filmatube.app.ui.theme.FilmatubeSpacing
 
+/**
+ * Board discovery, mirroring the web page: hero, then Featured, My boards and All boards as
+ * card grids, with a search box and type filters over the last of them.
+ *
+ * One grid rather than the horizontal rows this used to use. A LazyRow of 240dp cards showed
+ * two boards at a time and hid the rest behind a sideways scroll nobody performs; the web
+ * lays every section out as a grid for the same reason.
+ */
 @Composable
 fun BoardsScreen(
     onBoardClick: (String) -> Unit,
@@ -55,9 +49,14 @@ fun BoardsScreen(
     viewModel: BoardsViewModel = hiltViewModel(),
 ) {
     val filter by viewModel.filter.collectAsStateWithLifecycle()
+    val query by viewModel.query.collectAsStateWithLifecycle()
     val featured by viewModel.featured.collectAsStateWithLifecycle()
     val boards by viewModel.boards.collectAsStateWithLifecycle()
     val myBoards by viewModel.myBoards.collectAsStateWithLifecycle()
+
+    // Featured and "mine" are discovery shortcuts, not search results — hiding them while a
+    // query is active keeps the answer to "what did I search for" on screen. Matches the web.
+    val searching = query.isNotBlank()
 
     Scaffold(
         floatingActionButton = {
@@ -68,232 +67,110 @@ fun BoardsScreen(
             )
         },
     ) { padding ->
-    LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(padding),
-        contentPadding = PaddingValues(bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
-    ) {
-        item {
-            Column(modifier = Modifier.padding(horizontal = FilmatubeSpacing.lg, vertical = FilmatubeSpacing.sm)) {
-                Text(stringResource(R.string.boards_title), style = MaterialTheme.typography.titleLarge)
-                Text(
-                    stringResource(R.string.boards_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-
-        if (myBoards.isNotEmpty()) {
-            item {
-                Text(
-                    stringResource(R.string.boards_my),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = FilmatubeSpacing.lg),
-                )
-            }
-            item {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = FilmatubeSpacing.lg),
-                    horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
-                ) {
-                    items(myBoards, key = { it.id }) { board ->
-                        FeaturedBoardCard(board, onClick = { onBoardClick(board.id) })
-                    }
-                }
-            }
-        }
-
-        item {
-            Row(
-                modifier = Modifier.padding(horizontal = FilmatubeSpacing.lg),
-                horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm),
-            ) {
-                FilmatubeFilterChip(
-                    label = stringResource(R.string.boards_tab_all),
-                    selected = filter == BoardFilter.ALL,
-                    onClick = { viewModel.setFilter(BoardFilter.ALL) },
-                )
-                FilmatubeFilterChip(
-                    label = stringResource(R.string.boards_tab_movies),
-                    selected = filter == BoardFilter.MOVIES,
-                    onClick = { viewModel.setFilter(BoardFilter.MOVIES) },
-                )
-                FilmatubeFilterChip(
-                    label = stringResource(R.string.boards_tab_general),
-                    selected = filter == BoardFilter.GENERAL,
-                    onClick = { viewModel.setFilter(BoardFilter.GENERAL) },
-                )
-            }
-        }
-
-        if (filter == BoardFilter.ALL && featured.isNotEmpty()) {
-            item {
-                Text(
-                    stringResource(R.string.boards_featured),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = FilmatubeSpacing.lg),
-                )
-            }
-            item {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = FilmatubeSpacing.lg),
-                    horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
-                ) {
-                    items(featured, key = { it.id }) { board ->
-                        FeaturedBoardCard(board, onClick = { onBoardClick(board.id) })
-                    }
-                }
-            }
-        }
-
-        if (boards.isEmpty()) {
-            item {
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(top = FilmatubeSpacing.xxl),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        stringResource(R.string.boards_empty),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = FilmatubeSpacing.xl),
-                    )
-                }
-            }
-        } else {
-            items(boards, key = { it.id }) { board ->
-                BoardRow(board, onClick = { onBoardClick(board.id) })
-            }
-        }
-    }
-    }
-}
-
-@Composable
-private fun FeaturedBoardCard(board: Board, onClick: () -> Unit) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = Modifier.width(240.dp).clickable(onClick = onClick),
-    ) {
-        Column {
-            Box(modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f)) {
-                BoardCover(board, Modifier.fillMaxSize())
-                if (board.isOfficial) OfficialBadge(Modifier.align(Alignment.TopEnd).padding(8.dp))
-            }
-            Column(modifier = Modifier.padding(FilmatubeSpacing.md)) {
-                Text(
-                    board.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                MemberLine(board)
-            }
-        }
-    }
-}
-
-@Composable
-private fun BoardRow(board: Board, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = FilmatubeSpacing.lg, vertical = FilmatubeSpacing.xs),
-        horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        BoardCover(board, Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)))
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xs)) {
-                Text(
-                    board.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false),
-                )
-                if (board.isOfficial) {
-                    Icon(
-                        Icons.Filled.Verified,
-                        contentDescription = stringResource(R.string.board_official),
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp),
-                    )
-                }
-            }
-            if (board.description.isNotBlank()) {
-                Text(
-                    board.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            MemberLine(board)
-        }
-    }
-}
-
-@Composable
-private fun BoardCover(board: Board, modifier: Modifier) {
-    if (board.coverUrl.isNotBlank()) {
-        AsyncImage(
-            model = board.coverUrl,
-            contentDescription = board.title,
-            contentScale = ContentScale.Crop,
-            modifier = modifier,
-        )
-    } else {
-        Box(
-            modifier = modifier.background(
-                Brush.linearGradient(
-                    listOf(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
-                        MaterialTheme.colorScheme.surfaceContainerHigh,
-                    ),
-                ),
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(
+                start = FilmatubeSpacing.lg,
+                end = FilmatubeSpacing.lg,
+                bottom = 96.dp,
             ),
-            contentAlignment = Alignment.Center,
+            horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
         ) {
-            Icon(Icons.Filled.Groups, contentDescription = null, tint = Color.White.copy(alpha = 0.8f))
+            fullWidth {
+                PageHero(
+                    eyebrow = stringResource(R.string.boards_eyebrow),
+                    title = stringResource(R.string.boards_title),
+                    subtitle = stringResource(R.string.boards_subtitle),
+                    icon = Icons.AutoMirrored.Filled.Chat,
+                    // The grid already insets its content; letting the hero pad again would
+                    // push the header in twice as far as everything below it.
+                    horizontalPadding = 0.dp,
+                )
+            }
+
+            if (featured.isNotEmpty() && !searching) {
+                fullWidth { SectionTitle(stringResource(R.string.boards_featured)) }
+                items(featured, key = { "featured-${it.id}" }) { board ->
+                    BoardCard(board = board, onClick = { onBoardClick(board.id) })
+                }
+            }
+
+            if (myBoards.isNotEmpty() && !searching) {
+                fullWidth { SectionTitle(stringResource(R.string.boards_my)) }
+                items(myBoards, key = { "mine-${it.id}" }) { board ->
+                    BoardCard(board = board, onClick = { onBoardClick(board.id) })
+                }
+            }
+
+            fullWidth { SectionTitle(stringResource(R.string.boards_all)) }
+
+            fullWidth {
+                FilmatubeTextField(
+                    value = query,
+                    onValueChange = viewModel::setQuery,
+                    label = stringResource(R.string.boards_search_hint),
+                    leadingIcon = Icons.Outlined.Search,
+                )
+            }
+
+            fullWidth {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm),
+                ) {
+                    FilmatubeFilterChip(
+                        label = stringResource(R.string.boards_tab_all),
+                        selected = filter == BoardFilter.ALL,
+                        onClick = { viewModel.setFilter(BoardFilter.ALL) },
+                    )
+                    FilmatubeFilterChip(
+                        label = stringResource(R.string.boards_tab_movies),
+                        selected = filter == BoardFilter.MOVIES,
+                        onClick = { viewModel.setFilter(BoardFilter.MOVIES) },
+                    )
+                    FilmatubeFilterChip(
+                        label = stringResource(R.string.boards_tab_general),
+                        selected = filter == BoardFilter.GENERAL,
+                        onClick = { viewModel.setFilter(BoardFilter.GENERAL) },
+                    )
+                }
+            }
+
+            if (boards.isEmpty()) {
+                fullWidth {
+                    Text(
+                        stringResource(
+                            if (searching) R.string.boards_no_results else R.string.boards_empty,
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = FilmatubeSpacing.xxl),
+                    )
+                }
+            } else {
+                items(boards, key = { it.id }) { board ->
+                    BoardCard(board = board, onClick = { onBoardClick(board.id) })
+                }
+            }
         }
     }
 }
 
+/** A row that spans both grid columns — headings, the hero, the search box and the filters. */
+private fun LazyGridScope.fullWidth(
+    content: @Composable () -> Unit,
+) {
+    item(span = { GridItemSpan(maxLineSpan) }) { content() }
+}
+
 @Composable
-private fun MemberLine(board: Board) {
-    val typeLabel = stringResource(
-        if (board.type == BoardTypes.MOVIE) R.string.board_type_movie else R.string.board_type_general,
-    )
+private fun SectionTitle(text: String) {
     Text(
-        text = "$typeLabel · ${stringResource(R.string.boards_members, board.memberCount)}",
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        text,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(top = FilmatubeSpacing.sm),
     )
-}
-
-@Composable
-private fun OfficialBadge(modifier: Modifier) {
-    Surface(shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.primary, modifier = modifier) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-        ) {
-            Icon(
-                Icons.Filled.Verified,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(12.dp),
-            )
-            Text(
-                stringResource(R.string.board_official),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.padding(start = 4.dp),
-            )
-        }
-    }
 }

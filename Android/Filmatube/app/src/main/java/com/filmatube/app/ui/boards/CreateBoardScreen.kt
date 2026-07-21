@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -44,6 +45,7 @@ import com.filmatube.app.data.boards.BoardTypes
 import com.filmatube.app.ui.components.FilmatubeFilterChip
 import com.filmatube.app.ui.components.FilmatubePrimaryButton
 import com.filmatube.app.ui.components.FilmatubeTextField
+import com.filmatube.app.ui.components.PageHero
 import com.filmatube.app.ui.theme.FilmatubeSpacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,6 +85,15 @@ fun CreateBoardScreen(
                 .padding(FilmatubeSpacing.lg),
             verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
         ) {
+            PageHero(
+                eyebrow = stringResource(R.string.boards_eyebrow),
+                title = stringResource(R.string.create_board_title),
+                subtitle = stringResource(R.string.create_board_subtitle),
+                icon = Icons.AutoMirrored.Filled.Chat,
+                // The Column already applies the page's horizontal padding.
+                horizontalPadding = 0.dp,
+            )
+
             // Cover picker
             Box(
                 modifier = Modifier

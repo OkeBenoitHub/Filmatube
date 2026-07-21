@@ -83,6 +83,11 @@
     <string name="notif_prefs_title">Notification preferences</string>
     <string name="settings_notifications">Notifications</string>
     <string name="boards_title">Boards</string>
+    <string name="boards_eyebrow">Community</string>
+    <string name="boards_all">All boards</string>
+    <string name="boards_search_hint">Search boards</string>
+    <string name="boards_no_results">No boards match your search.</string>
+    <string name="create_board_subtitle">Start a space for a movie, a genre, or whatever you want to talk about.</string>
     <string name="boards_subtitle">Join the conversation around movies and more.</string>
     <string name="boards_tab_all">All</string>
     <string name="boards_tab_movies">Movies</string>

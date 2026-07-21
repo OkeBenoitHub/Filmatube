@@ -83,6 +83,11 @@
     <string name="notif_prefs_title">Préférences de notification</string>
     <string name="settings_notifications">Notifications</string>
     <string name="boards_title">Forums</string>
+    <string name="boards_eyebrow">Communauté</string>
+    <string name="boards_all">Tous les forums</string>
+    <string name="boards_search_hint">Rechercher un forum</string>
+    <string name="boards_no_results">Aucun forum ne correspond à votre recherche.</string>
+    <string name="create_board_subtitle">Créez un espace pour un film, un genre, ou ce dont vous voulez parler.</string>
     <string name="boards_subtitle">Rejoignez la conversation autour des films et plus encore.</string>
     <string name="boards_tab_all">Tous</string>
     <string name="boards_tab_movies">Films</string>
