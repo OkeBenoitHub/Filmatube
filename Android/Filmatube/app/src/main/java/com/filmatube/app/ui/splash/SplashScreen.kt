@@ -36,8 +36,9 @@ import kotlinx.coroutines.delay
 private const val MIN_SPLASH_MS = 1600L
 
 /**
- * Animated splash — the logo tile springs in with a green glow, the wordmark fades up,
- * then routes to onboarding (first run) or the main app once the flag is read.
+ * Animated splash — the logo carries over from the system splash and settles, a green glow
+ * sits behind it and the wordmark fades up, then routes to onboarding (first run) or the
+ * main app once the flag is read.
  */
 @Composable
 fun SplashScreen(
@@ -49,15 +50,19 @@ fun SplashScreen(
     var started by remember { mutableStateOf(false) }
     var minTimeElapsed by remember { mutableStateOf(false) }
 
+    /**
+     * The mark settles rather than making an entrance.
+     *
+     * The system splash has already been showing this logo, full size, for the moment before
+     * this screen existed — so springing up from 0.6 and fading in from nothing made it
+     * vanish and pop back, which is what read as "two splash screens". Starting at full
+     * opacity and a hair oversized lets the handoff look like one continuous logo that
+     * settles into place, with the wordmark reveal below carrying the actual animation.
+     */
     val logoScale by animateFloatAsState(
-        targetValue = if (started) 1f else 0.6f,
+        targetValue = if (started) 1f else 1.06f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
         label = "logo-scale",
-    )
-    val logoAlpha by animateFloatAsState(
-        targetValue = if (started) 1f else 0f,
-        animationSpec = tween(durationMillis = 500),
-        label = "logo-alpha",
     )
     val wordmarkAlpha by animateFloatAsState(
         targetValue = if (started) 1f else 0f,
@@ -104,9 +109,7 @@ fun SplashScreen(
         ) {
             FilmatubeLogo(
                 size = 104.dp,
-                modifier = Modifier
-                    .scale(logoScale)
-                    .alpha(logoAlpha),
+                modifier = Modifier.scale(logoScale),
             )
             Text(
                 text = stringResource(R.string.app_name),

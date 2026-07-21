@@ -18,17 +18,18 @@
     <style name="Theme.Filmatube.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/filmatube_background</item>
         <!--
-          No icon here on purpose — the app shows exactly one logo, the animated one on the
-          in-app splash. Android 12+ always draws a system splash before the Activity exists
-          and it can't be disabled, so the only way to avoid showing the mark twice is to draw
-          nothing over a matching background and let the animated splash carry it.
+          @mipmap, not @drawable. Two files share the name ic_launcher_foreground: a stale
+          hand-drawn vector that used to live in res/drawable, and the real brand mark in
+          res/mipmap. The launcher icon referenced the mipmap, so a brand refresh updated the
+          app icon and left this slot showing the old mark — that's why the first splash
+          didn't match. Both now point at the same asset and can't drift apart again.
 
-          (This slot used to point at @drawable/ic_launcher_foreground — a stale hand-drawn
-          vector that shared its name with the real brand mark in @mipmap. The launcher icon
-          referenced the mipmap, so a brand refresh updated the app icon and left this behind:
-          that's why the first splash didn't match.)
+          Android 12+ always draws this splash before the Activity exists and it can't be
+          disabled, so the aim is continuity rather than removal: same mark, same #0E1512
+          background, and the system renders it at roughly the 104dp the animated splash uses,
+          so the logo appears to stay put while the animation takes over.
         -->
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon_none</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
         <item name="postSplashScreenTheme">@style/Theme.Filmatube</item>
     </style>
 </resources>
