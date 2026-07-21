@@ -25,6 +25,14 @@ import com.filmatube.app.data.parties.PartyMessage
 import com.filmatube.app.data.parties.PartyReaction
 import com.filmatube.app.data.parties.PartyRepository
 import com.filmatube.app.data.parties.PartySyncState
+import com.filmatube.app.data.theater.ChatRateLimitedException
+import com.filmatube.app.data.theater.Showtime
+import com.filmatube.app.data.theater.ShowtimeStatus
+import com.filmatube.app.data.theater.PRESENCE_HEARTBEAT_MS
+import com.filmatube.app.data.theater.TheaterMessage
+import com.filmatube.app.data.theater.TheaterPresence
+import com.filmatube.app.data.theater.TheaterReaction
+import com.filmatube.app.data.theater.TheaterRepository
 import com.filmatube.app.data.playback.PlaybackRepository
 import com.filmatube.app.data.playback.WatchProgressRepository
 import com.filmatube.app.data.preferences.UserPreferencesRepository
@@ -67,6 +75,7 @@ class PlayerViewModel @Inject constructor(
     private val analytics: PlaybackAnalytics,
     private val crashReporter: CrashReporter,
     private val partyRepository: PartyRepository,
+    private val theaterRepository: TheaterRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -98,6 +107,54 @@ class PlayerViewModel @Inject constructor(
     fun sendPartyReaction(emoji: String) {
         val pid = partyId ?: return
         viewModelScope.launch { partyRepository.sendReaction(pid, emoji) }
+    }
+
+    /** Theater mode: non-null when launched from a showtime lobby. */
+    private val showtimeId: String? = savedStateHandle["showtime"]
+    val isTheater: Boolean get() = showtimeId != null
+
+    /** True once the showing ends — the screen shows a notice and leaves. */
+    private val _theaterEnded = MutableStateFlow(false)
+    val theaterEnded: StateFlow<Boolean> = _theaterEnded.asStateFlow()
+
+    /** Theater overlay: live chat + floating emoji (empty outside theater mode). */
+    private val _theaterMessages = MutableStateFlow<List<TheaterMessage>>(emptyList())
+    val theaterMessages: StateFlow<List<TheaterMessage>> = _theaterMessages.asStateFlow()
+    private val _theaterReactions = MutableStateFlow<List<TheaterReaction>>(emptyList())
+    val theaterReactions: StateFlow<List<TheaterReaction>> = _theaterReactions.asStateFlow()
+
+    /** Everyone currently in the room (freshness judged by the UI against the ticking clock). */
+    private val _theaterPresent = MutableStateFlow<List<TheaterPresence>>(emptyList())
+    val theaterPresent: StateFlow<List<TheaterPresence>> = _theaterPresent.asStateFlow()
+    private var theaterPresence: Job? = null
+
+    /**
+     * Non-null when I walked into a showing already in progress: how far in the film was
+     * when I arrived. The UI shows it briefly so the jump into the middle isn't jarring.
+     */
+    private val _joinedMidShowAtMs = MutableStateFlow<Long?>(null)
+    val joinedMidShowAtMs: StateFlow<Long?> = _joinedMidShowAtMs.asStateFlow()
+    fun dismissJoinedMidShow() { _joinedMidShowAtMs.value = null }
+
+    /** Set when a chat line was throttled, so the overlay can say so. */
+    private val _theaterThrottled = MutableStateFlow(false)
+    val theaterThrottled: StateFlow<Boolean> = _theaterThrottled.asStateFlow()
+    fun clearTheaterThrottled() { _theaterThrottled.value = false }
+
+    fun sendTheaterMessage(text: String, isSpoiler: Boolean) {
+        val sid = showtimeId ?: return
+        viewModelScope.launch {
+            try {
+                theaterRepository.sendMessage(sid, text, isSpoiler)
+            } catch (e: ChatRateLimitedException) {
+                _theaterThrottled.value = true
+            }
+        }
+    }
+
+    fun sendTheaterReaction(emoji: String) {
+        val sid = showtimeId ?: return
+        viewModelScope.launch { theaterRepository.sendReaction(sid, emoji) }
     }
 
     private val _uiState = MutableStateFlow<PlayerUiState>(PlayerUiState.Loading)
@@ -223,6 +280,7 @@ class PlayerViewModel @Inject constructor(
         load()
         registerNetworkCallback()
         initPartySync()
+        initTheaterSync()
         // Periodically checkpoint the watch position while playing.
         viewModelScope.launch {
             while (true) {
@@ -312,6 +370,105 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    // ── theater sync (Day 158) ─────────────────────────────────────────────
+
+    /** Device-to-server clock skew in ms, measured once on entry. */
+    private var serverClockOffsetMs = 0L
+    private var currentShowtime: Showtime? = null
+    private var hasConverged = false
+
+    /** Server time right now, as best this device can tell. */
+    private fun serverNowMs(): Long = System.currentTimeMillis() + serverClockOffsetMs
+
+    /**
+     * Theater playback is driven by the wall clock, not by a host.
+     *
+     * There is no publisher and no subscriber: every viewer independently computes
+     * `serverNow - startAt` and converges on it. That makes late joiners self-correcting
+     * (catch-up is just the first convergence pass), removes the host-drops failure mode
+     * entirely, and costs zero writes per viewer.
+     */
+    private fun initTheaterSync() {
+        val sid = showtimeId ?: return
+
+        viewModelScope.launch { theaterRepository.observeMessages(sid).collect { _theaterMessages.value = it } }
+        viewModelScope.launch { theaterRepository.observeReactions(sid).collect { _theaterReactions.value = it } }
+
+        // Presence heartbeat: tells the room I'm here, and stops on its own if I vanish.
+        theaterPresence = viewModelScope.launch {
+            while (true) {
+                theaterRepository.markPresent(sid)
+                delay(PRESENCE_HEARTBEAT_MS)
+            }
+        }
+        viewModelScope.launch {
+            theaterRepository.observePresence(sid).collect { list ->
+                _theaterPresent.value = list
+            }
+        }
+
+        viewModelScope.launch {
+            // Measure skew before the first convergence, or we'd seek to the wrong place
+            // and then visibly jump once the offset landed.
+            serverClockOffsetMs = theaterRepository.measureServerClockOffset()
+
+            launch {
+                theaterRepository.observeShowtime(sid).collect { s ->
+                    if (s == null) return@collect
+                    currentShowtime = s
+                    if (s.status == ShowtimeStatus.ENDED && !_theaterEnded.value) {
+                        _theaterEnded.value = true
+                        player.pause()
+                    }
+                }
+            }
+
+            // Converge on the schedule, forever. The same pass handles joining late,
+            // recovering from a buffer stall, and a viewer who backgrounded the app.
+            while (true) {
+                delay(THEATER_SYNC_INTERVAL_MS)
+                applyTheaterClock()
+            }
+        }
+    }
+
+    private fun applyTheaterClock() {
+        val s = currentShowtime ?: return
+        if (_theaterEnded.value) return
+        // Before the doors open there is nothing to converge on.
+        if (s.status != ShowtimeStatus.LIVE) return
+
+        val expected = s.playbackPositionMs(serverNowMs())
+
+        // An admin is holding the room: freeze exactly where it froze rather than drifting on.
+        if (s.isPaused) {
+            if (player.isPlaying) player.pause()
+            if (kotlin.math.abs(expected - player.currentPosition) > PARTY_DRIFT_TOLERANCE_MS) {
+                player.seekTo(expected.coerceAtLeast(0))
+            }
+            return
+        }
+
+        // First convergence of the session: if the film is already well underway, say so
+        // rather than silently dropping the viewer into the middle of a scene.
+        if (!hasConverged) {
+            hasConverged = true
+            if (expected > JOIN_MID_SHOW_THRESHOLD_MS) _joinedMidShowAtMs.value = expected
+        }
+
+        val duration = player.duration
+        // The schedule has run past the end of the film: the showing is over in practice.
+        if (duration > 0 && expected >= duration) {
+            player.pause()
+            return
+        }
+        if (!player.isPlaying) player.play()
+        val drift = expected - player.currentPosition
+        if (kotlin.math.abs(drift) > PARTY_DRIFT_TOLERANCE_MS) {
+            player.seekTo(expected.coerceAtLeast(0))
+        }
+    }
+
     /** Retry playback from the last position when the network comes back after a drop. */
     private fun registerNetworkCallback() {
         val callback = object : ConnectivityManager.NetworkCallback() {
@@ -373,8 +530,10 @@ class PlayerViewModel @Inject constructor(
                     _introEndMs.value = (media.movie?.introEndSec ?: 0) * 1000L
                     movieTitle = media.movie?.title?.get("en") ?: ""
                     viewModelScope.launch { feedRepository.publish(FeedEventTypes.WATCHING, movieId, movieTitle) }
-                    // Party playback is host-synced — solo resume would fight the sync engine.
-                    val resumeMs = if (partyId == null) watchProgressRepository.resumePosition(movieId) else 0L
+                    // Synced playback (party or theater) owns the playhead — a solo resume
+                    // would seek somewhere the room isn't and immediately be corrected.
+                    val isSynced = partyId != null || showtimeId != null
+                    val resumeMs = if (isSynced) 0L else watchProgressRepository.resumePosition(movieId)
                     if (resumeMs > 0L) {
                         player.seekTo(resumeMs)
                         _resumePrompt.value = resumeMs
@@ -481,6 +640,15 @@ class PlayerViewModel @Inject constructor(
                 partyRepository.publishSync(pid, position, isPlaying = false)
             }
         }
+        // Leaving the theater: drop out of the room's presence list promptly rather than
+        // waiting for the staleness window to reap us. Same detached-scope reasoning as above.
+        theaterPresence?.cancel()
+        if (showtimeId != null) {
+            val sid = showtimeId
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.IO).launch {
+                theaterRepository.clearPresence(sid)
+            }
+        }
         networkCallback?.let { cb -> runCatching { connectivityManager?.unregisterNetworkCallback(cb) } }
         player.release()
     }
@@ -489,6 +657,12 @@ class PlayerViewModel @Inject constructor(
         const val SAVE_INTERVAL_MS = 10_000L
         const val PARTY_HEARTBEAT_MS = 5_000L
         const val PARTY_DRIFT_TOLERANCE_MS = 2_500L
+
+        /** How often a theater viewer re-checks itself against the schedule. */
+        const val THEATER_SYNC_INTERVAL_MS = 5_000L
+
+        /** Past this far into the film, arriving counts as joining mid-show. */
+        const val JOIN_MID_SHOW_THRESHOLD_MS = 60_000L
     }
 }
 

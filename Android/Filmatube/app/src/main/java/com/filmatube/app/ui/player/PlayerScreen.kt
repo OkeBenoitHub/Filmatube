@@ -42,6 +42,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.filmatube.app.R
+import com.filmatube.app.data.parties.PARTY_REACTIONS
+import com.filmatube.app.data.theater.THEATER_REACTIONS
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -69,6 +71,12 @@ fun PlayerScreen(
     val partyEnded by viewModel.partyEnded.collectAsStateWithLifecycle()
     val partyMessages by viewModel.partyMessages.collectAsStateWithLifecycle()
     val partyReactions by viewModel.partyReactions.collectAsStateWithLifecycle()
+    val theaterEnded by viewModel.theaterEnded.collectAsStateWithLifecycle()
+    val theaterMessages by viewModel.theaterMessages.collectAsStateWithLifecycle()
+    val theaterReactions by viewModel.theaterReactions.collectAsStateWithLifecycle()
+    val theaterThrottled by viewModel.theaterThrottled.collectAsStateWithLifecycle()
+    val theaterPresent by viewModel.theaterPresent.collectAsStateWithLifecycle()
+    val joinedMidShowAtMs by viewModel.joinedMidShowAtMs.collectAsStateWithLifecycle()
     // Emoji already animated away — kept out of the render so they don't replay on recomposition.
     val spentReactions = remember { mutableStateListOf<String>() }
     val resumePrompt by viewModel.resumePrompt.collectAsStateWithLifecycle()
@@ -220,8 +228,9 @@ fun PlayerScreen(
                     sleepOption = sleepOption,
                     sleepRemainingMs = sleepRemainingMs,
                     onSetSleepTimer = viewModel::setSleepTimer,
-                    // Party guests follow the host: transport is read-only for them.
-                    transportEnabled = !viewModel.isParty || isPartyHost,
+                    // Party guests follow the host; in the theater nobody scrubs — the
+                    // whole room is on one schedule, so transport is read-only for all.
+                    transportEnabled = !viewModel.isTheater && (!viewModel.isParty || isPartyHost),
                     onInteract = { interaction++ },
                 )
             }
@@ -265,35 +274,135 @@ fun PlayerScreen(
                 )
             }
 
+            // Showing ended: tell the room, then bow out of the player.
+            if (theaterEnded) {
+                LaunchedEffect(Unit) {
+                    kotlinx.coroutines.delay(2500)
+                    onBack()
+                }
+                Text(
+                    text = stringResource(R.string.theater_ended_notice),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .windowInsetsPadding(WindowInsets.systemBars)
+                        .padding(top = 72.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(Color.Black.copy(alpha = 0.7f))
+                        .padding(horizontal = FilmatubeSpacing.lg, vertical = FilmatubeSpacing.sm),
+                )
+            }
+
             // ── Watch-party overlay (Day 144) ─────────────────────
             if (viewModel.isParty && !partyEnded) {
-                // Floating emoji rise from the bottom-right, fresh ones only.
-                val now = System.currentTimeMillis()
-                Column(
+                FloatingReactions(
+                    reactions = partyReactions.map { OverlayReaction(it.id, it.emoji, it.createdAtMs) },
+                    spent = spentReactions,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .windowInsetsPadding(WindowInsets.systemBars)
                         .padding(end = 16.dp, bottom = 120.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    partyReactions
-                        .filter { it.id !in spentReactions && now - it.createdAtMs < REACTION_TTL_MS }
-                        .takeLast(6)
-                        .forEach { r ->
-                            key(r.id) {
-                                FloatingReaction(reaction = r, onDone = { spentReactions.add(it) })
-                            }
-                        }
-                }
-
-                PartyOverlay(
-                    messages = partyMessages,
-                    onSend = viewModel::sendPartyMessage,
+                )
+                PlaybackChatOverlay(
+                    messages = partyMessages.map { OverlayMessage(it.id, it.userName, it.text) },
+                    reactionEmojis = PARTY_REACTIONS,
+                    onSend = { text, _ -> viewModel.sendPartyMessage(text) },
                     onReact = viewModel::sendPartyReaction,
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .windowInsetsPadding(WindowInsets.systemBars),
                 )
+            }
+
+            // ── Theater overlay (Days 159–160) ────────────────────
+            if (viewModel.isTheater && !theaterEnded) {
+                // Live indicator + how many people are actually in the room right now.
+                val presentNow = theaterPresent.count { it.isFresh(System.currentTimeMillis()) }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .windowInsetsPadding(WindowInsets.systemBars)
+                        .padding(16.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(Color.Black.copy(alpha = 0.55f))
+                        .padding(horizontal = FilmatubeSpacing.sm, vertical = FilmatubeSpacing.xs),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .padding(end = 6.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                            .padding(3.dp),
+                    )
+                    Text(
+                        text = stringResource(R.string.theater_in_room_now, presentNow),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color.White,
+                    )
+                }
+
+                // Joined mid-show: say where we dropped in, then get out of the way.
+                joinedMidShowAtMs?.let { positionMs ->
+                    LaunchedEffect(positionMs) {
+                        kotlinx.coroutines.delay(5000)
+                        viewModel.dismissJoinedMidShow()
+                    }
+                    Text(
+                        text = stringResource(R.string.theater_joined_mid_show, formatTime(positionMs)),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = Color.White,
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .windowInsetsPadding(WindowInsets.systemBars)
+                            .padding(top = 72.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(Color.Black.copy(alpha = 0.7f))
+                            .padding(horizontal = FilmatubeSpacing.lg, vertical = FilmatubeSpacing.sm),
+                    )
+                }
+
+                FloatingReactions(
+                    reactions = theaterReactions.map { OverlayReaction(it.id, it.emoji, it.createdAtMs) },
+                    spent = spentReactions,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .windowInsetsPadding(WindowInsets.systemBars)
+                        .padding(end = 16.dp, bottom = 120.dp),
+                )
+                PlaybackChatOverlay(
+                    messages = theaterMessages.map {
+                        OverlayMessage(it.id, it.userName, it.text, it.isSpoiler)
+                    },
+                    reactionEmojis = THEATER_REACTIONS,
+                    onSend = viewModel::sendTheaterMessage,
+                    onReact = viewModel::sendTheaterReaction,
+                    // A public screening has people at different points in the film —
+                    // and joiners who arrived late — so spoiler tagging earns its place.
+                    spoilerToggle = true,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .windowInsetsPadding(WindowInsets.systemBars),
+                )
+                if (theaterThrottled) {
+                    LaunchedEffect(Unit) {
+                        kotlinx.coroutines.delay(2000)
+                        viewModel.clearTheaterThrottled()
+                    }
+                    Text(
+                        text = stringResource(R.string.theater_chat_too_fast),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = Color.White,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .windowInsetsPadding(WindowInsets.systemBars)
+                            .padding(bottom = 200.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(Color.Black.copy(alpha = 0.7f))
+                            .padding(horizontal = FilmatubeSpacing.md, vertical = FilmatubeSpacing.xs),
+                    )
+                }
             }
 
             resumePrompt?.let { positionMs ->

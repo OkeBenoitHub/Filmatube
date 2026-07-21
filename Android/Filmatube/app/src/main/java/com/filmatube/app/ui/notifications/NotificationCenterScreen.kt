@@ -49,6 +49,7 @@ fun NotificationCenterScreen(
     onOpenUser: (String) -> Unit,
     onOpenBoard: (String) -> Unit,
     onOpenParty: (String) -> Unit,
+    onOpenShowtime: (String) -> Unit,
     viewModel: NotificationCenterViewModel = hiltViewModel(),
 ) {
     val notifications by viewModel.notifications.collectAsStateWithLifecycle()
@@ -92,13 +93,13 @@ fun NotificationCenterScreen(
             if (today.isNotEmpty()) {
                 item { SectionHeader(stringResource(R.string.notifications_today)) }
                 items(today, key = { it.id }) { n ->
-                    NotificationRow(n, onOpen = { openTarget(n, viewModel, onOpenMovie, onOpenUser, onOpenBoard, onOpenParty) })
+                    NotificationRow(n, onOpen = { openTarget(n, viewModel, onOpenMovie, onOpenUser, onOpenBoard, onOpenParty, onOpenShowtime) })
                 }
             }
             if (earlier.isNotEmpty()) {
                 item { SectionHeader(stringResource(R.string.notifications_earlier)) }
                 items(earlier, key = { it.id }) { n ->
-                    NotificationRow(n, onOpen = { openTarget(n, viewModel, onOpenMovie, onOpenUser, onOpenBoard, onOpenParty) })
+                    NotificationRow(n, onOpen = { openTarget(n, viewModel, onOpenMovie, onOpenUser, onOpenBoard, onOpenParty, onOpenShowtime) })
                 }
             }
         }
@@ -112,9 +113,11 @@ private fun openTarget(
     onOpenUser: (String) -> Unit,
     onOpenBoard: (String) -> Unit,
     onOpenParty: (String) -> Unit,
+    onOpenShowtime: (String) -> Unit,
 ) {
     viewModel.markRead(n.id)
     when {
+        n.showtimeId.isNotBlank() -> onOpenShowtime(n.showtimeId)
         n.partyId.isNotBlank() -> onOpenParty(n.partyId)
         n.boardId.isNotBlank() -> onOpenBoard(n.boardId)
         n.movieId.isNotBlank() -> onOpenMovie(n.movieId)
@@ -182,6 +185,9 @@ private fun actionText(type: String): String = stringResource(
         NotificationTypes.REVIEW_LIKE -> R.string.notif_review_like
         NotificationTypes.BOARD_INVITE -> R.string.notif_board_invite
         NotificationTypes.PARTY_INVITE -> R.string.notif_party_invite
+        NotificationTypes.THEATER_STARTING -> R.string.notif_theater_starting
+        NotificationTypes.FRIEND_IN_THEATER -> R.string.notif_friend_in_theater
+        NotificationTypes.THEATER_POSTSHOW -> R.string.notif_theater_postshow
         else -> R.string.notif_recommendation
     },
 )

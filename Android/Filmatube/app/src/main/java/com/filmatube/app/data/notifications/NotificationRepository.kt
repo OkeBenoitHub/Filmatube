@@ -25,11 +25,17 @@ object NotificationTypes {
     const val REVIEW_LIKE = "review_like"
     const val BOARD_INVITE = "board_invite"
     const val PARTY_INVITE = "party_invite"
+    const val THEATER_STARTING = "theater_starting"
+    const val FRIEND_IN_THEATER = "friend_in_theater"
+    const val THEATER_POSTSHOW = "theater_postshow"
     const val SYSTEM = "system"
 
     /** Push channel category for a given in-app notification type. */
     fun categoryFor(type: String): String = when (type) {
         SYSTEM -> "system"
+        // A showtime you RSVP'd to is scheduling, not somebody's social activity — it rides
+        // the content channel so muting social chatter doesn't make you miss your own seat.
+        THEATER_STARTING -> "content"
         else -> "social"
     }
 }
@@ -46,6 +52,7 @@ data class AppNotification(
     val boardId: String,
     val boardTitle: String,
     val partyId: String = "",
+    val showtimeId: String = "",
     val message: String,
     val read: Boolean,
     val createdAtMs: Long,
@@ -130,6 +137,7 @@ class NotificationRepository @Inject constructor(
                                 boardId = d.getString("boardId") ?: "",
                                 boardTitle = d.getString("boardTitle") ?: "",
                                 partyId = d.getString("partyId") ?: "",
+                                showtimeId = d.getString("showtimeId") ?: "",
                                 message = d.getString("message") ?: "",
                                 read = d.getBoolean("read") ?: false,
                                 createdAtMs = d.getTimestamp("createdAt")?.toDate()?.time ?: 0L,
