@@ -274,27 +274,27 @@
 *Public scheduled cinema — showtimes & premieres with synced playback and live chat.*
 
 ### Week 23 — Theater (Android) (Days 155–161) (A)
-- **Day 155** — Theater tab: upcoming showtimes/premieres (poster, countdown, attendees).
-- **Day 156** — Showtime detail + RSVP/remind (FCM).
-- **Day 157** — Lobby (countdown, attendee avatars, pre-show chat).
-- **Day 158** — Synced playback room (server-clock driven; no scrubbing; catch-up).
-- **Day 159** — Live chat (rate-limited, spoiler-tag) + floating emoji reactions overlay.
-- **Day 160** — "Now Showing" live indicator; join mid-show; presence/attendee count.
-- **Day 161** — Theater notifications ("starting soon", "friend in a theater"); week review.
+- **Day 155** ✅ — Theater tab: upcoming showtimes/premieres (poster, countdown, attendees).
+- **Day 156** ✅ — Showtime detail + RSVP/remind (opt-in stored; the push itself lands on Day 161).
+- **Day 157** ✅ — Lobby (countdown, attendee avatars, pre-show chat) — merged into the showtime screen, which changes shape with status.
+- **Day 158** ✅ — Synced playback room (server-clock driven; no scrubbing; catch-up).
+- **Day 159** ✅ — Live chat (rate-limited client-side, spoiler-tag) + floating emoji reactions overlay.
+- **Day 160** ✅ — "Now Showing" live indicator; join mid-show; presence/attendee count (presence is its own subcollection, separate from RSVPs).
+- **Day 161** ✅ — Theater notifications ("starting soon", "friend in a theater") via Cloud Functions; week review. **Week 23 complete.**
 
 ### Week 24 — Theater (Web) + Admin (Days 162–168) (W)
-- **Day 162** — Theater discovery + showtime detail (web); RSVP/remind.
-- **Day 163** — Lobby + pre-show chat (web).
-- **Day 164** — Synced playback room (web, server clock); live chat + reactions.
-- **Day 165** — Now Showing / join mid-show; attendee presence.
-- **Day 166** — **Admin Theater CMS**: schedule showtimes (movie/datetime/capacity/public); lineup mgmt.
-- **Day 167** — Admin host controls (pause/skip/end); attendance analytics.
-- **Day 168** — Week review.
+- **Day 162** ✅ — Theater discovery + showtime detail (web); RSVP/remind.
+- **Day 163** ✅ — Lobby + pre-show chat (web) — merged into the showtime page, which changes shape with status (same as Android).
+- **Day 164** ✅ — Synced playback room (web, server clock); live chat + reactions.
+- **Day 165** ✅ — Now Showing / join mid-show; attendee presence (web parity with Android Day 160).
+- **Day 166** ✅ — **Admin Theater CMS**: schedule showtimes (movie/datetime/capacity/premiere); lineup mgmt.
+- **Day 167** ✅ — Admin host controls (pause/skip/end) via `pausedAt` + `startAt` schedule edits — no host player exists, so the controls steer the clock; attendance analytics (RSVPs/attended/turnout/chat).
+- **Day 168** ✅ — Week review. **Week 24 complete** (theater web + admin).
 
 ### Week 25 — Premieres + Automation (Days 169–175) (B/A)
-- **Day 169** — **Premiere** type: first public screening of a new release; premiere badge/branding.
-- **Day 170 (B)** — Theater automation (Cloud Function): auto lobby → live → ended; sync clock; recurring showtimes.
-- **Day 171** — Post-show → auto-created discussion board; "rate it now" prompt.
+- **Day 169** ✅ — **Premiere** type: first public screening of a new release; premiere badge/branding (gold, not brand green, so it reads as rare against ordinary showtimes).
+- **Day 170 (B)** ✅ — Theater automation (`processTheaterSchedule`, every minute): auto lobby → live → ended via denormalized `durationMs`; recurring showtimes (daily/weekly). No clock to publish — the wall-clock model means `startAt` **is** the sync clock.
+- **Day 171** ✅ — Post-show → discussion board (reuses the movie's existing board if it has one) + "rate it now" prompt to everyone who actually attended.
 - **Day 172** — Capacity/waitlist handling; private (board-only) theaters.
 - **Day 173** — Android theater polish + edge cases.
 - **Day 174** — Concurrency/load testing (sync clock under many viewers).
