@@ -25,8 +25,12 @@ data class RegisterUiState(
     val confirmError: Int? = null,
     val generalError: Int? = null,
     val isLoading: Boolean = false,
+    val isGoogleLoading: Boolean = false,
     val navTarget: AuthNavTarget? = null,
-)
+) {
+    /** Any auth attempt in flight — used to disable inputs regardless of which one is running. */
+    val isBusy: Boolean get() = isLoading || isGoogleLoading
+}
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
@@ -39,7 +43,10 @@ class RegisterViewModel @Inject constructor(
 
     fun onNameChange(v: String) = _state.update { it.copy(name = v, nameError = null, generalError = null) }
     fun onEmailChange(v: String) = _state.update { it.copy(email = v, emailError = null, generalError = null) }
-    fun onPasswordChange(v: String) = _state.update { it.copy(password = v, passwordError = null, generalError = null) }
+    // Editing the password also clears the mismatch error: it was raised about the *pair*,
+    // so leaving it pinned under the confirm field claims a mismatch that may no longer hold.
+    fun onPasswordChange(v: String) =
+        _state.update { it.copy(password = v, passwordError = null, confirmError = null, generalError = null) }
     fun onConfirmChange(v: String) = _state.update { it.copy(confirmPassword = v, confirmError = null, generalError = null) }
 
     fun register() {
@@ -72,17 +79,19 @@ class RegisterViewModel @Inject constructor(
 
     fun signInWithGoogle(activityContext: Context) {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, generalError = null) }
+            // Tracked separately from isLoading so the spinner appears on the Google button
+            // rather than on the untouched "Create account" button.
+            _state.update { it.copy(isGoogleLoading = true, generalError = null) }
             runCatching {
                 val idToken = googleAuthClient.getIdToken(activityContext)
                 authRepository.signInWithGoogle(idToken)
             }.fold(
-                onSuccess = { _state.update { it.copy(isLoading = false, navTarget = resolveTarget()) } },
+                onSuccess = { _state.update { it.copy(isGoogleLoading = false, navTarget = resolveTarget()) } },
                 onFailure = { e ->
                     if (e is GetCredentialCancellationException) {
-                        _state.update { it.copy(isLoading = false) }
+                        _state.update { it.copy(isGoogleLoading = false) }
                     } else {
-                        _state.update { it.copy(isLoading = false, generalError = mapAuthError(e)) }
+                        _state.update { it.copy(isGoogleLoading = false, generalError = mapAuthError(e)) }
                     }
                 },
             )

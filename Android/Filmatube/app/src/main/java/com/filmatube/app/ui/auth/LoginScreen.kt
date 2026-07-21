@@ -72,7 +72,7 @@ fun LoginScreen(
             keyboardType = KeyboardType.Email,
             imeAction = ImeAction.Next,
             errorText = state.emailError?.let { stringResource(it) },
-            enabled = !state.isLoading,
+            enabled = !state.isBusy,
             modifier = Modifier.padding(top = FilmatubeSpacing.sm),
         )
 
@@ -86,7 +86,7 @@ fun LoginScreen(
             imeAction = ImeAction.Done,
             onImeAction = viewModel::signIn,
             errorText = state.passwordError?.let { stringResource(it) },
-            enabled = !state.isLoading,
+            enabled = !state.isBusy,
         )
 
         TextButton(
@@ -111,7 +111,8 @@ fun LoginScreen(
 
         GoogleButton(
             onClick = { viewModel.signInWithGoogle(context) },
-            enabled = !state.isLoading,
+            enabled = !state.isBusy,
+            loading = state.isGoogleLoading,
         )
 
         AuthFooterPrompt(

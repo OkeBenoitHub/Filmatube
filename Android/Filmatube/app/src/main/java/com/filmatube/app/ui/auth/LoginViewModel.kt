@@ -20,8 +20,12 @@ data class LoginUiState(
     val passwordError: Int? = null,
     val generalError: Int? = null,
     val isLoading: Boolean = false,
+    val isGoogleLoading: Boolean = false,
     val navTarget: AuthNavTarget? = null,
-)
+) {
+    /** Any auth attempt in flight — used to disable inputs regardless of which one is running. */
+    val isBusy: Boolean get() = isLoading || isGoogleLoading
+}
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
@@ -64,17 +68,19 @@ class LoginViewModel @Inject constructor(
 
     fun signInWithGoogle(activityContext: Context) {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, generalError = null) }
+            // Tracked separately from isLoading so the spinner appears on the Google button
+            // rather than on the untouched "Sign in" button.
+            _state.update { it.copy(isGoogleLoading = true, generalError = null) }
             runCatching {
                 val idToken = googleAuthClient.getIdToken(activityContext)
                 authRepository.signInWithGoogle(idToken)
             }.fold(
-                onSuccess = { _state.update { it.copy(isLoading = false, navTarget = resolveTarget()) } },
+                onSuccess = { _state.update { it.copy(isGoogleLoading = false, navTarget = resolveTarget()) } },
                 onFailure = { e ->
                     if (e is GetCredentialCancellationException) {
-                        _state.update { it.copy(isLoading = false) } // user dismissed — no error
+                        _state.update { it.copy(isGoogleLoading = false) } // user dismissed — no error
                     } else {
-                        _state.update { it.copy(isLoading = false, generalError = mapAuthError(e)) }
+                        _state.update { it.copy(isGoogleLoading = false, generalError = mapAuthError(e)) }
                     }
                 },
             )

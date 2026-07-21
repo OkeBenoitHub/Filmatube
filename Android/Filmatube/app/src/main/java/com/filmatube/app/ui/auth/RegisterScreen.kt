@@ -68,7 +68,7 @@ fun RegisterScreen(
             leadingIcon = Icons.Outlined.Person,
             imeAction = ImeAction.Next,
             errorText = state.nameError?.let { stringResource(it) },
-            enabled = !state.isLoading,
+            enabled = !state.isBusy,
             modifier = Modifier.padding(top = FilmatubeSpacing.sm),
         )
 
@@ -80,7 +80,7 @@ fun RegisterScreen(
             keyboardType = KeyboardType.Email,
             imeAction = ImeAction.Next,
             errorText = state.emailError?.let { stringResource(it) },
-            enabled = !state.isLoading,
+            enabled = !state.isBusy,
         )
 
         FilmatubeTextField(
@@ -92,7 +92,7 @@ fun RegisterScreen(
             keyboardType = KeyboardType.Password,
             imeAction = ImeAction.Next,
             errorText = state.passwordError?.let { stringResource(it) },
-            enabled = !state.isLoading,
+            enabled = !state.isBusy,
         )
 
         FilmatubeTextField(
@@ -105,7 +105,7 @@ fun RegisterScreen(
             imeAction = ImeAction.Done,
             onImeAction = viewModel::register,
             errorText = state.confirmError?.let { stringResource(it) },
-            enabled = !state.isLoading,
+            enabled = !state.isBusy,
         )
 
         state.generalError?.let { AuthErrorBanner(message = stringResource(it)) }
@@ -119,11 +119,14 @@ fun RegisterScreen(
                 .height(52.dp),
         )
 
+        AuthLegalConsent(modifier = Modifier.padding(top = FilmatubeSpacing.xs))
+
         AuthDivider(modifier = Modifier.padding(vertical = FilmatubeSpacing.sm))
 
         GoogleButton(
             onClick = { viewModel.signInWithGoogle(context) },
-            enabled = !state.isLoading,
+            enabled = !state.isBusy,
+            loading = state.isGoogleLoading,
         )
 
         AuthFooterPrompt(
