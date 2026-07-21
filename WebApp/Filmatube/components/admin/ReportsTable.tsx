@@ -109,7 +109,7 @@ export function ReportsTable({ reports, dict }: { reports: ReportRow[]; dict: Di
                   type="button"
                   disabled={pending}
                   onClick={() =>
-                    startTransition(() => removeReportedContent(r.id, r.type, r.movieId, r.boardId, r.targetId))
+                    startTransition(() => removeReportedContent(r.id, r.type, r.movieId, r.boardId, r.targetId, r.showtimeId))
                   }
                   className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10 disabled:opacity-50"
                 >

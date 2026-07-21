@@ -3,7 +3,12 @@ import "server-only";
 import { getAdminDb } from "@/lib/firebase-admin";
 
 /** Report kinds the queue understands. `board_message` is written by both board clients. */
-export const REPORT_TYPES = { REVIEW: "review", COMMENT: "comment", BOARD_MESSAGE: "board_message" } as const;
+export const REPORT_TYPES = {
+  REVIEW: "review",
+  COMMENT: "comment",
+  BOARD_MESSAGE: "board_message",
+  THEATER_CHAT: "theater_chat",
+} as const;
 
 export interface ReportRow {
   id: string;
@@ -11,6 +16,7 @@ export interface ReportRow {
   movieId: string;
   boardId: string;
   boardTitle: string;
+  showtimeId: string;
   targetId: string;
   reportedUserId: string;
   reporterId: string;
@@ -24,11 +30,21 @@ export interface ReportRow {
  * Where a reported item lives, by report type — board messages sit in a different subtree
  * from reviews/comments, which is why the queue couldn't resolve them before.
  */
-export function reportedContentRef(type: string, movieId: string, boardId: string, targetId: string) {
+export function reportedContentRef(
+  type: string,
+  movieId: string,
+  boardId: string,
+  targetId: string,
+  showtimeId = "",
+) {
   const db = getAdminDb();
   if (type === REPORT_TYPES.BOARD_MESSAGE) {
     if (!boardId || !targetId) return null;
     return db.collection("boards").doc(boardId).collection("messages").doc(targetId);
+  }
+  if (type === REPORT_TYPES.THEATER_CHAT) {
+    if (!showtimeId || !targetId) return null;
+    return db.collection("showtimes").doc(showtimeId).collection("chat").doc(targetId);
   }
   if (!movieId || !targetId) return null;
   const col = type === REPORT_TYPES.COMMENT ? "comments" : "reviews";
@@ -46,8 +62,9 @@ export async function getReports(): Promise<ReportRow[]> {
       const movieId = (data.movieId as string) ?? "";
       const boardId = (data.boardId as string) ?? "";
       const targetId = (data.targetId as string) ?? "";
+      const showtimeId = (data.showtimeId as string) ?? "";
 
-      const ref = reportedContentRef(type, movieId, boardId, targetId);
+      const ref = reportedContentRef(type, movieId, boardId, targetId, showtimeId);
       const [target, board] = await Promise.all([
         ref ? ref.get() : Promise.resolve(null),
         boardId ? getAdminDb().collection("boards").doc(boardId).get() : Promise.resolve(null),
@@ -62,6 +79,7 @@ export async function getReports(): Promise<ReportRow[]> {
         type,
         movieId,
         boardId,
+        showtimeId,
         boardTitle: (board?.get("title") as string) ?? "",
         targetId,
         reportedUserId: (data.reportedUserId as string) ?? "",

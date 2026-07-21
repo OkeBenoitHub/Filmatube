@@ -247,12 +247,30 @@ class TheaterRepository @Inject constructor(
         awaitClose { registration.remove() }
     }
 
-    /** Fill in display data for the avatar stack. */
+    /**
+     * Display names and avatars for the attendee list, resolved once per user.
+     *
+     * The cache is the point. The attendee snapshot re-fires on every RSVP and every reminder
+     * toggle, and this used to re-read every profile each time: in a 100-person lobby showing
+     * 24 faces, one person arriving cost 2,400 user-document reads across the room. Profiles
+     * change far more slowly than attendance, so a stale name until the screen is reopened is
+     * a fair trade.
+     */
+    private val profileCache = mutableMapOf<String, TheaterAttendee>()
+
     suspend fun resolveAttendees(attendees: List<TheaterAttendee>): List<TheaterAttendee> =
         withContext(ioDispatcher) {
             attendees.map { attendee ->
-                val user = runCatching { userRepository.getUser(attendee.uid) }.getOrNull()
-                attendee.copy(name = user?.displayName ?: "", avatar = user?.avatarUrl ?: "")
+                profileCache[attendee.uid] ?: run {
+                    val user = runCatching { userRepository.getUser(attendee.uid) }.getOrNull()
+                    val resolved = attendee.copy(
+                        name = user?.displayName ?: "",
+                        avatar = user?.avatarUrl ?: "",
+                    )
+                    // Only cache a real hit; a failed read should be retried, not remembered.
+                    if (user != null) profileCache[attendee.uid] = resolved
+                    resolved
+                }
             }
         }
 
@@ -499,6 +517,30 @@ class TheaterRepository @Inject constructor(
                 trySend(list)
             }
         awaitClose { registration.remove() }
+    }
+
+    /**
+     * Flag a chat line for moderation.
+     *
+     * Feeds the same `reports` queue as reviews, comments and board messages, so the admin
+     * console handles theater chat through the path it already has rather than a second one.
+     */
+    suspend fun reportMessage(showtimeId: String, message: TheaterMessage) = withContext(ioDispatcher) {
+        val uid = myUid ?: return@withContext
+        runCatching {
+            firestore.collection("reports").add(
+                mapOf(
+                    "type" to "theater_chat",
+                    "showtimeId" to showtimeId,
+                    "targetId" to message.id,
+                    "reportedUserId" to message.userId,
+                    "reporterId" to uid,
+                    "reason" to "",
+                    "status" to "pending",
+                    "createdAt" to FieldValue.serverTimestamp(),
+                ),
+            ).await()
+        }
     }
 
     // ── floating reactions (Day 159) ──────────────────────────────────────

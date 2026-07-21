@@ -308,6 +308,36 @@ service cloud.firestore {
     // Showtimes are admin-scheduled and machine-advanced (Day 170); clients only read
     // the lineup and write their own attendee doc.
     match /showtimes/{showtimeId} {
+      function showtimeData() {
+        return get(/databases/$(database)/documents/showtimes/$(showtimeId)).data;
+      }
+
+      /**
+       * Whether the caller may enter this room at all.
+       *
+       * Hiding the showtime document was not enough: every subcollection here used to be
+       * open to any signed-in user, so anyone holding the ID could read a private board's
+       * chat, post to it, appear as present, and RSVP. "Private" only meant "unlisted".
+       */
+      function canAccessShowtime() {
+        let boardId = showtimeData().get('boardId', '');
+        return boardId == ''
+          || request.auth.uid in get(/databases/$(database)/documents/boards/$(boardId)).data.memberIds;
+      }
+
+      /**
+       * Whether a seat is actually free.
+       *
+       * Capacity used to live only in the web action and the Android UI, so a crafted client
+       * could write its own attendee document and walk straight past a sold-out room. Reads
+       * the denormalized count, which lags its Cloud Function slightly — a simultaneous burst
+       * can still overshoot by a little, but the room can no longer be ignored outright.
+       */
+      function showtimeHasRoom() {
+        let s = showtimeData();
+        return s.get('capacity', 0) == 0 || s.get('attendeesCount', 0) < s.get('capacity', 0);
+      }
+
       // A private screening belongs to one board and only its members may see it. Note the
       // consequence for the lineup: a list query must constrain `boardId` itself, because a
       // query that could return a private showtime fails outright rather than filtering it
@@ -321,17 +351,24 @@ service cloud.firestore {
       // Queue for a seat once the room is full; a Cloud Function promotes from here when
       // one frees up. Entries are self-written but never self-promoted.
       match /waitlist/{userId} {
-        allow read: if isSignedIn();
-        allow write: if isSelf(userId);
+        allow read: if isSignedIn() && canAccessShowtime();
+        allow write: if isSelf(userId) && canAccessShowtime();
       }
 
       match /attendees/{userId} {
-        allow read: if isSignedIn();
-        allow write: if isSelf(userId);
+        allow read: if isSignedIn() && canAccessShowtime();
+        // Split by operation so capacity applies to *taking* a seat only: an existing
+        // attendee toggling their reminder must not be refused because the room filled up
+        // behind them, and leaving must always be possible.
+        allow create: if isSelf(userId) && canAccessShowtime() && showtimeHasRoom();
+        allow update: if isSelf(userId) && canAccessShowtime();
+        allow delete: if isSelf(userId);
       }
       match /chat/{messageId} {
-        allow read: if isSignedIn();
-        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+        allow read: if isSignedIn() && canAccessShowtime();
+        allow create: if isSignedIn()
+          && canAccessShowtime()
+          && request.resource.data.userId == request.auth.uid;
         // Authors may retract their own line; edits are never allowed (an edited chat
         // line in a live room can rewrite a spoiler into everyone's face after the fact).
         allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
@@ -340,8 +377,10 @@ service cloud.firestore {
 
       // Ephemeral floating emoji — write-once, never edited.
       match /reactions/{reactionId} {
-        allow read: if isSignedIn();
-        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+        allow read: if isSignedIn() && canAccessShowtime();
+        allow create: if isSignedIn()
+          && canAccessShowtime()
+          && request.resource.data.userId == request.auth.uid;
         allow update: if false;
         allow delete: if isAdmin();
       }
@@ -349,8 +388,8 @@ service cloud.firestore {
       // "I'm in the room": a heartbeat each viewer writes for themselves. Kept apart from
       // attendees so presence can't inflate the RSVP count.
       match /presence/{userId} {
-        allow read: if isSignedIn();
-        allow write: if isSelf(userId);
+        allow read: if isSignedIn() && canAccessShowtime();
+        allow write: if isSelf(userId) && canAccessShowtime();
       }
 
       // Server-side guard so the friend-in-theater notification fires once per showing.

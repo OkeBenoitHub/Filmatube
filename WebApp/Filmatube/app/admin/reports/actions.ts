@@ -25,9 +25,10 @@ export async function removeReportedContent(
   movieId: string,
   boardId: string,
   targetId: string,
+  showtimeId = "",
 ) {
   await assertAdmin();
-  const ref = reportedContentRef(type, movieId, boardId, targetId);
+  const ref = reportedContentRef(type, movieId, boardId, targetId, showtimeId);
   if (ref) await ref.delete();
   await getAdminDb().collection("reports").doc(id).update({ status: "resolved" });
   revalidatePath("/admin/reports");

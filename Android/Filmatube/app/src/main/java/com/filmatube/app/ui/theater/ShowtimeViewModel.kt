@@ -125,6 +125,11 @@ class ShowtimeViewModel @Inject constructor(
         }
     }
 
+    /** Flag someone else's chat line for moderation. */
+    fun report(message: TheaterMessage) {
+        viewModelScope.launch { theaterRepository.reportMessage(showtimeId, message) }
+    }
+
     fun react(emoji: String) {
         viewModelScope.launch { theaterRepository.sendReaction(showtimeId, emoji) }
     }

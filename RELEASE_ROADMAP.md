@@ -301,10 +301,10 @@
 - **Day 175** ✅ — Week review. **Week 25 complete** (premieres, automation, waitlist, private theaters).
 
 ### Week 26 — Theater QA + **v1.2 Release** (Days 176–182) (W/B)
-- **Day 176** — Theater parity QA (Android↔web).
-- **Day 177** — Performance + Firestore cost review (chat/presence fan-out).
-- **Day 178** — Security: theater rules audit; chat moderation.
-- **Day 179** — Beta + fixes.
+- **Day 176** ✅ — Theater parity QA (Android↔web): both clients share the model, formula and field names; divergences found were the presence-count source and attendee profile resolution, both fixed below.
+- **Day 177** ✅ — Cost review. Presence was fixed on Day 174; this pass caught attendee profile re-resolution — every RSVP re-read all 24 shown profiles on every viewer (~2,400 user reads per arrival in a 100-person lobby). Now cached.
+- **Day 178** ✅ — Rules audit found two real holes: private screenings were private only at the showtime doc (every subcollection was open to any signed-in user holding the ID), and capacity was never enforced in rules at all. Both closed. Theater chat now feeds the existing `reports` moderation queue.
+- **Day 179** ✅ — Beta: functions/rules/indexes and web all deployed; both clients build clean.
 - **Day 180** — Store/web release prep.
 - **Day 181** — **🚀 v1.2 release**; monitoring.
 - **Day 182** — Retro + buffer.

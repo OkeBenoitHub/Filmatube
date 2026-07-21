@@ -40,6 +40,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -277,6 +281,7 @@ fun ShowtimeScreen(
                             message = message,
                             revealed = revealed[message.id] == true,
                             onReveal = { revealed[message.id] = true },
+                            onReport = { viewModel.report(message) },
                         )
                     }
                 }
@@ -363,8 +368,17 @@ private fun AttendeeStrip(attendees: List<TheaterAttendee>) {
 }
 
 @Composable
-private fun ChatLine(message: TheaterMessage, revealed: Boolean, onReveal: () -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {
+private fun ChatLine(
+    message: TheaterMessage,
+    revealed: Boolean,
+    onReveal: () -> Unit,
+    onReport: () -> Unit,
+) {
+    var reported by remember(message.id) { mutableStateOf(false) }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm),
+    ) {
         UserAvatar(url = message.userAvatar.ifBlank { null }, name = message.userName, size = 28.dp)
         Column {
             Text(
@@ -392,6 +406,18 @@ private fun ChatLine(message: TheaterMessage, revealed: Boolean, onReveal: () ->
                 }
             } else {
                 Text(message.text, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+
+        // Only other people's lines: reporting your own is noise for the moderation queue.
+        if (!message.isMine) {
+            Spacer(Modifier.weight(1f))
+            TextButton(onClick = { reported = true; onReport() }, enabled = !reported) {
+                Text(
+                    stringResource(if (reported) R.string.reviews_reported else R.string.reviews_report),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
