@@ -30,7 +30,6 @@ import com.filmatube.app.data.theater.Showtime
 import com.filmatube.app.data.theater.ShowtimeStatus
 import com.filmatube.app.data.theater.PRESENCE_HEARTBEAT_MS
 import com.filmatube.app.data.theater.TheaterMessage
-import com.filmatube.app.data.theater.TheaterPresence
 import com.filmatube.app.data.theater.TheaterReaction
 import com.filmatube.app.data.theater.TheaterRepository
 import com.filmatube.app.data.playback.PlaybackRepository
@@ -123,9 +122,15 @@ class PlayerViewModel @Inject constructor(
     private val _theaterReactions = MutableStateFlow<List<TheaterReaction>>(emptyList())
     val theaterReactions: StateFlow<List<TheaterReaction>> = _theaterReactions.asStateFlow()
 
-    /** Everyone currently in the room (freshness judged by the UI against the ticking clock). */
-    private val _theaterPresent = MutableStateFlow<List<TheaterPresence>>(emptyList())
-    val theaterPresent: StateFlow<List<TheaterPresence>> = _theaterPresent.asStateFlow()
+    /**
+     * How many people are in the room right now, maintained server-side and read off the
+     * showtime doc this screen already watches.
+     *
+     * Counting by subscribing to the presence subcollection delivered every viewer's
+     * heartbeat to every viewer — O(N^2) document reads, which a full room cannot afford.
+     */
+    private val _theaterPresentCount = MutableStateFlow(0)
+    val theaterPresentCount: StateFlow<Int> = _theaterPresentCount.asStateFlow()
     private var theaterPresence: Job? = null
 
     /**
@@ -401,11 +406,7 @@ class PlayerViewModel @Inject constructor(
                 delay(PRESENCE_HEARTBEAT_MS)
             }
         }
-        viewModelScope.launch {
-            theaterRepository.observePresence(sid).collect { list ->
-                _theaterPresent.value = list
-            }
-        }
+        // The count itself arrives with the showtime doc below — no separate listener.
 
         viewModelScope.launch {
             // Measure skew before the first convergence, or we'd seek to the wrong place
@@ -416,6 +417,8 @@ class PlayerViewModel @Inject constructor(
                 theaterRepository.observeShowtime(sid).collect { s ->
                     if (s == null) return@collect
                     currentShowtime = s
+                    _theaterPresentCount.value = s.presentCount
+                    _theaterPresentCount.value = s.presentCount
                     if (s.status == ShowtimeStatus.ENDED && !_theaterEnded.value) {
                         _theaterEnded.value = true
                         player.pause()

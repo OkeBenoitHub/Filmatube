@@ -238,6 +238,13 @@
     <string name="theater_over">Cette séance est terminée.</string>
     <string name="theater_ended_notice">C\'est fini — la séance est terminée.</string>
     <string name="theater_full_message">Cette séance est complète.</string>
+    <string name="theater_gone_title">Séance introuvable</string>
+    <string name="theater_gone_message">Cette séance n\'est plus au programme.</string>
+    <string name="theater_waitlist_join">Rejoindre la liste d\'attente</string>
+    <string name="theater_waitlist_leave">Sur la liste d\'attente</string>
+    <string name="theater_waitlist_count">%1$d en attente</string>
+    <string name="theater_private">Réservé au forum</string>
+    <string name="notif_theater_seat_free">une place s\'est libérée — vous y êtes</string>
     <string name="theater_capacity">%1$d places sur %2$d occupées</string>
     <string name="theater_preshow_chat">Discussion d\'avant-séance</string>
     <string name="theater_chat_empty">Dites quelque chose pendant que tout le monde s\'installe.</string>

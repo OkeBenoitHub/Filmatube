@@ -12,7 +12,7 @@ import {
   query,
   serverTimestamp,
 } from "firebase/firestore";
-import { Bell, Check, EyeOff, Play, Send, Users } from "lucide-react";
+import { Bell, Check, EyeOff, Hourglass, Play, Send, Users } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { setRemind, setRsvp } from "@/app/theater/actions";
 import { Countdown } from "@/components/theater/Countdown";
@@ -26,8 +26,6 @@ import { cn } from "@/lib/utils";
 
 /** Minimum gap between two messages from this browser. Mirrors the Android throttle. */
 const CHAT_INTERVAL_MS = 2_000;
-/** Presence goes stale this long after its last heartbeat. Mirrors Android. */
-const PRESENCE_STALE_AFTER_MS = 90_000;
 
 interface ChatMessage {
   id: string;
@@ -65,7 +63,7 @@ export function ShowtimeRoom({
   const [attendees, setAttendees] = useState(initialAttendees);
   const [attendance, setAttendance] = useState(initialAttendance);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [presentCount, setPresentCount] = useState(0);
+  const [waitlisted, setWaitlisted] = useState(false);
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [text, setText] = useState("");
   const [spoiler, setSpoiler] = useState(false);
@@ -91,6 +89,9 @@ export function ShowtimeRoom({
         ...s,
         status: (snap.get("status") as string) ?? s.status,
         attendeesCount: (snap.get("attendeesCount") as number) ?? s.attendeesCount,
+        // Server-maintained. Counting by subscribing to the presence subcollection
+        // delivered every viewer heartbeat to every viewer — O(N^2) reads.
+        presentCount: (snap.get("presentCount") as number) ?? s.presentCount,
       }));
     });
   }, [showtime.id]);
@@ -103,6 +104,13 @@ export function ShowtimeRoom({
         going: snap.exists() ? ((snap.get("rsvp") as boolean) ?? false) : false,
         remind: snap.exists() ? ((snap.get("remind") as boolean) ?? false) : false,
       }),
+    );
+  }, [showtime.id, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    return onSnapshot(doc(db, "showtimes", showtime.id, "waitlist", user.uid), (snap) =>
+      setWaitlisted(snap.exists()),
     );
   }, [showtime.id, user]);
 
@@ -120,21 +128,6 @@ export function ShowtimeRoom({
       });
     });
   }, [showtime.id]);
-
-  // Who's actually in the room. Freshness is judged here against the ticking clock rather
-  // than by a query bound, since the cutoff moves every second.
-  useEffect(() => {
-    if (!open) return;
-    return onSnapshot(collection(db, "showtimes", showtime.id, "presence"), (snap) => {
-      const cutoff = Date.now() - PRESENCE_STALE_AFTER_MS;
-      setPresentCount(
-        snap.docs.filter((d) => {
-          const at = (d.get("presentAt") as { toMillis?: () => number })?.toMillis?.() ?? 0;
-          return at > cutoff;
-        }).length,
-      );
-    });
-  }, [showtime.id, open]);
 
   // Pre-show / live chat. Newest-first + reverse, matching Android and boards: an ascending
   // limit would pin the window to the room's oldest messages.
@@ -260,8 +253,27 @@ export function ShowtimeRoom({
                 <Play className="h-4 w-4 fill-current" aria-hidden />
                 {live ? dict.theaterEnter : dict.theaterEnterLobby}
               </Link>
+            ) : waitlisted ? (
+              <button
+                type="button"
+                onClick={() => run(() => setRsvp(showtime.id, false))}
+                disabled={pending}
+                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-lg border border-surface-border px-5 text-sm font-medium text-ink hover:bg-surface-hover disabled:opacity-60"
+              >
+                <Hourglass className="h-4 w-4 text-gold" aria-hidden />
+                {dict.theaterWaitlistLeave}
+              </button>
             ) : full && !attendance.going ? (
-              <p className="text-sm font-medium text-red-400">{dict.theaterFullMessage}</p>
+              // Queue rather than refuse — a sold-out premiere is exactly when someone most
+              // wants telling that a seat opened, and cancellations are common.
+              <button
+                type="button"
+                onClick={() => run(() => setRsvp(showtime.id, true))}
+                disabled={pending || !user}
+                className="h-10 whitespace-nowrap rounded-lg bg-brand-500 px-5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-60"
+              >
+                {dict.theaterWaitlistJoin}
+              </button>
             ) : attendance.going ? (
               <button
                 type="button"
@@ -311,7 +323,7 @@ export function ShowtimeRoom({
           <Users className="h-4 w-4" aria-hidden />
           {attendeeLabel}
         </h2>
-        {open && <p className="mt-0.5 text-sm text-brand-400">{dict.theaterInRoomNow.replace("{n}", String(presentCount))}</p>}
+        {open && <p className="mt-0.5 text-sm text-brand-400">{dict.theaterInRoomNow.replace("{n}", String(showtime.presentCount))}</p>}
 
         {attendees.length > 0 && (
           <ul className="mt-3 flex flex-wrap gap-3">

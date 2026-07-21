@@ -32,6 +32,7 @@ export async function createShowtime(input: {
   capacity: number;
   isPremiere: boolean;
   recurrence?: string;
+  boardId?: string;
 }): Promise<void> {
   await assertAdmin();
 
@@ -59,6 +60,10 @@ export async function createShowtime(input: {
     // startAt forward, so startAt + durationMs moves with it.
     durationMs: Math.max(0, (movie.duration ?? 0) * 60_000),
     recurrence,
+    // Always written, never omitted: both the read rule and the lineup query test this field,
+    // and a missing one would make the showtime invisible rather than public.
+    boardId: input.boardId ?? "",
+    waitlistCount: 0,
     createdAt: FieldValue.serverTimestamp(),
   });
 

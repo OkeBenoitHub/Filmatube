@@ -188,6 +188,7 @@ private fun actionText(type: String): String = stringResource(
         NotificationTypes.THEATER_STARTING -> R.string.notif_theater_starting
         NotificationTypes.FRIEND_IN_THEATER -> R.string.notif_friend_in_theater
         NotificationTypes.THEATER_POSTSHOW -> R.string.notif_theater_postshow
+        NotificationTypes.THEATER_SEAT_FREE -> R.string.notif_theater_seat_free
         else -> R.string.notif_recommendation
     },
 )

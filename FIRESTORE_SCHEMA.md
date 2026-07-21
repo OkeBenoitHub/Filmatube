@@ -246,6 +246,9 @@ createdAt       Timestamp
 Also written by the admin CMS / automation:
 ```
 durationMs      number    (denormalized movie runtime — how the automation knows when to end)
+boardId         string    ("" = public; otherwise private to that board)
+waitlistCount   number
+presentCount    number    (server-maintained; see presence below)
 recurrence      string    ("none" | "daily" | "weekly")
 recurrenceSpawned boolean (guard: the next occurrence has already been queued)
 endedAt         Timestamp
@@ -267,6 +270,21 @@ A late status flip is cosmetic — clients derive position from `startAt`, not f
 Heartbeat while actually watching (~30s), stale after 90s. Deliberately **not** the attendees
 doc: an RSVP is intent, presence is fact, and merging them would let walking into a room
 inflate the `attendeesCount` shown before it starts.
+
+Clients read the denormalized `presentCount` rather than subscribing to this subcollection.
+With N viewers all heartbeating, a collection listener delivers N documents to N listeners —
+O(N²), roughly a million reads per 30s at a thousand viewers. `syncShowtimePresence` maintains
+the counter on arrival/departure, and `processTheaterSchedule` sweeps records whose heartbeat
+stopped (an app killed without a clean exit), whose deletes come back as decrements.
+
+### `showtimes/{showtimeId}/waitlist/{userId}` → `{ userId, joinedAt }`
+Queue for a seat once the room is full. `promoteFromWaitlist` pulls the longest-waiting person
+in when an attendee leaves, claiming the place by deleting the entry *first* so two concurrent
+departures can't promote the same person twice.
+
+**Private screenings** set `boardId`; only that board's members may read or join. The read rule
+means a list query must constrain `boardId` itself — a query that *could* return a private
+showtime fails outright rather than filtering it out — so both clients query with `boardId == ""`.
 ### `showtimes/{showtimeId}/friendNotified/{userId}` → `{ at }`
 Function-only marker so "a friend is in a theater" fires once per viewer per showing.
 `showtimes.remindSentAt` is the matching guard for the "starting soon" reminder.

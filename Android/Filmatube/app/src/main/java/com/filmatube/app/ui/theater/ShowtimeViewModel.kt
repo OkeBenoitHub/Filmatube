@@ -8,7 +8,6 @@ import com.filmatube.app.data.theater.Showtime
 import com.filmatube.app.data.theater.TheaterAttendance
 import com.filmatube.app.data.theater.TheaterAttendee
 import com.filmatube.app.data.theater.TheaterMessage
-import com.filmatube.app.data.theater.TheaterPresence
 import com.filmatube.app.data.theater.TheaterRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,6 +39,15 @@ class ShowtimeViewModel @Inject constructor(
     val showtime: StateFlow<Showtime?> = theaterRepository.observeShowtime(showtimeId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    /**
+     * True once a snapshot has actually arrived. Without it a null showtime is ambiguous —
+     * still loading, or deleted — and the screen would show "this showing is gone" for a
+     * moment on every open.
+     */
+    val loaded: StateFlow<Boolean> = theaterRepository.observeShowtime(showtimeId)
+        .map { true }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
     val attendance: StateFlow<TheaterAttendance> = theaterRepository.observeMyAttendance(showtimeId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TheaterAttendance())
 
@@ -51,9 +59,15 @@ class ShowtimeViewModel @Inject constructor(
     val messages: StateFlow<List<TheaterMessage>> = theaterRepository.observeMessages(showtimeId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    /** Who is in the room right now — only meaningful once the doors are open. */
-    val present: StateFlow<List<TheaterPresence>> = theaterRepository.observePresence(showtimeId)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    /**
+     * Who is in the room right now, read off the showtime doc we already watch.
+     *
+     * Subscribing to the presence subcollection instead would deliver every viewer's
+     * heartbeat to every viewer — O(N^2) reads, which a full room cannot afford.
+     */
+    val presentCount: StateFlow<Int> = showtime
+        .map { it?.presentCount ?: 0 }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 
     private val _draft = MutableStateFlow("")
     val draft: StateFlow<String> = _draft.asStateFlow()
@@ -75,11 +89,15 @@ class ShowtimeViewModel @Inject constructor(
     // ── RSVP ──────────────────────────────────────────────────────────────
 
     fun toggleRsvp() {
-        val going = attendance.value.going
+        val current = attendance.value
+        // Either state counts as "in" — tapping again should get you out of both.
+        val isIn = current.going || current.waitlisted
+        val full = showtime.value?.isFull == true
+
         viewModelScope.launch {
             _busy.value = true
             // Opting in turns reminders on by default; that's the point of the RSVP.
-            theaterRepository.setRsvp(showtimeId, going = !going, remind = true)
+            theaterRepository.setRsvp(showtimeId, going = !isIn, remind = true, full = full)
             _busy.value = false
         }
     }

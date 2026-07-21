@@ -72,6 +72,101 @@ exports.syncShowtimeAttendees = onDocumentWritten(
   },
 );
 
+/**
+ * Keep `presentCount` on the showtime in step with the presence subcollection.
+ *
+ * This exists to kill an O(N^2) fanout. Clients used to subscribe to the whole presence
+ * collection to count who was in the room: with N viewers each heartbeating every 30s, that
+ * delivered N documents to N listeners — 1,000 viewers meant ~1M document reads per 30s.
+ * One denormalized number on a document everyone already watches makes it O(N) writes and
+ * zero extra listeners.
+ *
+ * Heartbeats are updates, not creates, so they don't move the count; only arrivals and
+ * departures do. Stale entries (app killed without a clean exit) are swept by
+ * `processTheaterSchedule`, whose deletes come back through here as decrements.
+ */
+exports.syncShowtimePresence = onDocumentWritten(
+  { document: "showtimes/{showtimeId}/presence/{userId}", region: "europe-west4" },
+  async (event) => {
+    const delta = (event.data?.after?.exists ? 1 : 0) - (event.data?.before?.exists ? 1 : 0);
+    if (delta === 0) return;
+    await db
+      .collection("showtimes")
+      .doc(event.params.showtimeId)
+      .set({ presentCount: FieldValue.increment(delta) }, { merge: true });
+  },
+);
+
+/** Keep `waitlistCount` in step, mirroring how attendeesCount is maintained. */
+exports.syncShowtimeWaitlist = onDocumentWritten(
+  { document: "showtimes/{showtimeId}/waitlist/{userId}", region: "europe-west4" },
+  async (event) => {
+    const delta = (event.data?.after?.exists ? 1 : 0) - (event.data?.before?.exists ? 1 : 0);
+    if (delta === 0) return;
+    await db
+      .collection("showtimes")
+      .doc(event.params.showtimeId)
+      .set({ waitlistCount: FieldValue.increment(delta) }, { merge: true });
+  },
+);
+
+/**
+ * When someone gives up a seat, pull the longest-waiting person in off the waitlist.
+ *
+ * Runs on attendee *removal* rather than on a schedule so the seat is filled in seconds —
+ * a cancellation an hour before a premiere is worth nothing to the queue if it's noticed
+ * after the film has started.
+ */
+exports.promoteFromWaitlist = onDocumentWritten(
+  { document: "showtimes/{showtimeId}/attendees/{userId}", region: "europe-west4" },
+  async (event) => {
+    // Only a departure frees a seat.
+    if (!event.data?.before?.exists || event.data?.after?.exists) return;
+
+    const showtimeId = event.params.showtimeId;
+    const ref = db.collection("showtimes").doc(showtimeId);
+    const showtime = await ref.get();
+    if (!showtime.exists || showtime.get("status") === "ended") return;
+
+    const capacity = showtime.get("capacity") || 0;
+    if (capacity <= 0) return; // unlimited rooms never have a queue
+
+    // Read the count from the attendees collection rather than the denormalized field:
+    // syncShowtimeAttendees may not have applied its decrement yet, and acting on a stale
+    // count here would either overfill the room or refuse to promote anyone.
+    const seated = await ref.collection("attendees").count().get();
+    let free = capacity - seated.data().count;
+    if (free <= 0) return;
+
+    const queue = await ref.collection("waitlist").orderBy("joinedAt", "asc").limit(free).get();
+    for (const entry of queue.docs) {
+      try {
+        // Claim the place by deleting it first: two concurrent departures would otherwise
+        // both promote the same person and double-count the seat.
+        await entry.ref.delete();
+        await ref.collection("attendees").doc(entry.id).set({
+          rsvp: true,
+          remind: true,
+          joinedAt: FieldValue.serverTimestamp(),
+        });
+        await notifyUser(entry.id, {
+          type: "theater_seat_free",
+          category: "content",
+          title: showtime.get("movieTitle") || "",
+          body: "A seat opened up — you're in.",
+          route: `filmatube://showtime/${showtimeId}`,
+          extra: { showtimeId, movieId: showtime.get("movieId") || "" },
+        });
+        free -= 1;
+        console.log(`showtime ${showtimeId}: promoted ${entry.id} from the waitlist`);
+      } catch (e) {
+        console.error(`showtime ${showtimeId}: could not promote ${entry.id}`, e);
+      }
+      if (free <= 0) break;
+    }
+  },
+);
+
 /** Deliver one notification: inbox doc + FCM push, honoring the channel opt-in. */
 async function notifyUser(uid, { type, category, title, body, route, extra }) {
   const settings = await db.collection("users").doc(uid).collection("settings").doc("notifications").get();
@@ -108,6 +203,8 @@ async function notifyUser(uid, { type, category, title, body, route, extra }) {
 const LOBBY_LEAD_MS = 15 * 60e3;
 /** Fallback runtime when a showtime predates the denormalized `durationMs`. */
 const FALLBACK_RUNTIME_MS = 3 * 3600e3;
+/** A presence record older than this is treated as gone. Mirrors both clients. */
+const PRESENCE_STALE_AFTER_MS = 90e3;
 
 const RECURRENCE_STEP_MS = {
   daily: 24 * 3600e3,
@@ -173,8 +270,38 @@ exports.processTheaterSchedule = onSchedule(
     console.log(`showtime ${doc.id}: live → ended`);
     await spawnRecurrence(doc);
   }
+
+  await sweepStalePresence(live.docs);
   },
 );
+
+/**
+ * Remove presence records whose heartbeat has stopped.
+ *
+ * Without this, `presentCount` only ever grows: a viewer whose app is killed never writes the
+ * delete that would decrement it, and the room would claim an audience long after everyone
+ * left. The deletes flow back through `syncShowtimePresence` as decrements.
+ */
+async function sweepStalePresence(showtimeDocs) {
+  const cutoff = Timestamp.fromMillis(Date.now() - PRESENCE_STALE_AFTER_MS);
+  for (const showtime of showtimeDocs) {
+    try {
+      const stale = await showtime.ref
+        .collection("presence")
+        .where("presentAt", "<=", cutoff)
+        .limit(200)
+        .get();
+      if (stale.empty) continue;
+
+      const batch = db.batch();
+      stale.docs.forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+      console.log(`showtime ${showtime.id}: swept ${stale.size} stale presence records`);
+    } catch (e) {
+      console.error(`showtime ${showtime.id}: presence sweep failed`, e);
+    }
+  }
+}
 
 /**
  * Queue the next occurrence of a recurring showtime.
@@ -209,6 +336,10 @@ async function spawnRecurrence(doc) {
       attendeesCount: 0,
       durationMs: doc.get("durationMs") ?? 0,
       recurrence: doc.get("recurrence"),
+      // Must be carried: the lineup query filters on boardId, so a repeat that omitted it
+      // would be created successfully and then never appear on the schedule.
+      boardId: doc.get("boardId") ?? "",
+      waitlistCount: 0,
       createdAt: FieldValue.serverTimestamp(),
     });
     console.log(`showtime ${doc.id}: queued next ${doc.get("recurrence")} occurrence`);

@@ -31,6 +31,9 @@ function mapShowtime(id: string, x: FirebaseFirestore.DocumentData): Showtime {
     capacity: (x.capacity as number) ?? 0,
     attendeesCount: (x.attendeesCount as number) ?? 0,
     pausedAtMs: toMillis(x.pausedAt),
+    boardId: (x.boardId as string) ?? "",
+    waitlistCount: (x.waitlistCount as number) ?? 0,
+    presentCount: (x.presentCount as number) ?? 0,
   };
 }
 
@@ -43,6 +46,9 @@ function mapShowtime(id: string, x: FirebaseFirestore.DocumentData): Showtime {
 export async function getLineup(limit = 50): Promise<Showtime[]> {
   const snap = await getAdminDb()
     .collection("showtimes")
+    // Public only. Board-private screenings are reached from their board, and the read rule
+    // would reject a query that could return one.
+    .where("boardId", "==", "")
     .where("status", "in", OPEN_STATUSES)
     .orderBy("startAt", "asc")
     .limit(limit)

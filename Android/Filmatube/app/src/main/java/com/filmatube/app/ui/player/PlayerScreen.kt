@@ -75,7 +75,7 @@ fun PlayerScreen(
     val theaterMessages by viewModel.theaterMessages.collectAsStateWithLifecycle()
     val theaterReactions by viewModel.theaterReactions.collectAsStateWithLifecycle()
     val theaterThrottled by viewModel.theaterThrottled.collectAsStateWithLifecycle()
-    val theaterPresent by viewModel.theaterPresent.collectAsStateWithLifecycle()
+    val theaterPresentCount by viewModel.theaterPresentCount.collectAsStateWithLifecycle()
     val joinedMidShowAtMs by viewModel.joinedMidShowAtMs.collectAsStateWithLifecycle()
     // Emoji already animated away — kept out of the render so they don't replay on recomposition.
     val spentReactions = remember { mutableStateListOf<String>() }
@@ -318,7 +318,7 @@ fun PlayerScreen(
             // ── Theater overlay (Days 159–160) ────────────────────
             if (viewModel.isTheater && !theaterEnded) {
                 // Live indicator + how many people are actually in the room right now.
-                val presentNow = theaterPresent.count { it.isFresh(System.currentTimeMillis()) }
+                val presentNow = theaterPresentCount
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier

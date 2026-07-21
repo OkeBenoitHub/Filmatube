@@ -52,6 +52,18 @@ data class Showtime(
      * edit to the schedule itself, written by the admin console (web Day 167).
      */
     val pausedAtMs: Long = 0L,
+    /** Non-empty when the screening is private to one board — only members may see or join. */
+    val boardId: String = "",
+    /** How many people are queued for a seat once the room is full. */
+    val waitlistCount: Int = 0,
+    /**
+     * How many people are in the room right now, maintained server-side.
+     *
+     * Denormalized deliberately: counting by subscribing to the presence subcollection meant
+     * every viewer received every other viewer heartbeat — O(N^2) document delivery, which
+     * at a thousand viewers is roughly a million reads every 30 seconds.
+     */
+    val presentCount: Int = 0,
 ) {
     val isPaused: Boolean get() = pausedAtMs > 0L
     val isLive: Boolean get() = status == ShowtimeStatus.LIVE
@@ -93,6 +105,8 @@ data class TheaterAttendee(
 data class TheaterAttendance(
     val going: Boolean = false,
     val remind: Boolean = false,
+    /** Queued for a seat because the room was full when I asked. */
+    val waitlisted: Boolean = false,
 )
 
 /**
@@ -163,6 +177,9 @@ class TheaterRepository @Inject constructor(
      */
     fun observeLineup(limit: Long = 50): Flow<List<Showtime>> = callbackFlow {
         val registration = showtimes
+            // Public only. Board-private screenings are reached from their board, and the
+            // read rule rejects a query that could return one rather than filtering it out.
+            .whereEqualTo("boardId", "")
             .whereIn("status", ShowtimeStatus.OPEN)
             .orderBy("startAt", Query.Direction.ASCENDING)
             .limit(limit)
@@ -180,6 +197,9 @@ class TheaterRepository @Inject constructor(
                         capacity = (d.getLong("capacity") ?: 0L).toInt(),
                         attendeesCount = (d.getLong("attendeesCount") ?: 0L).toInt(),
                         pausedAtMs = d.getTimestamp("pausedAt")?.toDate()?.time ?: 0L,
+                        boardId = d.getString("boardId") ?: "",
+                        waitlistCount = (d.getLong("waitlistCount") ?: 0L).toInt(),
+                        presentCount = (d.getLong("presentCount") ?: 0L).toInt(),
                     )
                 } ?: emptyList())
             }
@@ -203,6 +223,9 @@ class TheaterRepository @Inject constructor(
                         capacity = (d.getLong("capacity") ?: 0L).toInt(),
                         attendeesCount = (d.getLong("attendeesCount") ?: 0L).toInt(),
                         pausedAtMs = d.getTimestamp("pausedAt")?.toDate()?.time ?: 0L,
+                        boardId = d.getString("boardId") ?: "",
+                        waitlistCount = (d.getLong("waitlistCount") ?: 0L).toInt(),
+                        presentCount = (d.getLong("presentCount") ?: 0L).toInt(),
                     )
                 },
             )
@@ -238,31 +261,56 @@ class TheaterRepository @Inject constructor(
     private fun attendeeDoc(showtimeId: String, uid: String) =
         showtimes.document(showtimeId).collection("attendees").document(uid)
 
+    private fun waitlistDoc(showtimeId: String, uid: String) =
+        showtimes.document(showtimeId).collection("waitlist").document(uid)
+
     /**
-     * RSVP to a showtime, or cancel it.
+     * RSVP to a showtime, or cancel it. Returns true when the seat went to a waitlist.
      *
      * Only the attendee doc is touched: `attendeesCount` on the showtime is maintained by
      * the `syncShowtimeAttendees` Cloud Function, because rules keep showtime docs
      * admin-writable. (Boards let clients bump their own memberCount; a public theater is
      * a bigger spoofing target, so the count is server-owned here.)
+     *
+     * A full room queues instead of refusing — a sold-out premiere is exactly when someone
+     * most wants telling that a seat opened, and `promoteFromWaitlist` pulls them in.
      */
-    suspend fun setRsvp(showtimeId: String, going: Boolean, remind: Boolean = true) =
-        withContext(ioDispatcher) {
-            val uid = myUid ?: return@withContext
-            runCatching {
-                if (going) {
-                    attendeeDoc(showtimeId, uid).set(
-                        mapOf(
-                            "rsvp" to true,
-                            "remind" to remind,
-                            "joinedAt" to FieldValue.serverTimestamp(),
-                        ),
-                    ).await()
-                } else {
-                    attendeeDoc(showtimeId, uid).delete().await()
-                }
-            }
+    suspend fun setRsvp(
+        showtimeId: String,
+        going: Boolean,
+        remind: Boolean = true,
+        full: Boolean = false,
+    ): Boolean = withContext(ioDispatcher) {
+        val uid = myUid ?: return@withContext false
+        if (!going) {
+            // Leaving frees a seat, so drop out of both lists.
+            runCatching { attendeeDoc(showtimeId, uid).delete().await() }
+            runCatching { waitlistDoc(showtimeId, uid).delete().await() }
+            return@withContext false
         }
+
+        val alreadySeated = runCatching { attendeeDoc(showtimeId, uid).get().await().exists() }
+            .getOrDefault(false)
+        if (full && !alreadySeated) {
+            runCatching {
+                waitlistDoc(showtimeId, uid).set(
+                    mapOf("userId" to uid, "joinedAt" to FieldValue.serverTimestamp()),
+                ).await()
+            }
+            return@withContext true
+        }
+
+        runCatching {
+            attendeeDoc(showtimeId, uid).set(
+                mapOf(
+                    "rsvp" to true,
+                    "remind" to remind,
+                    "joinedAt" to FieldValue.serverTimestamp(),
+                ),
+            ).await()
+        }
+        false
+    }
 
     /** Toggle just the "remind me" flag, leaving the RSVP itself alone. */
     suspend fun setRemind(showtimeId: String, remind: Boolean) = withContext(ioDispatcher) {
@@ -272,7 +320,13 @@ class TheaterRepository @Inject constructor(
         }
     }
 
-    /** My RSVP state for a showtime, realtime. */
+    /**
+     * My RSVP state for a showtime, realtime — including whether I'm queued.
+     *
+     * Two listeners rather than one: being promoted off the waitlist is a server write to a
+     * *different* document, so watching only the attendee doc would leave someone staring at
+     * "you're on the waitlist" after a seat had already been given to them.
+     */
     fun observeMyAttendance(showtimeId: String): Flow<TheaterAttendance> = callbackFlow {
         val uid = myUid
         if (uid == null) {
@@ -280,19 +334,22 @@ class TheaterRepository @Inject constructor(
             awaitClose { }
             return@callbackFlow
         }
-        val registration = attendeeDoc(showtimeId, uid).addSnapshotListener { snap, _ ->
-            trySend(
-                if (snap?.exists() != true) {
-                    TheaterAttendance()
-                } else {
-                    TheaterAttendance(
-                        going = snap.getBoolean("rsvp") ?: false,
-                        remind = snap.getBoolean("remind") ?: false,
-                    )
-                },
-            )
+
+        var seated = false
+        var queued = false
+        var reminding = false
+        fun emit() = trySend(TheaterAttendance(going = seated, remind = reminding, waitlisted = queued))
+
+        val attendee = attendeeDoc(showtimeId, uid).addSnapshotListener { snap, _ ->
+            seated = snap?.exists() == true && (snap.getBoolean("rsvp") ?: false)
+            reminding = snap?.getBoolean("remind") ?: false
+            emit()
         }
-        awaitClose { registration.remove() }
+        val waitlist = waitlistDoc(showtimeId, uid).addSnapshotListener { snap, _ ->
+            queued = snap?.exists() == true
+            emit()
+        }
+        awaitClose { attendee.remove(); waitlist.remove() }
     }
 
     // ── presence (Day 160) ────────────────────────────────────────────────

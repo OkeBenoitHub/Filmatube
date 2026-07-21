@@ -238,6 +238,13 @@
     <string name="theater_over">This showing has ended.</string>
     <string name="theater_ended_notice">That\'s a wrap — the showing has ended.</string>
     <string name="theater_full_message">This screening is full.</string>
+    <string name="theater_gone_title">Showtime not found</string>
+    <string name="theater_gone_message">This screening is no longer on the schedule.</string>
+    <string name="theater_waitlist_join">Join the waitlist</string>
+    <string name="theater_waitlist_leave">On the waitlist</string>
+    <string name="theater_waitlist_count">%1$d waiting</string>
+    <string name="theater_private">Board only</string>
+    <string name="notif_theater_seat_free">a seat opened up — you\'re in</string>
     <string name="theater_capacity">%1$d of %2$d seats taken</string>
     <string name="theater_preshow_chat">Pre-show chat</string>
     <string name="theater_chat_empty">Say something while everyone settles in.</string>

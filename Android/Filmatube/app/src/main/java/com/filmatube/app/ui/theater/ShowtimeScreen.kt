@@ -21,8 +21,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.Theaters
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -56,6 +58,8 @@ import com.filmatube.app.data.theater.Showtime
 import com.filmatube.app.data.theater.ShowtimeStatus
 import com.filmatube.app.data.theater.TheaterAttendee
 import com.filmatube.app.data.theater.TheaterMessage
+import com.filmatube.app.ui.components.EmptyView
+import com.filmatube.app.ui.components.LoadingView
 import com.filmatube.app.ui.components.FilmatubePrimaryButton
 import com.filmatube.app.ui.components.FilmatubeTextField
 import com.filmatube.app.ui.components.FilmatubeSecondaryButton
@@ -79,10 +83,11 @@ fun ShowtimeScreen(
     viewModel: ShowtimeViewModel = hiltViewModel(),
 ) {
     val showtime by viewModel.showtime.collectAsStateWithLifecycle()
+    val loaded by viewModel.loaded.collectAsStateWithLifecycle()
     val attendance by viewModel.attendance.collectAsStateWithLifecycle()
     val attendees by viewModel.attendees.collectAsStateWithLifecycle()
     val messages by viewModel.messages.collectAsStateWithLifecycle()
-    val present by viewModel.present.collectAsStateWithLifecycle()
+    val presentCount by viewModel.presentCount.collectAsStateWithLifecycle()
     val draft by viewModel.draft.collectAsStateWithLifecycle()
     val spoiler by viewModel.spoiler.collectAsStateWithLifecycle()
     val busy by viewModel.busy.collectAsStateWithLifecycle()
@@ -117,7 +122,26 @@ fun ShowtimeScreen(
             )
         },
     ) { padding ->
-        val s = showtime ?: return@Scaffold
+        // Was a bare early return, which rendered an empty screen both while loading and if
+        // the showtime was deleted out from under you — indistinguishable from a hang.
+        val s = showtime
+        if (s == null) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(padding),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (loaded) {
+                    EmptyView(
+                        icon = Icons.Outlined.Theaters,
+                        title = stringResource(R.string.theater_gone_title),
+                        message = stringResource(R.string.theater_gone_message),
+                    )
+                } else {
+                    LoadingView()
+                }
+            }
+            return@Scaffold
+        }
         val inLobby = s.status == ShowtimeStatus.LOBBY
 
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -144,16 +168,26 @@ fun ShowtimeScreen(
                             leadingIcon = Icons.Filled.PlayArrow,
                             modifier = Modifier.fillMaxWidth(),
                         )
-                        // A full room can still be watched later, but not reserved now.
-                        s.isFull && !attendance.going -> Text(
-                            stringResource(R.string.theater_full_message),
-                            color = MaterialTheme.colorScheme.error,
+                        attendance.waitlisted -> FilmatubeSecondaryButton(
+                            text = stringResource(R.string.theater_waitlist_leave),
+                            onClick = viewModel::toggleRsvp,
+                            enabled = !busy,
+                            leadingIcon = Icons.Filled.HourglassEmpty,
+                            modifier = Modifier.fillMaxWidth(),
                         )
                         attendance.going -> FilmatubeSecondaryButton(
                             text = stringResource(R.string.theater_rsvp_cancel),
                             onClick = viewModel::toggleRsvp,
                             enabled = !busy,
                             leadingIcon = Icons.Filled.Check,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        // A full room queues you rather than turning you away — cancellations
+                        // are common, and this is exactly when you want telling.
+                        s.isFull -> FilmatubePrimaryButton(
+                            text = stringResource(R.string.theater_waitlist_join),
+                            onClick = viewModel::toggleRsvp,
+                            enabled = !busy,
                             modifier = Modifier.fillMaxWidth(),
                         )
                         else -> FilmatubePrimaryButton(
@@ -209,9 +243,8 @@ fun ShowtimeScreen(
                         )
                         // Once the doors open, "here now" is the number that matters.
                         if (s.isOpen) {
-                            val presentNow = present.count { it.isFresh(nowMs) }
                             Text(
-                                stringResource(R.string.theater_in_room_now, presentNow),
+                                stringResource(R.string.theater_in_room_now, presentCount),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary,
                             )

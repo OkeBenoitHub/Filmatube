@@ -308,8 +308,22 @@ service cloud.firestore {
     // Showtimes are admin-scheduled and machine-advanced (Day 170); clients only read
     // the lineup and write their own attendee doc.
     match /showtimes/{showtimeId} {
-      allow read: if isSignedIn();
+      // A private screening belongs to one board and only its members may see it. Note the
+      // consequence for the lineup: a list query must constrain `boardId` itself, because a
+      // query that could return a private showtime fails outright rather than filtering it
+      // out. Both clients query public showtimes with `boardId == ""`.
+      allow read: if isSignedIn() && (
+        resource.data.get('boardId', '') == ''
+        || request.auth.uid in get(/databases/$(database)/documents/boards/$(resource.data.boardId)).data.memberIds
+      );
       allow write: if isAdmin();
+
+      // Queue for a seat once the room is full; a Cloud Function promotes from here when
+      // one frees up. Entries are self-written but never self-promoted.
+      match /waitlist/{userId} {
+        allow read: if isSignedIn();
+        allow write: if isSelf(userId);
+      }
 
       match /attendees/{userId} {
         allow read: if isSignedIn();

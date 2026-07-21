@@ -40,6 +40,20 @@ export interface Showtime {
    * an edit to the schedule itself. See [playbackPositionMs].
    */
   pausedAtMs: number;
+  /**
+   * Set when the screening is private to one board — only its members may see or join.
+   * Empty means public, which is the default and the common case.
+   */
+  boardId: string;
+  /** How many people are queued for a seat once the room is full. */
+  waitlistCount: number;
+  /**
+   * How many people are in the room right now, maintained server-side.
+   *
+   * Denormalized deliberately: counting via the presence subcollection delivered every
+   * viewer heartbeat to every viewer — O(N^2) reads, which a full room cannot afford.
+   */
+  presentCount: number;
 }
 
 export interface ShowtimeAttendee {

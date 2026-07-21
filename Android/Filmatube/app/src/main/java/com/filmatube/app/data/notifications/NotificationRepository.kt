@@ -28,6 +28,7 @@ object NotificationTypes {
     const val THEATER_STARTING = "theater_starting"
     const val FRIEND_IN_THEATER = "friend_in_theater"
     const val THEATER_POSTSHOW = "theater_postshow"
+    const val THEATER_SEAT_FREE = "theater_seat_free"
     const val SYSTEM = "system"
 
     /** Push channel category for a given in-app notification type. */

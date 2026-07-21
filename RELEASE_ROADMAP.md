@@ -295,10 +295,10 @@
 - **Day 169** ✅ — **Premiere** type: first public screening of a new release; premiere badge/branding (gold, not brand green, so it reads as rare against ordinary showtimes).
 - **Day 170 (B)** ✅ — Theater automation (`processTheaterSchedule`, every minute): auto lobby → live → ended via denormalized `durationMs`; recurring showtimes (daily/weekly). No clock to publish — the wall-clock model means `startAt` **is** the sync clock.
 - **Day 171** ✅ — Post-show → discussion board (reuses the movie's existing board if it has one) + "rate it now" prompt to everyone who actually attended.
-- **Day 172** — Capacity/waitlist handling; private (board-only) theaters.
-- **Day 173** — Android theater polish + edge cases.
-- **Day 174** — Concurrency/load testing (sync clock under many viewers).
-- **Day 175** — Week review.
+- **Day 172** ✅ — Capacity/waitlist (a full room queues you rather than refusing; a Cloud Function promotes when a seat frees); private board-only theaters via `boardId`.
+- **Day 173** ✅ — Android theater polish: loading vs. deleted states on the showtime screen (a bare early return rendered an empty screen for both).
+- **Day 174** ✅ — Concurrency/load review. The wall-clock sync is already O(1) per viewer; the real defect was presence — a collection listener per viewer made counting O(N²) (~1M reads/30s at 1k viewers). Now a server-maintained `presentCount` with a stale sweep.
+- **Day 175** ✅ — Week review. **Week 25 complete** (premieres, automation, waitlist, private theaters).
 
 ### Week 26 — Theater QA + **v1.2 Release** (Days 176–182) (W/B)
 - **Day 176** — Theater parity QA (Android↔web).

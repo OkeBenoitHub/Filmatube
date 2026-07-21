@@ -50,6 +50,8 @@ export async function getAdminShowtimes(limit = 100): Promise<AdminShowtime[]> {
         capacity: (x.capacity as number) ?? 0,
         attendeesCount,
         pausedAtMs: toMillis(x.pausedAt),
+        boardId: (x.boardId as string) ?? "",
+        waitlistCount: (x.waitlistCount as number) ?? 0,
         presentCount,
         chatCount: chat.data().count,
         turnoutRate: attendeesCount > 0 ? presentCount / attendeesCount : null,
