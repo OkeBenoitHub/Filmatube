@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { getLocale } from "@/lib/i18n/server";
 import { getMovie, getPublishedMovies, localized, pickRelated } from "@/lib/movies";
 import { getParty } from "@/lib/parties";
+import { getShowtime, isOpen } from "@/lib/theater";
 
 /**
  * Full-screen web player route. The actual <video> is rendered by the persistent
@@ -27,6 +28,18 @@ export default async function WatchMoviePage({
   const party = requestedParty ? await getParty(requestedParty, user.uid) : null;
   const partyId = party && party.status === "live" && party.movieId === id ? party.id : null;
 
+  // Unlike a party, a showtime is public — no membership check, just that the room is
+  // actually open and actually for this movie (a guessed ?showtime= for another film
+  // shouldn't silently attach the wrong sync engine).
+  //
+  // Only one engine may drive the playhead: `?party=X&showtime=Y` would otherwise attach
+  // both, and they'd fight over currentTime every few seconds. The party wins because it is
+  // membership-checked and private, so it's the more specific claim on this viewer.
+  const requestedShowtime = partyId ? null : typeof sp.showtime === "string" ? sp.showtime : null;
+  const showtime = requestedShowtime ? await getShowtime(requestedShowtime) : null;
+  const showtimeId = showtime && showtime.movieId === id && isOpen(showtime) ? showtime.id : null;
+  const theaterStartAtMs = showtime?.startAtMs ?? 0;
+
   const [locale, movie] = await Promise.all([getLocale(), getMovie(id)]);
   if (!movie || movie.isComingSoon) notFound();
 
@@ -45,6 +58,8 @@ export default async function WatchMoviePage({
       subtitles={movie.subtitleTracks}
       upNext={upNext}
       partyId={partyId}
+      showtimeId={showtimeId}
+      theaterStartAtMs={theaterStartAtMs}
     />
   );
 }

@@ -24,6 +24,10 @@ export interface ActiveMovie {
   upNext: UpNextMovie | null;
   /** Non-null when opened from a live watch-party lobby — enables the sync engine. */
   partyId: string | null;
+  /** Non-null when opened from an open showtime lobby — enables the theater sync engine. */
+  showtimeId: string | null;
+  /** The showtime's scheduled start — the wall-clock anchor the theater engine converges on. */
+  theaterStartAtMs: number;
 }
 
 interface MiniPlayerContext {

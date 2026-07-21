@@ -20,6 +20,8 @@ import { db } from "@/lib/firebase";
 import { PartyPlayerOverlay } from "@/components/parties/PartyPlayerOverlay";
 import { useI18n } from "@/components/providers/LocaleProvider";
 import { usePartySync } from "@/components/parties/usePartySync";
+import { TheaterPlayerOverlay } from "@/components/theater/TheaterPlayerOverlay";
+import { useTheaterSync } from "@/components/theater/useTheaterSync";
 import { logPlayerEvent } from "@/lib/analytics";
 import { useAuth } from "@/components/providers/AuthProvider";
 import type { ActiveMovie } from "@/components/player/MiniPlayerProvider";
@@ -96,6 +98,17 @@ export function PersistentPlayer({
   const videoRef = useRef<HTMLVideoElement>(null);
   // Watch-party sync engine: no-op unless this movie was opened from a live lobby.
   const party = usePartySync(active.partyId, videoRef);
+  // Theater sync engine: no-op unless opened from an open showtime lobby. Distinct from
+  // the party engine — a public screening has no host, so nobody's transport is authoritative.
+  const theater = useTheaterSync(active.showtimeId, active.theaterStartAtMs, videoRef);
+  const transportDisabled = party.isParty ? !party.isHost : theater.isTheater;
+  /**
+   * A sync engine owns the playhead. Autoplay and solo resume must both stand down: the
+   * engine decides when playback starts (during a theater lobby that's "not yet") and where
+   * it starts from, so letting the element autoplay from 0:00 or seek to a saved position
+   * puts the viewer somewhere the room isn't until the next correction yanks them back.
+   */
+  const isSynced = party.isParty || theater.isTheater;
   const containerRef = useRef<HTMLDivElement>(null);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const appliedResume = useRef(false);
@@ -278,6 +291,9 @@ export function PersistentPlayer({
     const v = videoRef.current;
     const ref = progressRef();
     if (!v || !ref || appliedResume.current) return;
+    // Synced playback owns the playhead — a solo resume would seek somewhere the room isn't
+    // and be visibly yanked back by the next correction. Matches the Android gate.
+    if (isSynced) return;
     appliedResume.current = true;
     try {
       const snap = await getDoc(ref);
@@ -292,7 +308,7 @@ export function PersistentPlayer({
     } catch {
       /* ignore */
     }
-  }, [progressRef]);
+  }, [progressRef, isSynced]);
 
   useEffect(() => {
     if (!uid) return;
@@ -326,12 +342,14 @@ export function PersistentPlayer({
 
   const togglePlay = useCallback(() => {
     // Party guests don't drive playback — the host is authoritative (rules enforce it too).
-    if (party.isParty && !party.isHost) return;
+    // In the theater NOBODY drives it — a public screening runs on the wall clock, so there
+    // is no "host" to hand transport to.
+    if (transportDisabled) return;
     const v = videoRef.current;
     if (!v) return;
     if (v.paused) v.play();
     else v.pause();
-  }, [party.isParty, party.isHost]);
+  }, [transportDisabled]);
 
   const toggleMute = useCallback(() => {
     const v = videoRef.current;
@@ -347,17 +365,20 @@ export function PersistentPlayer({
 
   const seek = useCallback(
     (value: number) => {
-      if (party.isParty && !party.isHost) return;
+      if (transportDisabled) return;
       const v = videoRef.current;
       if (v) v.currentTime = value;
     },
-    [party.isParty, party.isHost],
+    [transportDisabled],
   );
 
   const startOver = useCallback(() => {
+    // Same guard as seek(): "start over" is a seek to 0 by another name, and a synced
+    // viewer restarting the film would desync the whole room until the next correction.
+    if (transportDisabled) return;
     if (videoRef.current) videoRef.current.currentTime = 0;
     setResumeMs(null);
-  }, []);
+  }, [transportDisabled]);
 
   const toggleFullscreen = useCallback(() => {
     if (document.fullscreenElement) document.exitFullscreen();
@@ -389,11 +410,14 @@ export function PersistentPlayer({
           break;
         case "ArrowLeft":
           e.preventDefault();
-          v.currentTime = Math.max(0, v.currentTime - 5);
+          // Was setting v.currentTime directly, bypassing seek()'s transport guard — a
+          // party guest or theater viewer could nudge the position with arrow keys even
+          // though the on-screen scrub bar correctly refused them.
+          seek(Math.max(0, v.currentTime - 5));
           break;
         case "ArrowRight":
           e.preventDefault();
-          v.currentTime = Math.min(v.duration || Infinity, v.currentTime + 5);
+          seek(Math.min(v.duration || Infinity, v.currentTime + 5));
           break;
         case "ArrowUp":
           e.preventDefault();
@@ -416,7 +440,7 @@ export function PersistentPlayer({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [minimized, togglePlay, toggleMute, toggleFullscreen, changeVolume, revealControls]);
+  }, [minimized, togglePlay, seek, toggleMute, toggleFullscreen, changeVolume, revealControls]);
 
   useEffect(() => {
     const onFsChange = () => setFullscreen(Boolean(document.fullscreenElement));
@@ -432,7 +456,7 @@ export function PersistentPlayer({
           ref={videoRef}
           src={src}
           poster={active.poster || undefined}
-          autoPlay
+          autoPlay={!isSynced}
           className="filmatube-cue h-full w-full object-contain"
           onClick={minimized ? () => router.push(`/watch/${movieId}`) : togglePlay}
           onPlay={() => {
@@ -448,7 +472,10 @@ export function PersistentPlayer({
             setPlaying(false);
             saveProgress();
             logPlayerEvent("video_complete", { movie_id: movieId });
-            if (active.upNext && !upNextDismissed && sleepOption !== "end") {
+            // Never auto-navigate out of a synced room: the credits rolling doesn't mean the
+            // audience is done, and yanking them into an unrelated movie would drop the chat
+            // and the room with it. (Post-show flow proper arrives on Day 171.)
+            if (active.upNext && !upNextDismissed && sleepOption !== "end" && !isSynced) {
               logFeature("up_next");
               router.push(`/watch/${active.upNext.id}`);
             }
@@ -573,7 +600,7 @@ export function PersistentPlayer({
         </div>
       )}
 
-      {active.upNext && duration > 0 && !upNextDismissed && duration - current > 0 && duration - current <= 30 && (
+      {active.upNext && !isSynced && duration > 0 && !upNextDismissed && duration - current > 0 && duration - current <= 30 && (
         <div className="absolute bottom-24 right-4 z-20 flex w-72 gap-3 rounded-xl border border-surface-border bg-black/85 p-3 backdrop-blur">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={active.upNext.poster} alt="" className="h-20 w-14 shrink-0 rounded object-cover" />
@@ -636,6 +663,51 @@ export function PersistentPlayer({
         </>
       )}
 
+      {/* ── Online movie theater (Day 164) ──────────────────────── */}
+      {theater.isTheater && !minimized && active.showtimeId && (
+        <>
+          <TheaterPlayerOverlay showtimeId={active.showtimeId} dict={catalog} />
+
+          {!theater.ended && (
+            <p className="absolute left-1/2 top-4 z-30 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+              {catalog.theaterSyncedNotice}
+            </p>
+          )}
+
+          {/* Live indicator + how many people are actually in the room right now. */}
+          <p className="absolute right-4 top-4 z-30 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand-500" aria-hidden />
+            {catalog.theaterInRoomNow.replace("{n}", String(theater.presentCount))}
+          </p>
+
+          {/* Joined mid-show: say where we dropped in, then get out of the way. */}
+          {theater.joinedMidShowAtMs !== null && (
+            <JoinedMidShowNotice
+              positionMs={theater.joinedMidShowAtMs}
+              label={catalog.theaterJoinedMidShow}
+              onDone={theater.dismissJoinedMidShow}
+            />
+          )}
+
+          {/* Autoplay is blocked without a gesture — a viewer has no transport, so offer one tap. */}
+          {theater.needsGesture && (
+            <button
+              type="button"
+              onClick={theater.joinPlayback}
+              className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 text-sm font-semibold text-white"
+            >
+              <span className="rounded-full bg-brand-500 px-6 py-3">{catalog.theaterEnter}</span>
+            </button>
+          )}
+
+          {theater.ended && (
+            <p className="absolute left-1/2 top-16 z-40 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/75 px-4 py-2 text-sm font-semibold text-white">
+              {catalog.theaterEndedNotice}
+            </p>
+          )}
+        </>
+      )}
+
       {src && (
         <div
           className={cn(
@@ -650,11 +722,21 @@ export function PersistentPlayer({
             step={0.1}
             value={Math.min(current, duration || 0)}
             onChange={(e) => seek(Number(e.target.value))}
+            disabled={transportDisabled}
             aria-label={dict.seek}
-            className="h-1 w-full cursor-pointer accent-brand-500"
+            className={cn(
+              "h-1 w-full accent-brand-500",
+              transportDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
+            )}
           />
           <div className="mt-2 flex items-center gap-3 text-white">
-            <button type="button" onClick={togglePlay} aria-label={playing ? dict.pause : dict.play}>
+            <button
+              type="button"
+              onClick={togglePlay}
+              disabled={transportDisabled}
+              aria-label={playing ? dict.pause : dict.play}
+              className={transportDisabled ? "cursor-not-allowed opacity-50" : undefined}
+            >
               {playing ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 fill-current" />}
             </button>
             <button type="button" onClick={toggleMute} aria-label={muted ? dict.unmute : dict.mute}>
@@ -792,6 +874,28 @@ export function PersistentPlayer({
         </div>
       )}
     </div>
+  );
+}
+
+/** "Joined at 47:12 — you're in sync with the room", shown briefly then dismissed. */
+function JoinedMidShowNotice({
+  positionMs,
+  label,
+  onDone,
+}: {
+  positionMs: number;
+  label: string;
+  onDone: () => void;
+}) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 5000);
+    return () => clearTimeout(t);
+  }, [onDone]);
+
+  return (
+    <p className="absolute left-1/2 top-16 z-40 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/75 px-4 py-2 text-sm font-semibold text-white">
+      {label.replace("{t}", formatTime(positionMs / 1000))}
+    </p>
   );
 }
 
