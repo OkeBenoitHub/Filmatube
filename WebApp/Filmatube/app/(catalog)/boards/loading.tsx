@@ -5,7 +5,7 @@ export default function BoardsLoading() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 md:px-6">
       <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-end">
-        <Skeleton className="h-36 w-36 shrink-0 rounded-2xl sm:h-48 sm:w-48" />
+        <Skeleton className="h-24 w-24 shrink-0 rounded-2xl sm:h-28 sm:w-28" />
         <div className="w-full space-y-3">
           <Skeleton className="h-3 w-24" />
           <Skeleton className="h-12 w-64" />

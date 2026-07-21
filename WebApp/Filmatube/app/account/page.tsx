@@ -26,12 +26,14 @@ export default async function AccountPage() {
       <main className="mx-auto max-w-4xl px-4 py-10 md:px-6">
         {/* ── Hero (Spotitube pattern with the user's avatar as the tile) ── */}
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-end">
-          <div className="shrink-0 rounded-full shadow-2xl shadow-brand-900/50 ring-4 ring-brand-700/40">
-            <Avatar url={profile?.avatarUrl} name={profile?.displayName ?? ""} size={160} />
+          {/* Matches the 96–112px icon tile the other heroes use, so the account page doesn't
+              lead with a portrait twice the size of every other page's header. */}
+          <div className="shrink-0 rounded-full shadow-xl shadow-brand-900/40 ring-4 ring-brand-700/40">
+            <Avatar url={profile?.avatarUrl} name={profile?.displayName ?? ""} size={104} />
           </div>
           <div className="min-w-0 text-center sm:text-left">
             <p className="text-xs font-bold uppercase tracking-widest text-ink-muted">{a.eyebrow}</p>
-            <h1 className="mt-1 truncate text-4xl font-black leading-none tracking-tight text-ink md:text-6xl">
+            <h1 className="mt-1 truncate text-3xl font-black leading-tight tracking-tight text-ink md:text-4xl">
               {profile?.displayName || a.title}
             </h1>
             <p className="mt-2 text-sm text-ink-muted">{profile?.bio || a.subtitle}</p>

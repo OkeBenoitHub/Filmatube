@@ -23,6 +23,7 @@
     <string name="home_empty_title">Aucun film pour l\'instant</string>
     <string name="home_empty_message">De nouveaux films arrivent. Revenez bientôt.</string>
     <string name="detail_play">Regarder</string>
+    <string name="home_hero_info">Plus d\'infos</string>
     <string name="detail_back">Retour</string>
     <string name="detail_directed_by">Réalisé par %1$s</string>
     <string name="detail_cast">Distribution</string>
@@ -215,6 +216,39 @@
     <!-- Aperçus des sections -->
     <string name="search_subtitle">Trouvez n\'importe quel film en quelques secondes — par titre, genre, année ou note.</string>
     <string name="theater_subtitle">Des séances programmées et des premières en direct, regardées ensemble en synchro.</string>
+    <string name="theater_upcoming">À l\'affiche bientôt</string>
+    <string name="theater_premiere">Première</string>
+    <string name="theater_live_now">En direct</string>
+    <string name="theater_starting_now">Ça commence</string>
+    <string name="theater_countdown_days">dans %1$dj %2$dh</string>
+    <string name="theater_countdown_hours">dans %1$dh %2$dmin</string>
+    <string name="theater_countdown_minutes">dans %1$dmin %2$ds</string>
+    <string name="theater_going">%1$d participants</string>
+    <string name="theater_watching">%1$d spectateurs</string>
+    <string name="theater_full">Complet</string>
+    <string name="theater_empty_title">Aucune séance programmée</string>
+    <string name="theater_empty_message">Les prochaines séances s\'afficheront ici. Revenez bientôt.</string>
+    <string name="theater_showtime_title">Séance</string>
+    <string name="theater_rsvp">Réserver ma place</string>
+    <string name="theater_rsvp_cancel">Vous y êtes</string>
+    <string name="theater_remind_title">Me le rappeler</string>
+    <string name="theater_remind_subtitle">Recevez une notification juste avant le début.</string>
+    <string name="theater_enter">Entrer dans la salle</string>
+    <string name="theater_enter_lobby">Entrer dans le hall</string>
+    <string name="theater_over">Cette séance est terminée.</string>
+    <string name="theater_ended_notice">C\'est fini — la séance est terminée.</string>
+    <string name="theater_full_message">Cette séance est complète.</string>
+    <string name="theater_capacity">%1$d places sur %2$d occupées</string>
+    <string name="theater_preshow_chat">Discussion d\'avant-séance</string>
+    <string name="theater_chat_empty">Dites quelque chose pendant que tout le monde s\'installe.</string>
+    <string name="theater_chat_hint">Écrire à la salle</string>
+    <string name="theater_chat_too_fast">Patientez un instant avant de renvoyer un message.</string>
+    <string name="theater_now_showing">À l\'affiche maintenant</string>
+    <string name="theater_in_room_now">%1$d dans la salle</string>
+    <string name="theater_joined_mid_show">Vous arrivez à %1$s — synchronisé avec la salle</string>
+    <string name="notif_theater_starting">votre séance commence bientôt</string>
+    <string name="notif_friend_in_theater">regarde un film dans la salle</string>
+    <string name="notif_theater_postshow">c\'est fini — notez le film et rejoignez la discussion</string>
     <string name="community_subtitle">Forums de discussion, chat en temps réel et soirées cinéma avec vos proches.</string>
     <string name="profile_subtitle">Votre profil, vos statistiques, vos badges et votre bibliothèque — au même endroit.</string>
 
@@ -238,6 +272,23 @@
     <string name="browse_year">Année</string>
     <string name="browse_year_all">Toutes les années</string>
     <string name="browse_empty">Aucun film ne correspond à vos filtres.</string>
+    <string name="browse_empty_title">Rien ici</string>
+    <string name="browse_results">%1$d films</string>
+    <string name="browse_clear">Effacer</string>
+    <!-- En-têtes de page (même motif que le web : accroche + titre + sous-titre) -->
+    <string name="search_eyebrow">Trouver un film</string>
+    <string name="theater_eyebrow">Séances publiques</string>
+    <string name="feed_eyebrow">Votre cercle</string>
+    <string name="feed_subtitle">Ce que regardent les personnes que vous suivez.</string>
+    <string name="profile_eyebrow">Votre compte</string>
+    <string name="profile_link_notifications_desc">Abonnements, réponses et réactions</string>
+    <string name="profile_link_inbox_desc">Les films qu\'on vous recommande</string>
+    <string name="profile_link_people_desc">Trouvez des personnes qui partagent vos goûts</string>
+    <string name="profile_link_settings_desc">Lecture, langue et compte</string>
+    <string name="movie_options_title">Options du film</string>
+    <string name="movie_options_download">Télécharger</string>
+    <string name="movie_options_downloaded">Téléchargé</string>
+    <string name="movie_options_details">Plus d\'infos</string>
 
     <!-- Intégration (onboarding) -->
     <string name="onboarding_skip">Passer</string>
@@ -494,5 +545,12 @@
     <string name="landing_faq_q4">Quelles langues sont prises en charge ?</string>
     <string name="landing_faq_a4">L\'application est entièrement disponible en français et en anglais.</string>
     <string name="landing_footer">Fait pour ceux qui aiment le cinéma.</string>
+    <string name="auth_legal_consent">En créant un compte, vous acceptez nos %1$s et notre %2$s.</string>
+    <string name="landing_menu">Plus</string>
+    <string name="landing_terms">Conditions d\'utilisation</string>
+    <string name="landing_privacy">Confidentialité</string>
+    <string name="landing_share">Partager l\'appli</string>
+    <string name="landing_share_subject">Filmatube</string>
+    <string name="landing_share_text">Regardez des films ensemble sur Filmatube — séances, soirées et forums. %1$s</string>
     <string name="profile_about">À propos de Filmatube</string>
 </resources>

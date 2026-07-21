@@ -23,6 +23,7 @@
     <string name="home_empty_title">No movies yet</string>
     <string name="home_empty_message">New movies are on the way. Check back soon.</string>
     <string name="detail_play">Play</string>
+    <string name="home_hero_info">More info</string>
     <string name="detail_back">Back</string>
     <string name="detail_directed_by">Directed by %1$s</string>
     <string name="detail_cast">Cast</string>
@@ -215,6 +216,39 @@
     <!-- Feature previews -->
     <string name="search_subtitle">Find any movie in seconds — by title, genre, year or rating.</string>
     <string name="theater_subtitle">Scheduled showtimes and live premieres, watched together in sync.</string>
+    <string name="theater_upcoming">Coming up</string>
+    <string name="theater_premiere">Premiere</string>
+    <string name="theater_live_now">Live now</string>
+    <string name="theater_starting_now">Starting now</string>
+    <string name="theater_countdown_days">in %1$dd %2$dh</string>
+    <string name="theater_countdown_hours">in %1$dh %2$dm</string>
+    <string name="theater_countdown_minutes">in %1$dm %2$ds</string>
+    <string name="theater_going">%1$d going</string>
+    <string name="theater_watching">%1$d watching</string>
+    <string name="theater_full">Full</string>
+    <string name="theater_empty_title">No showtimes scheduled</string>
+    <string name="theater_empty_message">The next screenings will appear here. Check back soon.</string>
+    <string name="theater_showtime_title">Showtime</string>
+    <string name="theater_rsvp">Save my seat</string>
+    <string name="theater_rsvp_cancel">You\'re going</string>
+    <string name="theater_remind_title">Remind me</string>
+    <string name="theater_remind_subtitle">Get a notification just before it starts.</string>
+    <string name="theater_enter">Enter the theater</string>
+    <string name="theater_enter_lobby">Enter the lobby</string>
+    <string name="theater_over">This showing has ended.</string>
+    <string name="theater_ended_notice">That\'s a wrap — the showing has ended.</string>
+    <string name="theater_full_message">This screening is full.</string>
+    <string name="theater_capacity">%1$d of %2$d seats taken</string>
+    <string name="theater_preshow_chat">Pre-show chat</string>
+    <string name="theater_chat_empty">Say something while everyone settles in.</string>
+    <string name="theater_chat_hint">Message the room</string>
+    <string name="theater_chat_too_fast">Slow down a moment before sending again.</string>
+    <string name="theater_now_showing">Now showing</string>
+    <string name="theater_in_room_now">%1$d in the room now</string>
+    <string name="theater_joined_mid_show">Joined at %1$s — you\'re in sync with the room</string>
+    <string name="notif_theater_starting">your showtime is starting soon</string>
+    <string name="notif_friend_in_theater">is watching in the theater</string>
+    <string name="notif_theater_postshow">that\'s a wrap — rate it and join the discussion</string>
     <string name="community_subtitle">Discussion boards, real-time chat and watch parties with your people.</string>
     <string name="profile_subtitle">Your profile, taste stats, badges and library — all in one place.</string>
 
@@ -238,6 +272,23 @@
     <string name="browse_year">Year</string>
     <string name="browse_year_all">All years</string>
     <string name="browse_empty">No movies match your filters.</string>
+    <string name="browse_empty_title">Nothing here</string>
+    <string name="browse_results">%1$d movies</string>
+    <string name="browse_clear">Clear</string>
+    <!-- Page hero headers (mirror the web's eyebrow + title + subtitle pattern) -->
+    <string name="search_eyebrow">Find something</string>
+    <string name="theater_eyebrow">Public screenings</string>
+    <string name="feed_eyebrow">Your circle</string>
+    <string name="feed_subtitle">What the people you follow are watching right now.</string>
+    <string name="profile_eyebrow">Your account</string>
+    <string name="profile_link_notifications_desc">Follows, replies and reactions</string>
+    <string name="profile_link_inbox_desc">Movies friends recommended to you</string>
+    <string name="profile_link_people_desc">Find people who share your taste</string>
+    <string name="profile_link_settings_desc">Playback, language and account</string>
+    <string name="movie_options_title">Movie options</string>
+    <string name="movie_options_download">Download</string>
+    <string name="movie_options_downloaded">Downloaded</string>
+    <string name="movie_options_details">More info</string>
 
     <!-- Onboarding -->
     <string name="onboarding_skip">Skip</string>
@@ -497,5 +548,12 @@
     <string name="landing_faq_q4">Which languages are supported?</string>
     <string name="landing_faq_a4">The app is fully available in English and French.</string>
     <string name="landing_footer">Made for people who love movies.</string>
+    <string name="auth_legal_consent">By creating an account you agree to our %1$s and %2$s.</string>
+    <string name="landing_menu">More</string>
+    <string name="landing_terms">Terms of Service</string>
+    <string name="landing_privacy">Privacy</string>
+    <string name="landing_share">Share App</string>
+    <string name="landing_share_subject">Filmatube</string>
+    <string name="landing_share_text">Watch movies together on Filmatube — showtimes, watch parties and boards. %1$s</string>
     <string name="profile_about">About Filmatube</string>
 </resources>
