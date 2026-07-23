@@ -103,7 +103,9 @@ export function SearchClient({
   }, [query, genre, year, minRating]);
 
   const idle = query.trim() === "";
-  const selectClass = "h-9 rounded-lg border border-surface-border bg-surface px-3 text-sm text-ink";
+  // Matched to the chip height/rounding so the filter row reads as one set of controls.
+  const selectClass =
+    "h-8 rounded-lg border border-surface-border bg-surface px-2.5 text-[13px] text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-400";
 
   return (
     <div className="space-y-5">
@@ -123,8 +125,8 @@ export function SearchClient({
       </div>
 
       {/* Genre chips — the Android filter row. Horizontal scroll rather than wrap so it reads
-          as one filter strip. */}
-      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+          as one filter strip, with the slim green scrollbar. */}
+      <div className="scrollbar-green -mx-1 flex gap-2 overflow-x-auto px-1 pb-2">
         <Chip label={dict.all} selected={genre === ""} onClick={() => setGenre("")} />
         {GENRE_KEYS.map((key) => (
           <Chip key={key} label={genres[key]} selected={genre === key} onClick={() => setGenre(genre === key ? "" : key)} />

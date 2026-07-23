@@ -31,8 +31,9 @@ export function BrowseControls({
     router.push(`${pathname}?${next.toString()}`, { scroll: false });
   };
 
+  // Matched to the chip height/rounding so filters read as one consistent set of controls.
   const selectClass =
-    "h-10 rounded-lg border border-surface-border bg-surface px-3 text-sm text-ink";
+    "h-8 rounded-lg border border-surface-border bg-surface px-2.5 text-[13px] text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-400";
 
   return (
     <div className="space-y-4">

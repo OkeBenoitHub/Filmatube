@@ -20,3 +20,23 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Slim brand-green scrollbar for scroll containers we want to keep visible (search page). */
+.scrollbar-green {
+  scrollbar-width: thin;
+  scrollbar-color: theme("colors.brand.500") transparent;
+}
+.scrollbar-green::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.scrollbar-green::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-green::-webkit-scrollbar-thumb {
+  background-color: theme("colors.brand.600");
+  border-radius: 9999px;
+}
+.scrollbar-green::-webkit-scrollbar-thumb:hover {
+  background-color: theme("colors.brand.500");
+}
