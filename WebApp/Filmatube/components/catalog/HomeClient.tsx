@@ -55,6 +55,8 @@ export function HomeClient({
   const [genrePrefs, setGenrePrefs] = useState<string[]>([]);
   const [progress, setProgress] = useState<ProgressEntry[]>([]);
   const [recRows, setRecRows] = useState<{ seedTitle: string; movieIds: string[] }[]>([]);
+  const [topPickIds, setTopPickIds] = useState<string[]>([]);
+  const [followFeedIds, setFollowFeedIds] = useState<string[]>([]);
 
   // Catalog — waits for client auth (rules require a signed-in reader).
   useEffect(() => {
@@ -88,6 +90,27 @@ export function HomeClient({
           .map((r) => ({ seedTitle: r.seedTitle ?? "", movieIds: r.movieIds ?? [] }))
           .filter((r) => r.movieIds.length > 0),
       );
+      setTopPickIds((snap.get("topPicks") as string[]) ?? []);
+    });
+  }, [user]);
+
+  // "From people you follow" — the viewer's feed is fanned out from the accounts they follow, so
+  // aggregating its recent events by movie surfaces what that circle is watching, most-mentioned
+  // first. Social, live, and needs no extra reads beyond the feed we already have rules for.
+  useEffect(() => {
+    if (!user) return;
+    const q = query(
+      collection(db, "feed", user.uid, "events"),
+      orderBy("createdAt", "desc"),
+      limit(100),
+    );
+    return onSnapshot(q, (snap) => {
+      const counts = new Map<string, number>();
+      for (const d of snap.docs) {
+        const id = d.get("movieId") as string | undefined;
+        if (id) counts.set(id, (counts.get(id) ?? 0) + 1);
+      }
+      setFollowFeedIds([...counts.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id));
     });
   }, [user]);
 
@@ -167,6 +190,14 @@ export function HomeClient({
     }))
     .filter((row) => row.movies.length >= 3);
 
+  const resolve = (ids: string[]) => ids.map((id) => byId.get(id)).filter((m): m is CatalogMovie => !!m);
+
+  // Top picks — the rec doc's overall ranking for this viewer.
+  const topPicks = resolve(topPickIds);
+  // What the people you follow are watching, minus anything you've already finished.
+  const finished = new Set(progress.filter((e) => e.completed).map((e) => e.movieId));
+  const fromPeopleYouFollow = resolve(followFeedIds).filter((m) => !finished.has(m.id));
+
   return (
     <div>
       <Hero movies={featured.length > 0 ? featured : movies.slice(0, 1)} locale={locale} dict={dict} />
@@ -174,7 +205,14 @@ export function HomeClient({
         {/* Continue Watching gets no "See all" — it isn't a browsable slice, matching Android.
             Every other row's target mirrors the Android home rows exactly. */}
         <ContinueWatchingRow title={dict.continueWatching} items={continueWatching} locale={locale} />
-        {/* Personalised rails, high on the page — most relevant thing on screen. Mirrors Android. */}
+        {/* Personalised rails, high on the page — most relevant thing on screen. Mirrors Android.
+            Each is absent until it has enough to show, so a new account still gets a full page. */}
+        {topPicks.length >= 3 && (
+          <MovieRow title={dict.topPicks} movies={topPicks} locale={locale} />
+        )}
+        {fromPeopleYouFollow.length >= 3 && (
+          <MovieRow title={dict.fromPeopleYouFollow} movies={fromPeopleYouFollow} locale={locale} />
+        )}
         {becauseYouWatched.map((row) => (
           <MovieRow
             key={row.seedTitle}
