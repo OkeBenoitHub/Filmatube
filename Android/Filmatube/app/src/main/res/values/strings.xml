@@ -275,6 +275,7 @@
     <string name="search_recent">Recent</string>
     <string name="search_trending">Trending</string>
     <string name="search_clear">Clear</string>
+    <string name="search_browse_action">Browse all movies</string>
     <string name="search_no_results">No results found.</string>
     <string name="search_no_results_hint">Try a different title, or clear a filter.</string>
     <string name="search_rating">Rating</string>

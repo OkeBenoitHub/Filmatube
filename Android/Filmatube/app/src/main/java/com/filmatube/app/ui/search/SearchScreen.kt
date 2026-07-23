@@ -25,11 +25,13 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -69,6 +71,7 @@ import java.util.Calendar
 @Composable
 fun SearchScreen(
     onMovieClick: (String) -> Unit,
+    onBrowse: () -> Unit,
     viewModel: SearchViewModel = hiltViewModel(),
 ) {
     val query by viewModel.query.collectAsStateWithLifecycle()
@@ -88,6 +91,17 @@ fun SearchScreen(
                 title = stringResource(R.string.nav_search),
                 subtitle = stringResource(R.string.search_subtitle),
                 icon = Icons.Outlined.Search,
+                // Browse, reachable without going back to Home and hunting for a "See all".
+                // It rides the hero's trailing slot, so it costs no extra chrome and sits in
+                // the same top-right position Social and Profile use for their header action.
+                trailing = {
+                    FilledTonalIconButton(onClick = onBrowse) {
+                        Icon(
+                            Icons.Outlined.GridView,
+                            contentDescription = stringResource(R.string.search_browse_action),
+                        )
+                    }
+                },
             )
         }
 

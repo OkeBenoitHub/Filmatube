@@ -275,6 +275,7 @@
     <string name="search_recent">Récentes</string>
     <string name="search_trending">Tendances</string>
     <string name="search_clear">Effacer</string>
+    <string name="search_browse_action">Parcourir tous les films</string>
     <string name="search_no_results">Aucun résultat.</string>
     <string name="search_no_results_hint">Essayez un autre titre, ou retirez un filtre.</string>
     <string name="search_rating">Note</string>
