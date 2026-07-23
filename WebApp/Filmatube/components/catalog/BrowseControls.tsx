@@ -22,6 +22,7 @@ export function BrowseControls({
   const genre = params.get("genre") ?? "";
   const sort = params.get("sort") ?? "newest";
   const year = params.get("year") ?? "";
+  const comingSoon = params.get("comingSoon") === "1";
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(params.toString());
@@ -41,9 +42,13 @@ export function BrowseControls({
           <Chip key={key} label={genres[key]} selected={genre === key} onClick={() => setParam("genre", key)} />
         ))}
       </div>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3">
+        {/* "popular" and the Coming Soon toggle exist so a page arrived at from a Home "See all"
+            shows the control that matches the slice — otherwise the sort would read blank and
+            coming-soon would have no visible, un-toggleable state. Mirrors the Android chips. */}
         <select value={sort} onChange={(e) => setParam("sort", e.target.value)} className={selectClass}>
           <option value="newest">{dict.sortNewest}</option>
+          <option value="popular">{dict.trending}</option>
           <option value="rating">{dict.sortRating}</option>
           <option value="az">{dict.sortAz}</option>
         </select>
@@ -55,6 +60,11 @@ export function BrowseControls({
             </option>
           ))}
         </select>
+        <Chip
+          label={dict.comingSoon}
+          selected={comingSoon}
+          onClick={() => setParam("comingSoon", comingSoon ? "" : "1")}
+        />
       </div>
     </div>
   );

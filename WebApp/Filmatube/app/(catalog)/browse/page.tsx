@@ -36,9 +36,18 @@ export default async function BrowsePage({
 
   const years = [...new Set(movies.map((m) => m.year).filter(Boolean))].sort((a, b) => b - a);
 
+  // Name the slice, exactly as the Android Browse heading does — a page arrived at from a Home
+  // "See all" otherwise reads "Browse" with no hint which row sent you here. Same precedence.
+  const heading =
+    genre ? (dict.genres as Record<string, string>)[genre] ?? genre
+    : comingSoon ? c.comingSoon
+    : sort === "popular" ? c.trending
+    : sort === "rating" ? c.sortRating
+    : c.browse;
+
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 md:px-6">
-      <PageHero icon={Compass} eyebrow={c.requestsEyebrow} title={c.browse} subtitle={c.browseSubtitle} />
+      <PageHero icon={Compass} eyebrow={c.browse} title={heading} subtitle={c.browseSubtitle} />
       <div className="pt-4">
         <BrowseControls dict={c} genres={dict.genres} years={years} />
       </div>
