@@ -17,6 +17,14 @@ interface MovieRepository {
     suspend fun getByGenre(genre: String, limit: Int = 15): List<Movie>
     suspend fun getMovie(id: String): Movie?
 
+    /**
+     * Fetch several movies by id, preserving the given order.
+     *
+     * The recommendation rows come back as an *ordered* list of ids (best match first), so the
+     * result must keep that order rather than whatever Firestore returns.
+     */
+    suspend fun getMoviesByIds(ids: List<String>): List<Movie>
+
     /** Movies sharing a genre with the given one (excludes it). */
     suspend fun getRelated(movieId: String, genres: List<String>, limit: Int = 15): List<Movie>
 

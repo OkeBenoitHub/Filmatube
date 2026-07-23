@@ -58,6 +58,18 @@ class MovieRepositoryImpl @Inject constructor(
     override suspend fun getMovie(id: String): Movie? =
         movies.document(id).get().await().toMovie()
 
+    override suspend fun getMoviesByIds(ids: List<String>): List<Movie> {
+        if (ids.isEmpty()) return emptyList()
+        // whereIn caps at 10 ids per query, so chunk. Fetch all, then reorder to match the
+        // caller's ranking — Firestore returns documents in its own order, not the id list's.
+        val fetched = ids.chunked(10).flatMap { chunk ->
+            movies.whereIn(com.google.firebase.firestore.FieldPath.documentId(), chunk)
+                .get().await().toMovies()
+        }
+        val byId = fetched.associateBy { it.id }
+        return ids.mapNotNull { byId[it] }
+    }
+
     override suspend fun getRelated(movieId: String, genres: List<String>, limit: Int): List<Movie> {
         val genre = genres.firstOrNull() ?: return emptyList()
         return getByGenre(genre, limit + 1).filter { it.id != movieId }.take(limit)

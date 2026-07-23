@@ -18,6 +18,9 @@ import javax.inject.Inject
 
 data class GenreRow(val genreKey: String, val movies: List<Movie>)
 
+/** A resolved "Because you watched X" rail — the seed's title, and the recommended movies. */
+data class BecauseYouWatchedRow(val seedTitle: String, val movies: List<Movie>)
+
 data class ContinueWatchingItem(val movie: Movie, val progress: Float)
 
 data class HomeUiState(
@@ -28,6 +31,7 @@ data class HomeUiState(
     val newReleases: List<Movie> = emptyList(),
     val comingSoon: List<Movie> = emptyList(),
     val genreRows: List<GenreRow> = emptyList(),
+    val becauseYouWatched: List<BecauseYouWatchedRow> = emptyList(),
     val error: AppError? = null,
 ) {
     val isEmpty: Boolean
@@ -45,6 +49,7 @@ class HomeViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
     private val watchProgressRepository: WatchProgressRepository,
+    private val recsRepository: com.filmatube.app.data.recs.RecsRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeUiState())
@@ -82,6 +87,13 @@ class HomeViewModel @Inject constructor(
                     }
                     .take(12)
 
+                // Personalised rails from the nightly rec doc. Empty (and silently absent)
+                // until the function has built recs for this user — never a blocking error.
+                val becauseYouWatched = recsRepository.getRecommendations().rows
+                    .map { row -> row to movieRepository.getMoviesByIds(row.movieIds) }
+                    .filter { (_, movies) -> movies.size >= 3 }
+                    .map { (row, movies) -> BecauseYouWatchedRow(row.seedTitle, movies) }
+
                 HomeUiState(
                     isLoading = false,
                     continueWatching = continueWatching,
@@ -90,6 +102,7 @@ class HomeViewModel @Inject constructor(
                     newReleases = newReleases,
                     comingSoon = comingSoon,
                     genreRows = genreRows,
+                    becauseYouWatched = becauseYouWatched,
                 )
             }.fold(
                 onSuccess = { loaded -> _state.value = loaded },

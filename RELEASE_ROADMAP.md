@@ -316,7 +316,7 @@
 
 ### Week 27 — Recommendations Engine (Android) (Days 183–189) (A)
 - **Day 183** ✅ — Per-user rec doc (`recs/{userId}`) + `buildRecommendations` scheduled function (24h, europe-west4): content-overlap scoring from watched/liked/reacted/watchlisted signals over genre/cast/directors, **no ML**. Writes a "For you" row + "Because you watched X" rails; `recFeedback` dismissals are excluded. Rules: recs are self-read/function-write-only.
-- **Day 184** — "Because you watched X" rows on Home; "More like this" on detail.
+- **Day 184** ✅ — "Because you watched X" rows on Home (Android), consuming the `recs/{userId}` rows from Day 183 — placed high, absent until the nightly function has built recs. "More like this" on detail already shipped (Day 33, content-similarity via getRelated).
 - **Day 185** — "Top picks for you" row (weighted by taste profile + history).
 - **Day 186** — "Trending among people you follow" (social recommendation row).
 - **Day 187** — "Hidden gems" / "New for you" rows; row ordering personalization.

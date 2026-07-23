@@ -109,6 +109,19 @@ private fun HomeContent(
                 ContinueWatchingTile(item = item, language = language, onPlay = onPlay)
             }
         }
+        // Personalised rails, high on the page — Netflix places "Because you watched" near the
+        // top because it's the most relevant thing on screen. Absent entirely for a user the
+        // nightly function hasn't built recs for yet.
+        state.becauseYouWatched.forEach { row ->
+            MovieRow(
+                title = stringResource(R.string.home_because_you_watched, row.seedTitle),
+                movies = row.movies,
+                language = language,
+                onMovieClick = onMovieClick,
+                onSeeAll = null,
+            )
+        }
+
         // Each "See all" carries its row's own query, so Browse opens continuing that list
         // rather than dropping every section onto one identical unfiltered grid.
         if (state.trending.isNotEmpty()) {
@@ -185,7 +198,7 @@ private fun MovieRow(
     movies: List<Movie>,
     language: String,
     onMovieClick: (String) -> Unit,
-    onSeeAll: () -> Unit,
+    onSeeAll: (() -> Unit)? = null,
 ) {
     ContentRow(title = title, items = movies, key = { it.id }, onSeeAll = onSeeAll) { movie ->
         MoviePosterTile(
