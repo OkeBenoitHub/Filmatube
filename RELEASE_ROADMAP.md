@@ -305,9 +305,9 @@
 - **Day 177** ✅ — Cost review. Presence was fixed on Day 174; this pass caught attendee profile re-resolution — every RSVP re-read all 24 shown profiles on every viewer (~2,400 user reads per arrival in a 100-person lobby). Now cached.
 - **Day 178** ✅ — Rules audit found two real holes: private screenings were private only at the showtime doc (every subcollection was open to any signed-in user holding the ID), and capacity was never enforced in rules at all. Both closed. Theater chat now feeds the existing `reports` moderation queue.
 - **Day 179** ✅ — Beta: functions/rules/indexes and web all deployed; both clients build clean.
-- **Day 180** — Release prep (no Play Store, no custom domain yet). **Skipped:** store listing/assets, upload signing, domain setup. **To do:** bump versionName/versionCode, changelog entry, build a signed release APK for sideloading.
-- **Day 181** — **🚀 v1.2 release.** Web already live at `filmatube--filmatubelive.europe-west4.hosted.app` (deployed Day 179); backend (functions/rules/indexes) live. **Remaining:** a monitoring pass — function logs, Firestore usage, first real showtime end-to-end.
-- **Day 182** — Retro + buffer. Slack to seed a real showtime and clear standing caveats.
+- **Day 180** ✅ — Release prep, scoped to no Play Store / no custom domain yet. **Skipped:** store listing/assets, upload signing, domain setup. **Done:** version → 1.2.0 (versionCode 2) mirrored in `lib/apk.ts`; v1.2 changelog entry (en/fr); release APK builds (6.2 MB, R8-minified, **unsigned** — signing needs an owner-created keystore). **Fixed a release blocker:** the release build pointed `WEB_API_BASE_URL` at the unowned `filmatube.app`, now the live App Hosting URL.
+- **Day 181** ✅ — **🚀 v1.2 released** for web (live at `filmatube--filmatubelive.europe-west4.hosted.app` since Day 179) and backend (functions/rules/indexes live, all `europe-west4`). Android release APK ready to sign + sideload. ⏳ **Deferred:** sign/host the APK; a live monitoring pass + first real showtime end-to-end (folds into Day 182).
+- **Day 182** ⏳ — Retro + buffer. Standing slack: seed a real showtime (also the Day 181 monitoring pass), sign/host the APK, and the pre-existing Node 20 runtime deadline (2026-10-30).
 
 ---
 
