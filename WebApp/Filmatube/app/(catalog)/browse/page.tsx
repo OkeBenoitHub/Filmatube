@@ -21,11 +21,16 @@ export default async function BrowsePage({
   const genre = typeof sp.genre === "string" ? sp.genre : "";
   const year = typeof sp.year === "string" ? sp.year : "";
   const sort = typeof sp.sort === "string" ? sp.sort : "newest";
+  // The Home rows' "See all" targets land here: Coming Soon flips the default exclusion to an
+  // inclusion, and Trending arrives as sort=popular. Both are needed for those buttons to open
+  // a page that actually continues the row rather than the generic catalogue.
+  const comingSoon = sp.comingSoon === "1";
 
-  let list = movies.filter((m) => !m.isComingSoon);
+  let list = movies.filter((m) => m.isComingSoon === comingSoon);
   if (genre) list = list.filter((m) => m.genres.includes(genre));
   if (year) list = list.filter((m) => String(m.year) === year);
   if (sort === "rating") list = [...list].sort((a, b) => b.averageRating - a.averageRating);
+  else if (sort === "popular") list = [...list].sort((a, b) => b.viewsCount - a.viewsCount);
   else if (sort === "az")
     list = [...list].sort((a, b) => localized(a.title, locale).localeCompare(localized(b.title, locale)));
 

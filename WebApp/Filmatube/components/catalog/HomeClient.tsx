@@ -147,18 +147,40 @@ export function HomeClient({
     <div>
       <Hero movie={hero} locale={locale} dict={dict} />
       <div className="mx-auto max-w-6xl space-y-8 py-8">
+        {/* Continue Watching gets no "See all" — it isn't a browsable slice, matching Android.
+            Every other row's target mirrors the Android home rows exactly. */}
         <ContinueWatchingRow title={dict.continueWatching} items={continueWatching} locale={locale} />
-        <MovieRow title={dict.trending} movies={pickTrending(movies)} locale={locale} />
-        <MovieRow title={dict.newReleases} movies={pickNewReleases(movies)} locale={locale} />
+        <MovieRow
+          title={dict.trending}
+          movies={pickTrending(movies)}
+          locale={locale}
+          seeAllHref="/browse?sort=popular"
+          seeAllLabel={dict.seeAll}
+        />
+        <MovieRow
+          title={dict.newReleases}
+          movies={pickNewReleases(movies)}
+          locale={locale}
+          seeAllHref="/browse"
+          seeAllLabel={dict.seeAll}
+        />
         {genreRows.map((row) => (
           <MovieRow
             key={row.key}
             title={(genresDict as Record<string, string>)[row.key] ?? row.key}
             movies={row.movies}
             locale={locale}
+            seeAllHref={`/browse?genre=${row.key}`}
+            seeAllLabel={dict.seeAll}
           />
         ))}
-        <MovieRow title={dict.comingSoon} movies={pickComingSoon(movies)} locale={locale} />
+        <MovieRow
+          title={dict.comingSoon}
+          movies={pickComingSoon(movies)}
+          locale={locale}
+          seeAllHref="/browse?comingSoon=1"
+          seeAllLabel={dict.seeAll}
+        />
       </div>
     </div>
   );
