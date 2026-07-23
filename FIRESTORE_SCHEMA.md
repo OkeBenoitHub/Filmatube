@@ -305,7 +305,31 @@ traffic. Both clients implement the same formula (`Showtime.playbackPositionMs`)
 
 ---
 
+## `recs/{userId}` — personalized recommendations (v1.3, Day 183)
+```
+topPicks    string[]   (movieIds — the overall "For you" row, best matches first)
+rows        [{ seedMovieId, seedTitle, seedPoster, movieIds: string[] }]
+                       ("Because you watched X" rails, strongest seed first)
+generatedAt Timestamp
+```
+Written **only** by the scheduled `buildRecommendations` Cloud Function (every 24h) — never
+by clients. Content-overlap scoring, **no ML**: a taste profile is accumulated from the
+signals a user already leaves (finished a movie, liked it, reacted love/fire/mind_blown, or
+watchlisted it), weighted per signal, and spread over each seed movie's genres, cast and
+directors. Every published movie the user hasn't already engaged with is then scored by how
+much its genres/people overlap that profile (people weighted above genre); anything they
+finished, saved, disliked (`boring`) or dismissed is excluded. Reasons are carried as the
+seed movie, so the client can say *why* without recomputing.
+
+## `recFeedback/{userId}/items/{movieId}` — "not interested" (v1.3)
+```
+action      string   ("dismissed")
+createdAt   Timestamp
+```
+Self-written. The next `buildRecommendations` run reads these and excludes the movie, so a
+dismissal sticks rather than reappearing on the next rebuild.
+
 ## Later versions (documented for planning, not yet enforced)
-- **v1.3:** `recs/{userId}`, `recFeedback/{userId}/items`, `referrals/{referralId}`
+- **v1.3:** `referrals/{referralId}` (Days 197+)
 - **v2.0:** `tvshows/*`, `animes/*` + `seasons`/`episodes` subcollections
 - **v2.1:** `subscriptions/{userId}`, `entitlements/{userId}`, `plans/{planId}`

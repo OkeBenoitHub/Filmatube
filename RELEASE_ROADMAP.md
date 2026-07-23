@@ -315,7 +315,7 @@
 *Keep people watching ("Because you watched…"), bring friends in (referral), reward engagement (gamification).*
 
 ### Week 27 — Recommendations Engine (Android) (Days 183–189) (A)
-- **Day 183** — Per-user rec doc design (`recs/{userId}`) built by scheduled Cloud Function — genre/cast/people overlap, **no ML**.
+- **Day 183** ✅ — Per-user rec doc (`recs/{userId}`) + `buildRecommendations` scheduled function (24h, europe-west4): content-overlap scoring from watched/liked/reacted/watchlisted signals over genre/cast/directors, **no ML**. Writes a "For you" row + "Because you watched X" rails; `recFeedback` dismissals are excluded. Rules: recs are self-read/function-write-only.
 - **Day 184** — "Because you watched X" rows on Home; "More like this" on detail.
 - **Day 185** — "Top picks for you" row (weighted by taste profile + history).
 - **Day 186** — "Trending among people you follow" (social recommendation row).

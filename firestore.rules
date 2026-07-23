@@ -294,6 +294,19 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // ───────── recommendations (v1.3) ─────────
+    // Your rec doc is yours to read, and nobody's to write from a client — the scheduled
+    // Cloud Function (which bypasses rules) is the only writer, so a client can't fabricate
+    // recommendations or point them at content it wants promoted.
+    match /recs/{userId} {
+      allow read: if isSelf(userId);
+      allow write: if false;
+    }
+    // "Not interested" — self-written; the next rec build reads these and excludes them.
+    match /recFeedback/{userId}/items/{movieId} {
+      allow read, write: if isSelf(userId);
+    }
+
     // ───────── gamification ─────────
     match /achievements/{userId}/badges/{badgeId} {
       allow read: if isSignedIn();
