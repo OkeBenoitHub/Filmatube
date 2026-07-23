@@ -54,6 +54,7 @@ export function HomeClient({
   const [movies, setMovies] = useState<CatalogMovie[] | null>(null);
   const [genrePrefs, setGenrePrefs] = useState<string[]>([]);
   const [progress, setProgress] = useState<ProgressEntry[]>([]);
+  const [recRows, setRecRows] = useState<{ seedTitle: string; movieIds: string[] }[]>([]);
 
   // Catalog — waits for client auth (rules require a signed-in reader).
   useEffect(() => {
@@ -73,6 +74,20 @@ export function HomeClient({
     if (!user) return;
     return onSnapshot(doc(db, "users", user.uid), (snap) => {
       setGenrePrefs(((snap.get("genrePreferences") as string[]) ?? []).slice(0, 4));
+    });
+  }, [user]);
+
+  // Recommendations → "Because you watched X" rows, from the nightly rec doc (Day 183). Read
+  // only; the client never writes recs. Absent until the function has built them for this user.
+  useEffect(() => {
+    if (!user) return;
+    return onSnapshot(doc(db, "recs", user.uid), (snap) => {
+      const rows = (snap.get("rows") as { seedTitle?: string; movieIds?: string[] }[]) ?? [];
+      setRecRows(
+        rows
+          .map((r) => ({ seedTitle: r.seedTitle ?? "", movieIds: r.movieIds ?? [] }))
+          .filter((r) => r.movieIds.length > 0),
+      );
     });
   }, [user]);
 
@@ -142,6 +157,16 @@ export function HomeClient({
     .map((key) => ({ key, movies: pickByGenre(movies, key) }))
     .filter((row) => row.movies.length > 0);
 
+  // Resolve each rec row's ordered ids against the loaded catalogue, keeping the ranking and
+  // dropping any title unpublished since the nightly build. Rows under 3 aren't worth a rail.
+  const byId = new Map(movies.map((m) => [m.id, m]));
+  const becauseYouWatched = recRows
+    .map((row) => ({
+      seedTitle: row.seedTitle,
+      movies: row.movieIds.map((id) => byId.get(id)).filter((m): m is CatalogMovie => !!m),
+    }))
+    .filter((row) => row.movies.length >= 3);
+
   return (
     <div>
       <Hero movies={featured.length > 0 ? featured : movies.slice(0, 1)} locale={locale} dict={dict} />
@@ -149,6 +174,15 @@ export function HomeClient({
         {/* Continue Watching gets no "See all" — it isn't a browsable slice, matching Android.
             Every other row's target mirrors the Android home rows exactly. */}
         <ContinueWatchingRow title={dict.continueWatching} items={continueWatching} locale={locale} />
+        {/* Personalised rails, high on the page — most relevant thing on screen. Mirrors Android. */}
+        {becauseYouWatched.map((row) => (
+          <MovieRow
+            key={row.seedTitle}
+            title={dict.becauseYouWatched.replace("{title}", row.seedTitle)}
+            movies={row.movies}
+            locale={locale}
+          />
+        ))}
         <MovieRow
           title={dict.trending}
           movies={pickTrending(movies)}

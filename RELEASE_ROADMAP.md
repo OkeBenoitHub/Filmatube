@@ -324,7 +324,7 @@
 - **Day 189** — Week review.
 
 ### Week 28 — Recommendations (Web) + Admin Curation (Days 190–196) (W)
-- **Day 190** — Recs rows on web home + detail parity.
+- **Day 190** ✅ — "Because you watched X" rows on web home, consuming `recs/{userId}` via a client snapshot (read-only; resolved against the loaded catalogue, ranking preserved, rows <3 dropped). Detail "More like this" already shipped (`pickRelated`), so detail parity was in place.
 - **Day 191** — "Because you watched / Top picks / From people you follow" (web).
 - **Day 192** — Rec feedback controls (web).
 - **Day 193** — **Admin curation tools**: manual row builder, pin/boost titles, schedule home-row campaigns.
