@@ -105,8 +105,12 @@ class MovieRepositoryImpl @Inject constructor(
             .orderBy("addedAt", Query.Direction.DESCENDING)
             .limit(200)
             .get().await().toMovies()
-        return all.filter {
-            it.title.en.lowercase().contains(q) || it.title.fr.lowercase().contains(q)
+        return all.filter { movie ->
+            movie.title.en.lowercase().contains(q) ||
+                movie.title.fr.lowercase().contains(q) ||
+                // Also match by cast and director, so "search by actor" works from the same box.
+                movie.cast.any { it.name.lowercase().contains(q) } ||
+                movie.directors.any { it.lowercase().contains(q) }
         }.take(limit)
     }
 

@@ -153,16 +153,21 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
             <h2 className="text-lg font-semibold text-ink">{c.cast}</h2>
             <div className="flex gap-4 overflow-x-auto pb-2">
               {movie.cast.map((person) => (
-                <div key={person.name} className="w-20 shrink-0 text-center">
-                  <div className="mx-auto h-20 w-20 overflow-hidden rounded-full border border-surface-border bg-surface-hover">
+                // Tappable → the actor's filmography, mirroring the Android cast row.
+                <Link
+                  key={person.name}
+                  href={`/actor/${encodeURIComponent(person.name)}`}
+                  className="group w-20 shrink-0 text-center"
+                >
+                  <div className="mx-auto h-20 w-20 overflow-hidden rounded-full border border-surface-border bg-surface-hover transition-colors group-hover:border-brand-500">
                     {person.photoUrl && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={person.photoUrl} alt="" className="h-full w-full object-cover" />
                     )}
                   </div>
-                  <p className="mt-1.5 truncate text-xs text-ink">{person.name}</p>
+                  <p className="mt-1.5 truncate text-xs text-ink group-hover:text-brand-300">{person.name}</p>
                   {person.character && <p className="truncate text-[11px] text-ink-faint">{person.character}</p>}
-                </div>
+                </Link>
               ))}
             </div>
           </section>
