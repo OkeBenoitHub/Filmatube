@@ -33,7 +33,22 @@ export default async function ChangelogPage() {
 
   const releases: { version: string; date: string; tag?: string; changes: { type: ChangeType; text: string }[] }[] = [
     {
+      // The current build — tracks APK.version so the download and this heading never diverge.
       version: APK.version,
+      date: c.v12Date,
+      tag: c.v12Tag,
+      changes: [
+        { type: "new", text: c.t1 },
+        { type: "new", text: c.t2 },
+        { type: "new", text: c.t3 },
+        { type: "new", text: c.t4 },
+        { type: "new", text: c.t5 },
+        { type: "improved", text: c.t6 },
+      ],
+    },
+    {
+      // Pinned, not APK.version: it's the historical first release, not whatever ships now.
+      version: "1.0.0-rc1",
       date: c.v1Date,
       tag: c.v1Tag,
       changes: [

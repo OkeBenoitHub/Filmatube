@@ -28,8 +28,8 @@ android {
         applicationId = "com.filmatube.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0-rc1"
+        versionCode = 2
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -57,7 +57,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            buildConfigField("String", "WEB_API_BASE_URL", "\"https://filmatube.app\"")
+            // The live App Hosting URL — no custom domain yet. Playback and avatar upload call
+            // this base, so a release build pointing at an unowned domain would fail to stream
+            // any movie. Switch to https://filmatube.app once that domain is attached.
+            buildConfigField("String", "WEB_API_BASE_URL", "\"https://filmatube--filmatubelive.europe-west4.hosted.app\"")
             // Signed only when keystore.properties is present (otherwise an unsigned release).
             if (keystorePropsFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
