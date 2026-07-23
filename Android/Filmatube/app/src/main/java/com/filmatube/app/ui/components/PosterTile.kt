@@ -94,13 +94,16 @@ fun PosterTile(
                         .clip(CircleShape)
                         .background(Color.Black.copy(alpha = 0.55f))
                         .clickable(onClick = onMoreClick)
-                        .padding(2.dp),
+                        .padding(3.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Filled.MoreVert,
                         contentDescription = stringResource(R.string.movie_options_title),
                         tint = Color.White,
-                        modifier = Modifier.size(18.dp),
+                        // 20dp in a 26dp scrim, nudged up from 18-in-22: the old button read
+                        // smaller than the web's and was fiddly on a dense grid. Kept well
+                        // under the poster's width so it stays an affordance, not a badge.
+                        modifier = Modifier.size(20.dp),
                     )
                 }
             }
