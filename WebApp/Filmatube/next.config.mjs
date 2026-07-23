@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Verification builds set NEXT_DIST_DIR=.next-verify so a `next build` never overwrites the
+  // running `next dev` server's default `.next` — doing so serves it mismatched CSS/JS chunks
+  // on the next refresh, which looks like "the design broke". Deploys/prod leave this unset.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
