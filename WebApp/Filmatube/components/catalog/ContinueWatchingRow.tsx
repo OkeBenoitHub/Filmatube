@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HScroller } from "@/components/catalog/HScroller";
 import { localized, type ContinueWatchingItem } from "@/lib/catalog";
 import type { Locale } from "@/lib/i18n/config";
 
@@ -16,7 +17,7 @@ export function ContinueWatchingRow({
   return (
     <section className="space-y-3">
       <h2 className="px-4 text-lg font-semibold text-ink md:px-6">{title}</h2>
-      <div className="flex snap-x gap-3 overflow-x-auto px-4 pb-2 md:px-6">
+      <HScroller>
         {items.map(({ movie, progress }) => (
           <Link
             key={movie.id}
@@ -43,7 +44,7 @@ export function ContinueWatchingRow({
             <p className="mt-1.5 truncate text-sm text-ink">{localized(movie.title, locale)}</p>
           </Link>
         ))}
-      </div>
+      </HScroller>
     </section>
   );
 }
