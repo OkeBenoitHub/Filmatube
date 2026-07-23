@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.DownloadDone
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.NotInterested
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -133,6 +134,7 @@ fun MovieOptionsSheet(
     language: String,
     onDismiss: () -> Unit,
     viewModel: MovieActionsViewModel = hiltViewModel(),
+    onNotInterested: (() -> Unit)? = null,
 ) {
     val actions = LocalMovieActions.current
     val sheetState = rememberModalBottomSheetState()
@@ -218,6 +220,14 @@ fun MovieOptionsSheet(
             onDismiss(); actions.onOpenDetails(movie.id)
         }
 
+        // Only offered where the tile came from a recommendation — dismissing a title you went
+        // looking for in browse or search would have nothing to tune.
+        if (onNotInterested != null) {
+            OptionRow(Icons.Outlined.NotInterested, stringResource(R.string.movie_options_not_interested)) {
+                onDismiss(); onNotInterested()
+            }
+        }
+
         // Breathing room above the gesture bar.
         Column(modifier = Modifier.padding(bottom = FilmatubeSpacing.xl)) {}
     }
@@ -237,6 +247,7 @@ fun MoviePosterTile(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     width: Dp? = PosterTileWidth,
+    onNotInterested: (() -> Unit)? = null,
 ) {
     var showOptions by rememberSaveable(movie.id) { mutableStateOf(false) }
 
@@ -250,7 +261,12 @@ fun MoviePosterTile(
     )
 
     if (showOptions) {
-        MovieOptionsSheet(movie = movie, language = language, onDismiss = { showOptions = false })
+        MovieOptionsSheet(
+            movie = movie,
+            language = language,
+            onDismiss = { showOptions = false },
+            onNotInterested = onNotInterested,
+        )
     }
 }
 

@@ -78,7 +78,10 @@ fun HomeScreen(
                     title = stringResource(R.string.home_empty_title),
                     message = stringResource(R.string.home_empty_message),
                 )
-                else -> HomeContent(state, language, onMovieClick, onBrowse, onPlay)
+                else -> HomeContent(
+                    state, language, onMovieClick, onBrowse, onPlay,
+                    onNotInterested = viewModel::notInterested,
+                )
             }
         }
     }
@@ -91,6 +94,7 @@ private fun HomeContent(
     onMovieClick: (String) -> Unit,
     onBrowse: (BrowseTarget) -> Unit,
     onPlay: (String) -> Unit,
+    onNotInterested: (String) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -118,6 +122,21 @@ private fun HomeContent(
         // Personalised rails, high on the page — Netflix places "Because you watched" near the
         // top because it's the most relevant thing on screen. Absent entirely for a user the
         // nightly function hasn't built recs for yet.
+        //
+        // Row order is personalisation itself: the more a rail knows about *this* viewer, the
+        // higher it sits. Top picks and the rec rails outrank the social row, which outranks
+        // taste-filtered new arrivals, which outrank the catalogue-wide rows below. Each is
+        // skipped when empty, so a brand-new account collapses to the generic ordering rather
+        // than showing a column of empty headings.
+        if (state.topPicks.isNotEmpty()) {
+            MovieRow(
+                title = stringResource(R.string.home_top_picks),
+                movies = state.topPicks,
+                language = language,
+                onMovieClick = onMovieClick,
+                onNotInterested = onNotInterested,
+            )
+        }
         state.becauseYouWatched.forEach { row ->
             MovieRow(
                 title = stringResource(R.string.home_because_you_watched, row.seedTitle),
@@ -125,7 +144,21 @@ private fun HomeContent(
                 language = language,
                 onMovieClick = onMovieClick,
                 onSeeAll = null,
+                onNotInterested = onNotInterested,
             )
+        }
+        if (state.fromPeopleYouFollow.isNotEmpty()) {
+            MovieRow(
+                stringResource(R.string.home_from_people_you_follow),
+                state.fromPeopleYouFollow,
+                language,
+                onMovieClick,
+            )
+        }
+        if (state.newForYou.isNotEmpty()) {
+            MovieRow(stringResource(R.string.home_new_for_you), state.newForYou, language, onMovieClick) {
+                onBrowse(BrowseTarget(sort = MovieSort.NEWEST))
+            }
         }
 
         // Each "See all" carries its row's own query, so Browse opens continuing that list
@@ -145,6 +178,11 @@ private fun HomeContent(
                 onBrowse(BrowseTarget(genre = row.genreKey))
             }
         }
+        if (state.hiddenGems.isNotEmpty()) {
+            MovieRow(stringResource(R.string.home_hidden_gems), state.hiddenGems, language, onMovieClick) {
+                onBrowse(BrowseTarget(sort = MovieSort.RATING))
+            }
+        }
         if (state.comingSoon.isNotEmpty()) {
             MovieRow(stringResource(R.string.row_coming_soon), state.comingSoon, language, onMovieClick) {
                 onBrowse(BrowseTarget(comingSoon = true))
@@ -161,12 +199,16 @@ private fun MovieRow(
     language: String,
     onMovieClick: (String) -> Unit,
     onSeeAll: (() -> Unit)? = null,
+    onNotInterested: ((String) -> Unit)? = null,
 ) {
     ContentRow(title = title, items = movies, key = { it.id }, onSeeAll = onSeeAll) { movie ->
         MoviePosterTile(
             movie = movie,
             language = language,
             onClick = { onMovieClick(movie.id) },
+            // Only recommended rows pass this, so "Not interested" appears exactly where it
+            // can actually tune something.
+            onNotInterested = onNotInterested?.let { dismiss -> { dismiss(movie.id) } },
         )
     }
 }

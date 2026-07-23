@@ -3,9 +3,12 @@ package com.filmatube.app.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.filmatube.app.data.playback.WatchProgressRepository
+import com.filmatube.app.data.recs.RecsRepository
+import com.filmatube.app.data.social.FeedRepository
 import com.filmatube.app.domain.model.Movie
 import com.filmatube.app.domain.repository.AuthRepository
 import com.filmatube.app.domain.repository.MovieRepository
+import com.filmatube.app.domain.repository.MovieSort
 import com.filmatube.app.domain.repository.UserRepository
 import com.filmatube.app.domain.util.AppError
 import com.filmatube.app.domain.util.toAppError
@@ -32,6 +35,10 @@ data class HomeUiState(
     val comingSoon: List<Movie> = emptyList(),
     val genreRows: List<GenreRow> = emptyList(),
     val becauseYouWatched: List<BecauseYouWatchedRow> = emptyList(),
+    val topPicks: List<Movie> = emptyList(),
+    val fromPeopleYouFollow: List<Movie> = emptyList(),
+    val hiddenGems: List<Movie> = emptyList(),
+    val newForYou: List<Movie> = emptyList(),
     val error: AppError? = null,
 ) {
     val isEmpty: Boolean
@@ -43,13 +50,18 @@ data class HomeUiState(
 
 private val DEFAULT_GENRES = listOf("action", "comedy", "drama", "scifi")
 
+private const val ROW_LIMIT = 15
+private const val GEM_MIN_RATING = 3.8
+private const val GEM_MAX_VIEWS = 500L
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val movieRepository: MovieRepository,
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
     private val watchProgressRepository: WatchProgressRepository,
-    private val recsRepository: com.filmatube.app.data.recs.RecsRepository,
+    private val recsRepository: RecsRepository,
+    private val feedRepository: FeedRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeUiState())
@@ -89,10 +101,33 @@ class HomeViewModel @Inject constructor(
 
                 // Personalised rails from the nightly rec doc. Empty (and silently absent)
                 // until the function has built recs for this user — never a blocking error.
-                val becauseYouWatched = recsRepository.getRecommendations().rows
+                val recs = recsRepository.getRecommendations()
+                val becauseYouWatched = recs.rows
                     .map { row -> row to movieRepository.getMoviesByIds(row.movieIds) }
                     .filter { (_, movies) -> movies.size >= 3 }
                     .map { (row, movies) -> BecauseYouWatchedRow(row.seedTitle, movies) }
+                val topPicks = movieRepository.getMoviesByIds(recs.topPicks)
+
+                // What the accounts this user follows have been watching, minus anything they've
+                // already finished themselves. Absent for an account that follows nobody.
+                val finishedIds = watchProgressRepository.getWatchedIds()
+                val fromPeopleYouFollow = movieRepository
+                    .getMoviesByIds(feedRepository.getTrendingAmongFollowing().take(ROW_LIMIT * 2))
+                    .filter { it.id !in finishedIds }
+                    .take(ROW_LIMIT)
+
+                // Hidden gems: well-reviewed but under-watched, from a rating-sorted pool. The
+                // view cap is what makes them "hidden" — otherwise this is just Top Rated.
+                val hiddenGems = movieRepository
+                    .browse(sort = MovieSort.RATING, comingSoon = false, limit = 60)
+                    .filter { it.averageRating >= GEM_MIN_RATING && it.viewsCount <= GEM_MAX_VIEWS }
+                    .take(ROW_LIMIT)
+
+                // New for you: this week's arrivals narrowed to the genres the user actually
+                // picked — the personalised half of New Releases.
+                val newForYou = newReleases
+                    .filter { movie -> movie.genres.any { it in userGenres } }
+                    .take(ROW_LIMIT)
 
                 HomeUiState(
                     isLoading = false,
@@ -103,11 +138,35 @@ class HomeViewModel @Inject constructor(
                     comingSoon = comingSoon,
                     genreRows = genreRows,
                     becauseYouWatched = becauseYouWatched,
+                    topPicks = topPicks,
+                    fromPeopleYouFollow = fromPeopleYouFollow,
+                    hiddenGems = hiddenGems,
+                    newForYou = newForYou,
                 )
             }.fold(
                 onSuccess = { loaded -> _state.value = loaded },
                 onFailure = { e -> _state.update { it.copy(isLoading = false, error = e.toAppError()) } },
             )
         }
+    }
+
+    /**
+     * "Not interested" on a recommended title.
+     *
+     * Drops it from every rec rail on screen straight away rather than waiting for a reload —
+     * a dismissal that leaves the poster sitting there reads as a no-op. The write is what
+     * makes it stick: the next nightly build reads recFeedback and excludes it. Rails that fall
+     * below three movies as a result disappear, matching how they were built.
+     */
+    fun notInterested(movieId: String) {
+        _state.update { current ->
+            current.copy(
+                topPicks = current.topPicks.filterNot { it.id == movieId },
+                becauseYouWatched = current.becauseYouWatched
+                    .map { row -> row.copy(movies = row.movies.filterNot { it.id == movieId }) }
+                    .filter { it.movies.size >= 3 },
+            )
+        }
+        viewModelScope.launch { recsRepository.dismiss(movieId) }
     }
 }

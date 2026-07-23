@@ -317,11 +317,11 @@
 ### Week 27 — Recommendations Engine (Android) (Days 183–189) (A)
 - **Day 183** ✅ — Per-user rec doc (`recs/{userId}`) + `buildRecommendations` scheduled function (24h, europe-west4): content-overlap scoring from watched/liked/reacted/watchlisted signals over genre/cast/directors, **no ML**. Writes a "For you" row + "Because you watched X" rails; `recFeedback` dismissals are excluded. Rules: recs are self-read/function-write-only.
 - **Day 184** ✅ — "Because you watched X" rows on Home (Android), consuming the `recs/{userId}` rows from Day 183 — placed high, absent until the nightly function has built recs. "More like this" on detail already shipped (Day 33, content-similarity via getRelated).
-- **Day 185** — "Top picks for you" row (weighted by taste profile + history).
-- **Day 186** — "Trending among people you follow" (social recommendation row).
-- **Day 187** — "Hidden gems" / "New for you" rows; row ordering personalization.
-- **Day 188** — Rec feedback ("not interested", "seen it") → tune future recs.
-- **Day 189** — Week review.
+- **Day 185** ✅ — "Top picks for you" row on Home (Android), rendering the rec doc’s `topPicks` ranking resolved via `getMoviesByIds`.
+- **Day 186** ✅ — "From people you follow" row: `FeedRepository.getTrendingAmongFollowing()` aggregates the viewer’s own feed by movie, most-mentioned first. The feed is already fanned out from followed accounts, so no follow lookup or extra collection read is needed; titles the viewer has finished are dropped.
+- **Day 187** ✅ — "Hidden gems" (rating ≥ 3.8 **and** views ≤ 500 from a rating-sorted pool — the view cap is what stops it being Top Rated again) and "New for you" (new releases narrowed to the user’s chosen genres). Row ordering is personalisation-first: top picks → rec rails → social → new-for-you → catalogue-wide rows, each skipped when empty so a new account collapses to the generic order.
+- **Day 188** ✅ — "Not interested" in the movie option sheet, offered **only** on recommended rows. Removes the title from every rec rail on screen immediately and writes `recFeedback`, which the next nightly build excludes. Also added `WatchProgressRepository.getWatchedIds()` — `getContinueWatching()` drops completed entries by design, so "seen it" filtering needed its own query.
+- **Day 189** ✅ — **Week review.** The rec engine is complete end-to-end on Android: nightly server-side build (183) → four personalised rails (184–187) → feedback that tunes the next build (188). Design held up: all scoring stays server-side and the clients only render what the function produced, so both platforms share one ranking with no duplicated logic. **Caveat: none of this has run against real data** — `buildRecommendations` is on a 24h timer with no seeded catalogue or watch signals, so every rail is currently empty on all accounts and the rows have only been verified by compilation. First real validation needs a seeded catalogue plus watch/like activity.
 
 ### Week 28 — Recommendations (Web) + Admin Curation (Days 190–196) (W)
 - **Day 190** ✅ — "Because you watched X" rows on web home, consuming `recs/{userId}` via a client snapshot (read-only; resolved against the loaded catalogue, ranking preserved, rows <3 dropped). Detail "More like this" already shipped (`pickRelated`), so detail parity was in place.

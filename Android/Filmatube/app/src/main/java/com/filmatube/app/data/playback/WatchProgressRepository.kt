@@ -72,6 +72,25 @@ class WatchProgressRepository @Inject constructor(
         }.getOrDefault(emptyList())
     }
 
+    /**
+     * Ids the user has finished.
+     *
+     * Its own query rather than a filter over [getContinueWatching], which drops completed
+     * entries by design — recommendation rails need exactly the titles that one hides.
+     */
+    suspend fun getWatchedIds(limit: Int = 100): Set<String> = withContext(ioDispatcher) {
+        val uid = auth.currentUser?.uid ?: return@withContext emptySet()
+        runCatching {
+            firestore.collection("watchProgress").document(uid).collection("items")
+                .whereEqualTo("completed", true)
+                .limit(limit.toLong())
+                .get().await()
+                .documents
+                .map { it.getString("movieId") ?: it.id }
+                .toSet()
+        }.getOrDefault(emptySet())
+    }
+
     companion object {
         private const val COMPLETE_THRESHOLD = 0.9 // watched ≥ 90% ⇒ completed
     }

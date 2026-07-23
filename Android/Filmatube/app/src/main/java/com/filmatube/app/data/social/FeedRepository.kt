@@ -81,6 +81,30 @@ class FeedRepository @Inject constructor(
         awaitClose { registration.remove() }
     }
 
+    /**
+     * Movie ids from recent feed activity, most-mentioned first — "trending among people you
+     * follow". The feed is already fanned out from the accounts this user follows, so counting
+     * its events by movie needs no follow lookup and no extra collection reads.
+     */
+    suspend fun getTrendingAmongFollowing(limit: Int = 100): List<String> = withContext(ioDispatcher) {
+        val uid = auth.currentUser?.uid ?: return@withContext emptyList()
+        val snap = runCatching {
+            events(uid)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(limit.toLong())
+                .get()
+                .await()
+        }.getOrNull() ?: return@withContext emptyList()
+
+        snap.documents
+            .mapNotNull { it.getString("movieId")?.takeIf(String::isNotBlank) }
+            .groupingBy { it }
+            .eachCount()
+            .entries
+            .sortedByDescending { it.value }
+            .map { it.key }
+    }
+
     /** Fan-out an activity event to the current user's followers. Best-effort. */
     suspend fun publish(type: String, movieId: String, movieTitle: String) = withContext(ioDispatcher) {
         val uid = auth.currentUser?.uid ?: return@withContext
