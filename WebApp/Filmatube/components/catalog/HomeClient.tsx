@@ -138,14 +138,13 @@ export function HomeClient({
   }
 
   const featured = pickFeatured(movies);
-  const hero = featured[0] ?? movies[0];
   const genreRows = genrePrefs
     .map((key) => ({ key, movies: pickByGenre(movies, key) }))
     .filter((row) => row.movies.length > 0);
 
   return (
     <div>
-      <Hero movie={hero} locale={locale} dict={dict} />
+      <Hero movies={featured.length > 0 ? featured : movies.slice(0, 1)} locale={locale} dict={dict} />
       <div className="mx-auto max-w-6xl space-y-8 py-8">
         {/* Continue Watching gets no "See all" — it isn't a browsable slice, matching Android.
             Every other row's target mirrors the Android home rows exactly. */}
