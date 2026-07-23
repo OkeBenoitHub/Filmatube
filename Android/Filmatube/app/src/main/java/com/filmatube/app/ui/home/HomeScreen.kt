@@ -46,6 +46,7 @@ import com.filmatube.app.domain.model.Movie
 import com.filmatube.app.domain.repository.MovieSort
 import com.filmatube.app.ui.navigation.BrowseTarget
 import com.filmatube.app.ui.components.ContentRow
+import com.filmatube.app.ui.components.ContinueWatchingTile
 import com.filmatube.app.ui.components.ContentRowShimmer
 import com.filmatube.app.ui.components.EmptyView
 import com.filmatube.app.ui.components.ErrorView
@@ -106,7 +107,12 @@ private fun HomeContent(
                 items = state.continueWatching,
                 key = { it.movie.id },
             ) { item ->
-                ContinueWatchingTile(item = item, language = language, onPlay = onPlay)
+                ContinueWatchingTile(
+                    posterUrl = item.movie.posterUrl,
+                    title = item.movie.title.get(language),
+                    progress = item.progress,
+                    onClick = { onPlay(item.movie.id) },
+                )
             }
         }
         // Personalised rails, high on the page — Netflix places "Because you watched" near the
@@ -145,50 +151,6 @@ private fun HomeContent(
             }
         }
         Spacer(Modifier.height(FilmatubeSpacing.xxl))
-    }
-}
-
-@Composable
-private fun ContinueWatchingTile(
-    item: ContinueWatchingItem,
-    language: String,
-    onPlay: (String) -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .width(PosterTileWidth)
-            .clickable { onPlay(item.movie.id) },
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(2f / 3f)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
-        ) {
-            AsyncImage(
-                model = item.movie.posterUrl,
-                contentDescription = item.movie.title.get(language),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
-            LinearProgressIndicator(
-                progress = { item.progress.coerceIn(0f, 1f) },
-                color = MaterialTheme.colorScheme.primary,
-                trackColor = Color.Black.copy(alpha = 0.45f),
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .height(4.dp),
-            )
-        }
-        Spacer(Modifier.height(FilmatubeSpacing.sm))
-        Text(
-            text = item.movie.title.get(language),
-            style = MaterialTheme.typography.bodySmall,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
     }
 }
 
