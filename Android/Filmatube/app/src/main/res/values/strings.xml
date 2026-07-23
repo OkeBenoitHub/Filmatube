@@ -271,6 +271,7 @@
     <string name="search_trending">Trending</string>
     <string name="search_clear">Clear</string>
     <string name="search_no_results">No results found.</string>
+    <string name="search_no_results_hint">Try a different title, or clear a filter.</string>
     <string name="search_rating">Rating</string>
     <string name="search_rating_any">Any rating</string>
     <string name="search_rating_3">3★ &amp; up</string>

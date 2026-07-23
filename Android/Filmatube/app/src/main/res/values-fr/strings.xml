@@ -271,6 +271,7 @@
     <string name="search_trending">Tendances</string>
     <string name="search_clear">Effacer</string>
     <string name="search_no_results">Aucun résultat.</string>
+    <string name="search_no_results_hint">Essayez un autre titre, ou retirez un filtre.</string>
     <string name="search_rating">Note</string>
     <string name="search_rating_any">Toutes les notes</string>
     <string name="search_rating_3">3★ et plus</string>

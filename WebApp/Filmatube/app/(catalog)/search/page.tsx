@@ -17,6 +17,9 @@ export default async function SearchPage() {
       isComingSoon: m.isComingSoon,
     }));
 
+  // Years present in the catalogue, newest first — the year filter's options.
+  const years = [...new Set(movies.map((m) => m.year).filter(Boolean))].sort((a, b) => b - a);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 md:px-6">
       {/* ── Hero header (Spotitube pattern, green) ─────────────── */}
@@ -34,7 +37,7 @@ export default async function SearchPage() {
       </div>
 
       <div className="mt-12">
-        <SearchClient dict={c} trending={trending} />
+        <SearchClient dict={c} genres={dict.genres} trending={trending} years={years} />
       </div>
     </div>
   );

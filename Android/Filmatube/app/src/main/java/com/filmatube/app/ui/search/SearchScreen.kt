@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -49,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.filmatube.app.R
+import com.filmatube.app.domain.model.Movie
 import com.filmatube.app.domain.util.DataState
 import com.filmatube.app.ui.components.EmptyView
 import com.filmatube.app.ui.components.ErrorView
@@ -144,74 +147,95 @@ fun SearchScreen(
 
         Box(modifier = Modifier.fillMaxSize()) {
             if (query.isBlank()) {
-                Suggestions(
+                // Idle: recent-term chips, then a poster grid of what's popular now — a search
+                // page is far more inviting showing real movies than an empty box.
+                IdleSuggestions(
                     recent = recent,
-                    trendingTitles = trending.map { it.title.get(language) },
+                    trending = trending,
+                    language = language,
                     onUse = viewModel::useTerm,
                     onClearRecent = viewModel::clearRecent,
+                    onMovieClick = onMovieClick,
                 )
             } else {
                 when (val r = results) {
                     DataState.Loading -> LoadingView()
-                    DataState.Empty -> EmptyView(message = stringResource(R.string.search_no_results))
+                    DataState.Empty -> EmptyView(
+                        icon = Icons.Outlined.SearchOff,
+                        title = stringResource(R.string.search_no_results),
+                        message = stringResource(R.string.search_no_results_hint),
+                    )
                     is DataState.Error -> ErrorView(error = r.error, onRetry = { viewModel.onQueryChange(query) })
-                    is DataState.Success -> LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = 110.dp),
-                        contentPadding = PaddingValues(FilmatubeSpacing.lg),
-                        horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
-                        verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
-                    ) {
-                        items(r.data, key = { it.id }) { movie ->
-                            MoviePosterTile(
-                                movie = movie,
-                                language = language,
-                                width = null,
-                                onClick = { onMovieClick(movie.id) },
-                            )
-                        }
-                    }
+                    is DataState.Success -> ResultsGrid(r.data, language, onMovieClick)
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+/** The shared poster grid used for both results and the idle "popular now" section. */
 @Composable
-private fun Suggestions(
-    recent: List<String>,
-    trendingTitles: List<String>,
-    onUse: (String) -> Unit,
-    onClearRecent: () -> Unit,
+private fun ResultsGrid(
+    movies: List<Movie>,
+    language: String,
+    onMovieClick: (String) -> Unit,
+    header: (@Composable () -> Unit)? = null,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = FilmatubeSpacing.lg),
-        verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 108.dp),
+        contentPadding = PaddingValues(FilmatubeSpacing.lg),
+        horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.lg),
     ) {
-        if (recent.isNotEmpty()) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.search_recent), style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.weight(1f))
-                TextButton(onClick = onClearRecent) { Text(stringResource(R.string.search_clear)) }
-            }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {
-                recent.forEach { term ->
-                    SuggestionChip(onClick = { onUse(term) }, label = { Text(term) })
-                }
-            }
+        if (header != null) {
+            item(span = { GridItemSpan(maxLineSpan) }) { header() }
         }
-        if (trendingTitles.isNotEmpty()) {
-            Text(stringResource(R.string.search_trending), style = MaterialTheme.typography.titleMedium)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {
-                trendingTitles.forEach { title ->
-                    SuggestionChip(onClick = { onUse(title) }, label = { Text(title) })
-                }
-            }
+        items(movies, key = { it.id }) { movie ->
+            MoviePosterTile(movie = movie, language = language, width = null, onClick = { onMovieClick(movie.id) })
         }
     }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun IdleSuggestions(
+    recent: List<String>,
+    trending: List<Movie>,
+    language: String,
+    onUse: (String) -> Unit,
+    onClearRecent: () -> Unit,
+    onMovieClick: (String) -> Unit,
+) {
+    // The recent-term chips ride above the grid as its header, so the whole thing is one
+    // scroll rather than a fixed block over a scrolling grid.
+    ResultsGrid(
+        movies = trending,
+        language = language,
+        onMovieClick = onMovieClick,
+        header = {
+            Column(verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md)) {
+                if (recent.isNotEmpty()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.search_recent), style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.weight(1f))
+                        TextButton(onClick = onClearRecent) { Text(stringResource(R.string.search_clear)) }
+                    }
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {
+                        recent.forEach { term ->
+                            SuggestionChip(onClick = { onUse(term) }, label = { Text(term) })
+                        }
+                    }
+                }
+                if (trending.isNotEmpty()) {
+                    Text(
+                        stringResource(R.string.search_trending),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(top = if (recent.isNotEmpty()) FilmatubeSpacing.sm else 0.dp),
+                    )
+                }
+            }
+        },
+    )
 }
 
 @Composable
