@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Globe } from "lucide-react";
+import { CollectionCard } from "@/components/collections/CollectionCard";
 import { NewCollectionButton } from "@/components/collections/NewCollectionButton";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getDict } from "@/lib/i18n/server";
@@ -25,20 +24,7 @@ export default async function CollectionsPage() {
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
           {collections.map((col) => (
-            <Link key={col.id} href={`/collections/${col.id}`} className="group block">
-              <div className="relative aspect-video overflow-hidden rounded-lg border border-surface-border bg-surface-hover">
-                {col.coverUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={col.coverUrl} alt="" className="h-full w-full object-cover" />
-                )}
-                {col.isPublic && (
-                  <span className="absolute right-1.5 top-1.5 rounded bg-black/60 p-1 text-white">
-                    <Globe className="h-3.5 w-3.5" aria-hidden />
-                  </span>
-                )}
-              </div>
-              <p className="mt-1.5 truncate text-sm font-medium text-ink">{col.title}</p>
-            </Link>
+            <CollectionCard key={col.id} collection={col} isOwner />
           ))}
         </div>
       )}

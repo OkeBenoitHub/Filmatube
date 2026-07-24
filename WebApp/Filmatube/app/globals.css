@@ -40,3 +40,25 @@
 .scrollbar-green::-webkit-scrollbar-thumb:hover {
   background-color: theme("colors.brand.500");
 }
+
+/* Green scrollbars across the whole app — every scroll container EXCEPT the main page (html/body
+   keep the OS scrollbar). Class utilities (.no-scrollbar) still win on specificity, so hidden
+   strips like the nav stay hidden. */
+*:not(html):not(body) {
+  scrollbar-width: thin;
+  scrollbar-color: theme("colors.brand.600") transparent;
+}
+*:not(html):not(body)::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*:not(html):not(body)::-webkit-scrollbar-track {
+  background: transparent;
+}
+*:not(html):not(body)::-webkit-scrollbar-thumb {
+  background-color: theme("colors.brand.600");
+  border-radius: 9999px;
+}
+*:not(html):not(body)::-webkit-scrollbar-thumb:hover {
+  background-color: theme("colors.brand.500");
+}

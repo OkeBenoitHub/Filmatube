@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { Globe, LibraryBig } from "lucide-react";
+import { LibraryBig } from "lucide-react";
 import { MovieCard } from "@/components/catalog/MovieCard";
 import { ContinueWatchingRow } from "@/components/catalog/ContinueWatchingRow";
+import { HScroller } from "@/components/catalog/HScroller";
+import { CollectionCard } from "@/components/collections/CollectionCard";
 import { NewCollectionButton } from "@/components/collections/NewCollectionButton";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getDict, getLocale } from "@/lib/i18n/server";
@@ -34,34 +36,23 @@ export default async function LibraryPage() {
 
       {/* Collections */}
       <section className="space-y-3">
-        <div className="flex items-center justify-between px-4 md:px-6">
+        <div className="flex items-center justify-between gap-3 px-4 md:px-6">
           <h2 className="text-lg font-semibold text-ink">{c.collections}</h2>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <NewCollectionButton label={c.newCollection} />
-            <Link href="/collections" className="text-sm text-brand-400 hover:underline">
-              {c.browse}
-            </Link>
+            {collections.length > 0 && (
+              <Link href="/collections" className="shrink-0 text-sm font-semibold text-brand-400 transition-colors hover:text-brand-300">
+                {c.seeAll}
+              </Link>
+            )}
           </div>
         </div>
         {collections.length > 0 && (
-          <div className="flex gap-3 overflow-x-auto px-4 pb-2 md:px-6">
+          <HScroller>
             {collections.slice(0, 12).map((col) => (
-              <Link key={col.id} href={`/collections/${col.id}`} className="w-44 shrink-0">
-                <div className="relative aspect-video overflow-hidden rounded-xl border border-surface-border bg-surface-hover transition-colors hover:border-brand-700/60">
-                  {col.coverUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={col.coverUrl} alt="" className="h-full w-full object-cover" />
-                  )}
-                  {col.isPublic && (
-                    <span className="absolute right-1.5 top-1.5 rounded bg-black/60 p-1 text-white">
-                      <Globe className="h-3 w-3" aria-hidden />
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1.5 truncate text-sm text-ink">{col.title}</p>
-              </Link>
+              <CollectionCard key={col.id} collection={col} isOwner className="w-44 shrink-0 snap-start" />
             ))}
-          </div>
+          </HScroller>
         )}
       </section>
 

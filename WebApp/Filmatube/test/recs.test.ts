@@ -31,8 +31,12 @@ type Signals = {
 
 const FieldValue = { serverTimestamp: () => "TS" };
 
-function snap(obj: Record<string, Record<string, unknown>>) {
-  const docs = Object.entries(obj).map(([id, d]) => ({ id, data: () => d, get: (k: string) => d[k] }));
+function snap<T>(obj: Record<string, T>) {
+  const docs = Object.entries(obj).map(([id, d]) => ({
+    id,
+    data: () => d,
+    get: (k: string) => (d as Record<string, unknown>)[k],
+  }));
   return { docs, size: docs.length, empty: docs.length === 0, forEach: (fn: (d: unknown) => void) => docs.forEach(fn) };
 }
 
