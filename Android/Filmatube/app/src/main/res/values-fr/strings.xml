@@ -166,6 +166,8 @@
     <string name="collection_delete_confirm">Supprimer cette collection ? Action irréversible.</string>
     <string name="collection_add_movies">Ajouter des films</string>
     <string name="collection_search_hint">Rechercher des films à ajouter…</string>
+    <string name="collections_search_hint">Rechercher des collections</string>
+    <string name="collections_subtitle">Vos listes de films sélectionnées à la main.</string>
     <string name="collection_remove">Retirer</string>
     <string name="collection_public">Publique</string>
     <string name="collection_private">Privée</string>

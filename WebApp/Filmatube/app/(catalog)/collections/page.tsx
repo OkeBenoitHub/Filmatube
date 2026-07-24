@@ -1,4 +1,6 @@
-import { CollectionCard } from "@/components/collections/CollectionCard";
+import { Library } from "lucide-react";
+import { PageHero } from "@/components/ui/PageHero";
+import { CollectionsGrid } from "@/components/collections/CollectionsGrid";
 import { NewCollectionButton } from "@/components/collections/NewCollectionButton";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getDict } from "@/lib/i18n/server";
@@ -13,20 +15,17 @@ export default async function CollectionsPage() {
   const c = dict.catalog;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 md:px-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-ink">{c.collections}</h1>
+    <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 md:px-6">
+      <PageHero icon={Library} eyebrow={c.libraryTitle} title={c.collections} subtitle={c.collectionsSubtitle}>
         <NewCollectionButton label={c.newCollection} />
-      </div>
+      </PageHero>
 
       {collections.length === 0 ? (
-        <p className="py-16 text-center text-ink-muted">{c.noCollections}</p>
-      ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-          {collections.map((col) => (
-            <CollectionCard key={col.id} collection={col} isOwner />
-          ))}
+        <div className="rounded-2xl border border-dashed border-surface-border py-16 text-center">
+          <p className="text-ink-muted">{c.noCollections}</p>
         </div>
+      ) : (
+        <CollectionsGrid collections={collections} dict={c} />
       )}
     </div>
   );

@@ -166,6 +166,8 @@
     <string name="collection_delete_confirm">Delete this collection? This cannot be undone.</string>
     <string name="collection_add_movies">Add movies</string>
     <string name="collection_search_hint">Search movies to add…</string>
+    <string name="collections_search_hint">Search collections</string>
+    <string name="collections_subtitle">Your hand-picked movie lists.</string>
     <string name="collection_remove">Remove</string>
     <string name="collection_public">Public</string>
     <string name="collection_private">Private</string>
