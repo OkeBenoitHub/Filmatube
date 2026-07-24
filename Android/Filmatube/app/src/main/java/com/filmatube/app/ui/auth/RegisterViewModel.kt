@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.filmatube.app.R
 import com.filmatube.app.data.auth.GoogleAuthClient
+import com.filmatube.app.data.referral.ReferralRepository
 import com.filmatube.app.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +37,7 @@ data class RegisterUiState(
 class RegisterViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val googleAuthClient: GoogleAuthClient,
+    private val referralRepository: ReferralRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(RegisterUiState())
@@ -100,6 +102,10 @@ class RegisterViewModel @Inject constructor(
 
     private suspend fun resolveTarget(): AuthNavTarget {
         val needsTaste = runCatching { authRepository.needsTasteOnboarding() }.getOrDefault(true)
+        // A fresh account still needs taste onboarding — the moment to attribute a captured invite.
+        // The server ignores it for existing accounts, so this is safe even on Google sign-in of a
+        // returning user via the register screen.
+        if (needsTaste) referralRepository.attributePendingInvite()
         return if (needsTaste) AuthNavTarget.TASTE else AuthNavTarget.MAIN
     }
 }

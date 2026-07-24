@@ -334,7 +334,7 @@
 
 ### Week 29 — Referral + Gamification (Android) (Days 197–203) (A)
 - **Day 197** ✅ — **Referral foundation**: invite link `/invite/{uid}` (code = referrer uid, no lookup table) → branded landing that drops a `filmatube.ref` cookie; the session route attributes it once on first sign-up, writing `referrals/{referredId}` (server-only via admin SDK). Rules deployed (client writes blocked; referrer/referred read own). Self-referral + repeat-referral guarded.
-- **Day 198** — Invite-a-friend UI (share sheet, contacts); referral status screen.
+- **Day 198** ✅ — Invite-a-friend UI + referral status, both platforms. Web `/refer` (link + copy/Web-Share + friends-joined list; account entry). Android `ReferralScreen` (link + share-sheet Intent + friends list; Profile entry). Android attribution: `filmatube://invite/{code}` deep link → captured in prefs → POST `/api/referral` (bearer) on first sign-up (referrals stay server-write-only). New `POST /api/referral` endpoint.
 - **Day 199** — Referral rewards (badge, early premiere access); FCM on successful referral.
 - **Day 200** — Achievement engine + badges (First Watch, Binge Watcher, Cinephile, Critic, Social Butterfly, Premiere Goer, **Recruiter**).
 - **Day 201** — Stats dashboard: watch hours, movies completed, top genres; badges + stats on profile.

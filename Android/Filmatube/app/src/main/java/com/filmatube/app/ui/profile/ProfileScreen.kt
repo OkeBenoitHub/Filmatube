@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CardGiftcard
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Notifications
@@ -55,6 +56,7 @@ fun ProfileScreen(
     onEditProfile: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenLibrary: () -> Unit,
+    onOpenReferral: () -> Unit,
     onOpenFollowers: () -> Unit,
     onOpenFollowing: () -> Unit,
     onOpenSuggestions: () -> Unit,
@@ -80,6 +82,7 @@ fun ProfileScreen(
                 onEditProfile = onEditProfile,
                 onOpenSettings = onOpenSettings,
                 onOpenLibrary = onOpenLibrary,
+                onOpenReferral = onOpenReferral,
                 onOpenFollowers = onOpenFollowers,
                 onOpenFollowing = onOpenFollowing,
                 onOpenSuggestions = onOpenSuggestions,
@@ -99,6 +102,7 @@ private fun ProfileContent(
     onEditProfile: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenLibrary: () -> Unit,
+    onOpenReferral: () -> Unit,
     onOpenFollowers: () -> Unit,
     onOpenFollowing: () -> Unit,
     onOpenSuggestions: () -> Unit,
@@ -191,6 +195,12 @@ private fun ProfileContent(
                 title = stringResource(R.string.my_library),
                 description = stringResource(R.string.profile_link_library_desc),
                 onClick = onOpenLibrary,
+            )
+            QuickLinkCard(
+                icon = Icons.Outlined.CardGiftcard,
+                title = stringResource(R.string.referral_title),
+                description = stringResource(R.string.profile_link_referral_desc),
+                onClick = onOpenReferral,
             )
             QuickLinkCard(
                 icon = Icons.Outlined.Notifications,

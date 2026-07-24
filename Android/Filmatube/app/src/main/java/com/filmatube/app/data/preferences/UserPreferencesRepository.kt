@@ -47,6 +47,7 @@ class UserPreferencesRepository @Inject constructor(
         val NOTIF_SOCIAL = booleanPreferencesKey("notif_social")
         val NOTIF_CONTENT = booleanPreferencesKey("notif_content")
         val NOTIF_SYSTEM = booleanPreferencesKey("notif_system")
+        val PENDING_INVITE_CODE = stringPreferencesKey("pending_invite_code")
     }
 
     private companion object {
@@ -73,6 +74,18 @@ class UserPreferencesRepository @Inject constructor(
 
     suspend fun setActiveProfileId(id: String) {
         dataStore.edit { prefs -> prefs[Keys.ACTIVE_PROFILE_ID] = id }
+    }
+
+    /** A referral code captured from an invite deep link, pending attribution at sign-up. */
+    val pendingInviteCode: Flow<String?> =
+        preferences.map { prefs -> prefs[Keys.PENDING_INVITE_CODE] }
+
+    suspend fun setPendingInviteCode(code: String) {
+        dataStore.edit { prefs -> prefs[Keys.PENDING_INVITE_CODE] = code }
+    }
+
+    suspend fun clearPendingInviteCode() {
+        dataStore.edit { prefs -> prefs.remove(Keys.PENDING_INVITE_CODE) }
     }
 
     /** Recent search terms, most-recent first. */

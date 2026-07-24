@@ -25,6 +25,7 @@ import com.filmatube.app.ui.social.CommentsScreen
 import com.filmatube.app.ui.detail.ActorScreen
 import com.filmatube.app.ui.detail.MovieDetailScreen
 import com.filmatube.app.ui.downloads.DownloadsScreen
+import com.filmatube.app.ui.referral.ReferralScreen
 import com.filmatube.app.ui.home.HomeScreen
 import com.filmatube.app.ui.landing.LandingScreen
 import com.filmatube.app.ui.notifications.NotificationCenterScreen
@@ -54,6 +55,7 @@ private const val ROUTE_PROFILE_EDIT = "profile/edit"
 private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_PROFILES = "settings/profiles"
 private const val ROUTE_DOWNLOADS = "downloads"
+private const val ROUTE_REFERRAL = "referral"
 private const val ROUTE_LIBRARY = "library"
 private const val ROUTE_LIBRARY_ALL = "libraryAll/{section}"
 private const val ROUTE_COLLECTION = "collection/{collectionId}"
@@ -239,6 +241,7 @@ fun FilmatubeNavHost(
                 onEditProfile = { navController.navigate(ROUTE_PROFILE_EDIT) },
                 onOpenSettings = { navController.navigate(ROUTE_SETTINGS) },
                 onOpenLibrary = { navController.navigate(ROUTE_LIBRARY) },
+                onOpenReferral = { navController.navigate(ROUTE_REFERRAL) },
                 onOpenFollowers = { navController.navigate(followsRoute("followers")) },
                 onOpenFollowing = { navController.navigate(followsRoute("following")) },
                 onOpenSuggestions = { navController.navigate(ROUTE_SUGGESTIONS) },
@@ -275,6 +278,9 @@ fun FilmatubeNavHost(
         }
         composable(ROUTE_DOWNLOADS) {
             DownloadsScreen(onBack = { navController.popBackStack() })
+        }
+        composable(ROUTE_REFERRAL) {
+            ReferralScreen(onBack = { navController.popBackStack() })
         }
         composable(ROUTE_LIBRARY) {
             LibraryScreen(

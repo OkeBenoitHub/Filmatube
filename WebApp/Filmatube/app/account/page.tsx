@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, ChevronRight, Clapperboard, Pencil, Users, type LucideIcon } from "lucide-react";
+import { Bell, ChevronRight, Clapperboard, Gift, Pencil, Users, type LucideIcon } from "lucide-react";
 import { AccountHeader } from "@/components/account/AccountHeader";
 import { Avatar } from "@/components/account/Avatar";
 import { requireUser } from "@/lib/auth/guards";
@@ -18,6 +18,7 @@ export default async function AccountPage() {
     { href: "/account/profiles", icon: Users, title: a.manageProfiles, desc: a.profilesSubtitle },
     { href: "/account/notifications", icon: Bell, title: c.notifPrefsTitle, desc: c.notifPrefsDesc },
     { href: "/requests", icon: Clapperboard, title: c.requestMovie, desc: c.requestsSubtitle },
+    { href: "/refer", icon: Gift, title: dict.referral.dashTitle, desc: dict.referral.accountDesc },
   ];
 
   return (
