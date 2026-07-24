@@ -72,6 +72,7 @@ fun ProfileScreen(
     val followingCount by viewModel.followingCount.collectAsStateWithLifecycle()
     val unreadNotifications by viewModel.unreadNotifications.collectAsStateWithLifecycle()
     val badges by viewModel.badges.collectAsStateWithLifecycle()
+    val stats by viewModel.stats.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize()) {
         when (val s = state) {
@@ -93,6 +94,7 @@ fun ProfileScreen(
                 onOpenInbox = onOpenInbox,
                 onOpenNotifications = onOpenNotifications,
                 badges = badges,
+                stats = stats,
             )
         }
     }
@@ -114,6 +116,7 @@ private fun ProfileContent(
     onOpenNotifications: () -> Unit,
     onOpenInbox: () -> Unit,
     badges: Set<String>,
+    stats: com.filmatube.app.data.achievements.UserStats,
 ) {
     Column(
         modifier = Modifier
@@ -176,7 +179,7 @@ private fun ProfileContent(
                 modifier = Modifier.weight(1f),
             )
             StatCard(
-                value = "0",
+                value = stats.moviesCompleted.toString(),
                 label = stringResource(R.string.profile_watched),
                 modifier = Modifier.weight(1f),
             )
@@ -235,10 +238,69 @@ private fun ProfileContent(
             )
         }
 
+        StatsSection(stats = stats)
+
         BadgesSection(earned = badges)
 
         Spacer(Modifier.height(FilmatubeSpacing.xl))
     }
+}
+
+/**
+ * Watch stats. Single headline numbers, so these are stat tiles rather than any kind of plot;
+ * the top-genre chips carry identity in their labels, not in colour.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun StatsSection(stats: com.filmatube.app.data.achievements.UserStats) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = FilmatubeSpacing.lg),
+        verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm),
+    ) {
+        Text(stringResource(R.string.stats_title), style = MaterialTheme.typography.titleMedium)
+        Row(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md), modifier = Modifier.fillMaxWidth()) {
+            StatCard(
+                value = stats.watchHours.toString(),
+                label = stringResource(R.string.stat_hours),
+                modifier = Modifier.weight(1f),
+            )
+            StatCard(
+                value = stats.moviesCompleted.toString(),
+                label = stringResource(R.string.stat_movies),
+                modifier = Modifier.weight(1f),
+            )
+            StatCard(
+                value = stats.reviewsWritten.toString(),
+                label = stringResource(R.string.stat_reviews),
+                modifier = Modifier.weight(1f),
+            )
+        }
+        if (stats.topGenres.isNotEmpty()) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm), verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xs)) {
+                Text(
+                    stringResource(R.string.stat_top_genres),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                stats.topGenres.forEach { key ->
+                    Surface(shape = MaterialTheme.shapes.small, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+                        Text(
+                            genreLabel(key),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Localised genre name, falling back to the raw key for anything not in the catalogue. */
+@Composable
+private fun genreLabel(key: String): String {
+    val res = com.filmatube.app.ui.taste.Genre.entries.find { it.key == key }?.labelRes
+    return if (res != null) stringResource(res) else key.replaceFirstChar { it.uppercase() }
 }
 
 @OptIn(ExperimentalLayoutApi::class)

@@ -192,6 +192,11 @@
     <string name="referral_unlocked">Unlocked</string>
     <string name="referral_locked">Locked</string>
     <string name="badges_earned">%1$d of %2$d earned</string>
+    <string name="stats_title">Your stats</string>
+    <string name="stat_hours">Hours watched</string>
+    <string name="stat_movies">Movies finished</string>
+    <string name="stat_reviews">Reviews written</string>
+    <string name="stat_top_genres">Top genres</string>
     <string name="badge_first_watch">First Watch</string>
     <string name="badge_first_watch_desc">Finish your first movie</string>
     <string name="badge_binge_watcher">Binge Watcher</string>

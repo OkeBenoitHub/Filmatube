@@ -3,6 +3,8 @@ package com.filmatube.app.ui.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.filmatube.app.data.achievements.AchievementsRepository
+import com.filmatube.app.data.achievements.StatsRepository
+import com.filmatube.app.data.achievements.UserStats
 import com.filmatube.app.data.notifications.NotificationRepository
 import com.filmatube.app.data.social.FollowRepository
 import com.filmatube.app.domain.model.UserProfile
@@ -26,12 +28,16 @@ class ProfileViewModel @Inject constructor(
     followRepository: FollowRepository,
     notificationRepository: NotificationRepository,
     achievementsRepository: AchievementsRepository,
+    statsRepository: StatsRepository,
 ) : ViewModel() {
 
     private val uid: String? = authRepository.currentUser()?.uid
 
     val badges: StateFlow<Set<String>> = achievementsRepository.observeMyBadges()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
+    val stats: StateFlow<UserStats> = statsRepository.observeMyStats()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UserStats())
 
     val unreadNotifications: StateFlow<Int> = notificationRepository.unreadCount
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)

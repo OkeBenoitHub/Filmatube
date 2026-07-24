@@ -746,6 +746,65 @@ exports.onReviewWritten = onDocumentWritten(
   },
 );
 
+/**
+ * Nightly stats roll-up → `stats/{uid}` (Day 201): watch minutes, movies completed and top
+ * genres. Merged, so the trigger-maintained `reviewsWritten`/`premieresAttended` survive.
+ *
+ * Watch time counts partial views too (duration × progress), so the number reflects time actually
+ * spent rather than only finished films.
+ */
+exports.buildStats = onSchedule(
+  { schedule: "every 24 hours", region: "europe-west4" },
+  async () => {
+    const moviesSnap = await db.collection("movies").where("status", "==", "published").get();
+    const byId = new Map(moviesSnap.docs.map((d) => [d.id, d.data()]));
+
+    const cutoff = new Date(Date.now() - 30 * 24 * 3600e3);
+    const users = await db.collection("users").where("lastActiveAt", ">=", cutoff).limit(500).get();
+
+    let built = 0;
+    for (const user of users.docs) {
+      try {
+        const items = await db.collection("watchProgress").doc(user.id).collection("items").get();
+        let minutes = 0;
+        let completed = 0;
+        const genreTally = new Map();
+
+        for (const item of items.docs) {
+          const movie = byId.get(item.get("movieId") || item.id);
+          if (!movie) continue;
+          const done = item.get("completed") === true;
+          const progress = Math.min(1, Math.max(0, Number(item.get("progress") ?? 0)));
+          minutes += Number(movie.duration ?? 0) * (done ? 1 : progress);
+          if (done) {
+            completed += 1;
+            (movie.genres ?? []).forEach((g) => genreTally.set(g, (genreTally.get(g) ?? 0) + 1));
+          }
+        }
+
+        const topGenres = [...genreTally.entries()]
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3)
+          .map(([g]) => g);
+
+        await db.collection("stats").doc(user.id).set(
+          {
+            totalWatchMinutes: Math.round(minutes),
+            moviesCompleted: completed,
+            topGenres,
+            updatedAt: FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
+        built += 1;
+      } catch (e) {
+        console.error(`stats: failed for ${user.id}`, e);
+      }
+    }
+    console.log(`stats: built ${built}/${users.size}`);
+  },
+);
+
 /** Count premiere attendance for the Premiere Goer badge (increment-only; a badge is permanent). */
 exports.onPremiereAttended = onDocumentWritten(
   { document: "showtimes/{showtimeId}/attendees/{userId}", region: "europe-west4" },

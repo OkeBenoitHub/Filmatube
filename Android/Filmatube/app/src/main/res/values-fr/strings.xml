@@ -192,6 +192,11 @@
     <string name="referral_unlocked">Débloqué</string>
     <string name="referral_locked">Verrouillé</string>
     <string name="badges_earned">%1$d sur %2$d obtenus</string>
+    <string name="stats_title">Vos statistiques</string>
+    <string name="stat_hours">Heures vues</string>
+    <string name="stat_movies">Films terminés</string>
+    <string name="stat_reviews">Avis écrits</string>
+    <string name="stat_top_genres">Genres favoris</string>
     <string name="badge_first_watch">Première séance</string>
     <string name="badge_first_watch_desc">Terminez votre premier film</string>
     <string name="badge_binge_watcher">Marathonien</string>

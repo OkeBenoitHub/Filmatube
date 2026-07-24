@@ -881,6 +881,11 @@ const en = {
     collectionMovieCount: "{n} movies",
     collectionsSubtitle: "Your hand-picked movie lists.",
     searchCollections: "Search collections",
+    statsTitle: "Your stats",
+    statHours: "Hours watched",
+    statMovies: "Movies finished",
+    statReviews: "Reviews written",
+    statTopGenres: "Top genres",
     badgesTitle: "Achievements",
     badgesEarned: "{n} of {total} earned",
     badgeMeta: {
@@ -2013,6 +2018,11 @@ const fr: Dictionary = {
     collectionMovieCount: "{n} films",
     collectionsSubtitle: "Vos listes de films sélectionnées à la main.",
     searchCollections: "Rechercher des collections",
+    statsTitle: "Vos statistiques",
+    statHours: "Heures vues",
+    statMovies: "Films terminés",
+    statReviews: "Avis écrits",
+    statTopGenres: "Genres favoris",
     badgesTitle: "Réussites",
     badgesEarned: "{n} sur {total} obtenus",
     badgeMeta: {

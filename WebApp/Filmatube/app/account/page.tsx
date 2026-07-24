@@ -3,9 +3,11 @@ import { Bell, ChevronRight, Clapperboard, Gift, Pencil, Users, type LucideIcon 
 import { AccountHeader } from "@/components/account/AccountHeader";
 import { Avatar } from "@/components/account/Avatar";
 import { Badges } from "@/components/account/Badges";
+import { Stats } from "@/components/account/Stats";
 import { requireUser } from "@/lib/auth/guards";
 import { getDict } from "@/lib/i18n/server";
 import { getUserBadges } from "@/lib/achievements";
+import { getUserStats } from "@/lib/stats";
 import { getUserProfile } from "@/lib/user";
 
 export default async function AccountPage() {
@@ -13,7 +15,11 @@ export default async function AccountPage() {
   const dict = await getDict();
   const a = dict.account;
   const c = dict.catalog;
-  const [profile, badges] = await Promise.all([getUserProfile(user.uid), getUserBadges(user.uid)]);
+  const [profile, badges, stats] = await Promise.all([
+    getUserProfile(user.uid),
+    getUserBadges(user.uid),
+    getUserStats(user.uid),
+  ]);
 
   const links: { href: string; icon: LucideIcon; title: string; desc: string }[] = [
     { href: "/account/edit", icon: Pencil, title: a.edit, desc: a.editSubtitle },
@@ -52,7 +58,7 @@ export default async function AccountPage() {
         <div className="mt-10 grid grid-cols-3 gap-4">
           <Stat value={profile?.followersCount ?? 0} label={a.followers} />
           <Stat value={profile?.followingCount ?? 0} label={a.following} />
-          <Stat value={0} label={a.watched} />
+          <Stat value={stats.moviesCompleted} label={a.watched} />
         </div>
 
         {/* ── Quick links ── */}
@@ -75,7 +81,10 @@ export default async function AccountPage() {
           ))}
         </div>
 
-        {/* ── Achievements ── */}
+        {/* ── Stats + achievements ── */}
+        <div className="mt-10">
+          <Stats stats={stats} dict={c} genres={dict.genres} />
+        </div>
         <div className="mt-10">
           <Badges earned={badges} dict={c} />
         </div>

@@ -9,16 +9,22 @@ import { getDict } from "@/lib/i18n/server";
 import { getUserProfile } from "@/lib/user";
 import { getPublicCollections } from "@/lib/collections";
 import { getFollowerIds, getFollowingIds, tasteMatch } from "@/lib/social";
+import { getUserBadges } from "@/lib/achievements";
+import { getUserStats } from "@/lib/stats";
+import { Badges } from "@/components/account/Badges";
+import { Stats } from "@/components/account/Stats";
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [me, dict, profile, followerIds, followingIds, collections] = await Promise.all([
+  const [me, dict, profile, followerIds, followingIds, collections, badges, stats] = await Promise.all([
     getCurrentUser(),
     getDict(),
     getUserProfile(id),
     getFollowerIds(id),
     getFollowingIds(id),
     getPublicCollections(id),
+    getUserBadges(id),
+    getUserStats(id),
   ]);
   if (!profile) notFound();
   const c = dict.catalog;
@@ -72,6 +78,13 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
           ))}
         </div>
       )}
+
+      <div className="mt-10">
+        <Stats stats={stats} dict={c} genres={dict.genres} />
+      </div>
+      <div className="mt-10">
+        <Badges earned={badges} dict={c} />
+      </div>
 
       {collections.length > 0 && (
         <section className="mt-10 space-y-3">
