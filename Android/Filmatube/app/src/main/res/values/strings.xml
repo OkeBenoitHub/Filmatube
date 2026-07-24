@@ -186,6 +186,11 @@
     <string name="referral_friends_heading">Friends joined (%1$d)</string>
     <string name="referral_friends_empty">No one yet. Share your link to get started.</string>
     <string name="referral_joined">Joined</string>
+    <string name="referral_rewards_title">Rewards</string>
+    <string name="referral_recruiter">Recruiter</string>
+    <string name="referral_early_access">Early premiere access</string>
+    <string name="referral_unlocked">Unlocked</string>
+    <string name="referral_locked">Locked</string>
     <string name="library_empty">Your library is empty.</string>
     <string name="detail_download">Download</string>
     <string name="detail_downloading">Downloading…</string>

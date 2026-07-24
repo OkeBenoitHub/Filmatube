@@ -368,6 +368,15 @@ Keyed by the **referred** user, so nobody can be referred twice. Written **serve
 `filmatube.ref` cookie dropped by `/invite/{code}`. Rules block all client writes; the referred
 user and the referrer may read their own. Self-referral and unknown referrers are ignored.
 
+Creating a `referrals/{}` doc triggers `onReferralCreated` (Day 199), which rewards the referrer
+on `users/{referrerId}` (function-written; admin bypasses the self-only update rule):
+```
+referralCount  number     (incremented per successful referral)
+badges         string[]   (arrayUnion "recruiter"; the achievement engine reads this, Day 200)
+earlyAccess    boolean    (early-premiere-access entitlement)
+```
+and pushes a "Recruiter" notification (inbox + FCM) via `notifyUser`.
+
 ## Later versions (documented for planning, not yet enforced)
 - **v2.0:** `tvshows/*`, `animes/*` + `seasons`/`episodes` subcollections
 - **v2.1:** `subscriptions/{userId}`, `entitlements/{userId}`, `plans/{planId}`

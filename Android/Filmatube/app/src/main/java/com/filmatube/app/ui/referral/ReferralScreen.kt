@@ -17,7 +17,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.CardGiftcard
+import androidx.compose.material.icons.outlined.ConfirmationNumber
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.PersonAddAlt
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -114,6 +118,16 @@ fun ReferralScreen(
                 }
             }
 
+            // Rewards — unlocked once a first friend joins.
+            item {
+                val unlocked = state.friends.isNotEmpty()
+                Column(verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {
+                    Text(stringResource(R.string.referral_rewards_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    RewardRow(icon = Icons.Outlined.PersonAddAlt, label = stringResource(R.string.referral_recruiter), unlocked = unlocked)
+                    RewardRow(icon = Icons.Outlined.ConfirmationNumber, label = stringResource(R.string.referral_early_access), unlocked = unlocked)
+                }
+            }
+
             // Friends who joined.
             item {
                 Text(
@@ -148,5 +162,33 @@ fun ReferralScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun RewardRow(icon: ImageVector, label: String, unlocked: Boolean) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
+    ) {
+        Box(
+            modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp))
+                .background(if (unlocked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                if (unlocked) icon else Icons.Outlined.Lock,
+                contentDescription = null,
+                tint = if (unlocked) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+        Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        Text(
+            stringResource(if (unlocked) R.string.referral_unlocked else R.string.referral_locked),
+            style = MaterialTheme.typography.labelSmall,
+            color = if (unlocked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }

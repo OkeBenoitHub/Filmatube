@@ -186,6 +186,11 @@
     <string name="referral_friends_heading">Amis inscrits (%1$d)</string>
     <string name="referral_friends_empty">Personne pour l’instant. Partagez votre lien pour commencer.</string>
     <string name="referral_joined">Inscrit</string>
+    <string name="referral_rewards_title">Récompenses</string>
+    <string name="referral_recruiter">Recruteur</string>
+    <string name="referral_early_access">Accès anticipé aux avant-premières</string>
+    <string name="referral_unlocked">Débloqué</string>
+    <string name="referral_locked">Verrouillé</string>
     <string name="library_empty">Votre bibliothèque est vide.</string>
     <string name="detail_download">Télécharger</string>
     <string name="detail_downloading">Téléchargement…</string>

@@ -611,6 +611,52 @@ exports.processScheduledBroadcasts = onSchedule(
   }
 });
 
+// ───────── referral rewards (v1.3, Day 199) ─────────
+
+/** The perk a successful referrer unlocks: badge id + entitlement. */
+const RECRUITER_BADGE = "recruiter";
+
+/**
+ * When a referral is recorded (`referrals/{referredId}` created — server-write-only), reward and
+ * notify the referrer: bump their referral count, grant the Recruiter badge and early-premiere
+ * access, and push a notification. Trigger-based so it fires for both attribution paths (web
+ * session route and the Android `/api/referral` endpoint).
+ */
+exports.onReferralCreated = onDocumentWritten(
+  { document: "referrals/{referredId}", region: "europe-west4" },
+  async (event) => {
+    const before = event.data?.before;
+    const after = event.data?.after;
+    if (!after?.exists || before?.exists) return; // creates only
+
+    const referrerId = after.get("referrerId");
+    const referredId = after.get("referredId") || event.params.referredId;
+    if (!referrerId || referrerId === referredId) return;
+
+    // Reward the referrer. Cross-user write, which only the admin SDK (this function) may do.
+    await db.collection("users").doc(referrerId).set(
+      {
+        referralCount: FieldValue.increment(1),
+        badges: FieldValue.arrayUnion(RECRUITER_BADGE),
+        earlyAccess: true,
+      },
+      { merge: true },
+    );
+
+    const referred = await db.collection("users").doc(referredId).get();
+    const name = (referred.exists && referred.get("displayName")) || "A friend";
+
+    await notifyUser(referrerId, {
+      type: "referral",
+      category: "social",
+      title: "You earned Recruiter 🎬",
+      body: `${name} joined Filmatube through your invite. Early premiere access unlocked.`,
+      route: "/refer",
+      extra: { movieId: "" },
+    });
+  },
+);
+
 // ───────── recommendations (v1.3, Day 183) ─────────
 //
 // Scoring lives in ./recs-core.js so this scheduled pass and scripts/seed-recs-demo.mjs run

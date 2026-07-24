@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { Gift } from "lucide-react";
+import { Gift, Lock, Ticket, UserPlus, type LucideIcon } from "lucide-react";
 import { Avatar } from "@/components/account/Avatar";
 import { InviteCard } from "@/components/referral/InviteCard";
 import { requireUser } from "@/lib/auth/guards";
@@ -7,6 +7,7 @@ import { getDict } from "@/lib/i18n/server";
 import { getReferralsBy } from "@/lib/referrals";
 import { inviteUrl } from "@/lib/referral-shared";
 import { getUserProfile } from "@/lib/user";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 /** Invite-a-friend dashboard: the user's link (copy/share) and who has joined through it. */
 export default async function ReferPage() {
@@ -42,6 +43,16 @@ export default async function ReferPage() {
 
       <InviteCard url={url} dict={c} />
 
+      {/* Rewards — unlocked the moment a first friend joins (the function also persists a durable
+          "recruiter" badge + earlyAccess flag for the achievement engine). */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold text-ink">{c.rewardsTitle}</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <RewardCard icon={UserPlus} title={c.recruiter} desc={c.recruiterDesc} unlocked={friends.length > 0} dict={c} />
+          <RewardCard icon={Ticket} title={c.earlyAccess} desc={c.earlyAccessDesc} unlocked={friends.length > 0} dict={c} />
+        </div>
+      </section>
+
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-ink">
           {c.referredHeading.replace("{n}", String(friends.length))}
@@ -64,6 +75,35 @@ export default async function ReferPage() {
           </ul>
         )}
       </section>
+    </div>
+  );
+}
+
+function RewardCard({
+  icon: Icon,
+  title,
+  desc,
+  unlocked,
+  dict,
+}: {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+  unlocked: boolean;
+  dict: Dictionary["referral"];
+}) {
+  return (
+    <div className={`flex items-center gap-3 rounded-2xl border p-4 ${unlocked ? "border-brand-700/50 bg-brand-700/10" : "border-surface-border bg-surface-card"}`}>
+      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${unlocked ? "bg-brand-600 text-white" : "bg-surface-hover text-ink-faint"}`}>
+        {unlocked ? <Icon className="h-5 w-5" aria-hidden /> : <Lock className="h-5 w-5" aria-hidden />}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold text-ink">{title}</p>
+        <p className="truncate text-sm text-ink-muted">{desc}</p>
+      </div>
+      <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${unlocked ? "bg-brand-700/25 text-brand-300" : "bg-surface-hover text-ink-faint"}`}>
+        {unlocked ? dict.rewardUnlocked : dict.rewardLocked}
+      </span>
     </div>
   );
 }
