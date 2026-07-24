@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,9 +53,13 @@ fun CollectionCoverCard(
     collection: MovieCollection,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    width: Dp = 176.dp,
+    width: Dp? = 176.dp,
 ) {
-    Column(modifier = modifier.width(width).clickable(onClick = onClick)) {
+    Column(
+        modifier = modifier
+            .then(if (width != null) Modifier.width(width) else Modifier.fillMaxWidth())
+            .clickable(onClick = onClick),
+    ) {
         Box(
             modifier = Modifier
                 .aspectRatio(16f / 9f)

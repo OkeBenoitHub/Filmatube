@@ -1,5 +1,6 @@
 package com.filmatube.app.ui.library
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.filmatube.app.data.collections.CollectionsRepository
@@ -18,20 +19,22 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/** Backs the "See all" full-grid screens for each Library section. */
 @HiltViewModel
-class LibraryViewModel @Inject constructor(
+class LibraryAllViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     watchlistRepository: WatchlistRepository,
-    private val collectionsRepository: CollectionsRepository,
+    collectionsRepository: CollectionsRepository,
     private val movieRepository: MovieRepository,
     private val watchProgressRepository: WatchProgressRepository,
 ) : ViewModel() {
 
-    /** Watch Later — live, so removing a title elsewhere drops it here without a reload. */
+    val section: String = savedStateHandle.get<String>("section").orEmpty()
+
     val watchlist = watchlistRepository.observeSavedIds()
         .map { ids -> ids.mapNotNull { runCatching { movieRepository.getMovie(it) }.getOrNull() } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<Movie>())
 
-    /** Collections — live from `collections/{id}`, created on web, viewable here. */
     val collections = collectionsRepository.observeMyCollections()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<MovieCollection>())
 
@@ -40,19 +43,10 @@ class LibraryViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _continueWatching.value = watchProgressRepository.getContinueWatching()
+            _continueWatching.value = watchProgressRepository.getContinueWatching(limit = 60)
                 .mapNotNull { entry ->
                     movieRepository.getMovie(entry.movieId)?.let { ContinueWatchingItem(it, entry.progress) }
                 }
-                .take(12)
-        }
-    }
-
-    /** Create an empty collection and hand back its id so the caller can open the editor. */
-    fun createCollection(onCreated: (String) -> Unit) {
-        viewModelScope.launch {
-            val id = collectionsRepository.create("Untitled collection")
-            if (id != null) onCreated(id)
         }
     }
 }

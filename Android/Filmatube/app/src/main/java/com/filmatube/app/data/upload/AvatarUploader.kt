@@ -37,6 +37,9 @@ class AvatarUploader @Inject constructor(
     /** Uploads a board cover to R2 (avatars bucket — user-writable) and returns its public URL. */
     suspend fun uploadBoardCover(uri: Uri): String = upload(uri, "board")
 
+    /** Uploads a collection cover to R2 (avatars bucket — user-writable) and returns its URL. */
+    suspend fun uploadCollectionCover(uri: Uri): String = upload(uri, "collection")
+
     private suspend fun upload(uri: Uri, name: String): String = withContext(ioDispatcher) {
         val user = auth.currentUser ?: error("Not signed in")
         val idToken = user.getIdToken(false).await().token ?: error("Missing ID token")

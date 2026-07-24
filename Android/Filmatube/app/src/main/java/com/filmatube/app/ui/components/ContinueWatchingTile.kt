@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.filmatube.app.ui.theme.FilmatubeSpacing
@@ -37,10 +38,11 @@ fun ContinueWatchingTile(
     progress: Float,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    width: Dp? = PosterTileWidth,
 ) {
     Column(
         modifier = modifier
-            .width(PosterTileWidth)
+            .then(if (width != null) Modifier.width(width) else Modifier.fillMaxWidth())
             .clickable(onClick = onClick),
     ) {
         Box(

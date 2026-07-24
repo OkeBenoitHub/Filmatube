@@ -30,6 +30,10 @@ import com.filmatube.app.ui.landing.LandingScreen
 import com.filmatube.app.ui.notifications.NotificationCenterScreen
 import com.filmatube.app.ui.notifications.NotificationPreferencesScreen
 import com.filmatube.app.ui.collections.CollectionDetailScreen
+import com.filmatube.app.ui.library.LIBRARY_SECTION_COLLECTIONS
+import com.filmatube.app.ui.library.LIBRARY_SECTION_CONTINUE
+import com.filmatube.app.ui.library.LIBRARY_SECTION_WATCHLIST
+import com.filmatube.app.ui.library.LibraryAllScreen
 import com.filmatube.app.ui.library.LibraryScreen
 import com.filmatube.app.ui.player.PlayerScreen
 import com.filmatube.app.ui.profile.EditProfileScreen
@@ -51,6 +55,7 @@ private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_PROFILES = "settings/profiles"
 private const val ROUTE_DOWNLOADS = "downloads"
 private const val ROUTE_LIBRARY = "library"
+private const val ROUTE_LIBRARY_ALL = "libraryAll/{section}"
 private const val ROUTE_COLLECTION = "collection/{collectionId}"
 private const val ROUTE_FOLLOWS = "follows/{mode}"
 private const val ROUTE_SUGGESTIONS = "suggestions"
@@ -87,6 +92,7 @@ private const val ROUTE_ACTOR = "actor/{name}"
 
 fun movieRoute(movieId: String) = "movie/$movieId"
 fun collectionRoute(collectionId: String) = "collection/$collectionId"
+fun libraryAllRoute(section: String) = "libraryAll/$section"
 fun playerRoute(movieId: String) = "player/$movieId"
 fun partyPlayerRoute(movieId: String, partyId: String) = "player/$movieId?party=$partyId"
 fun theaterPlayerRoute(movieId: String, showtimeId: String) = "player/$movieId?showtime=$showtimeId"
@@ -272,6 +278,19 @@ fun FilmatubeNavHost(
         }
         composable(ROUTE_LIBRARY) {
             LibraryScreen(
+                onBack = { navController.popBackStack() },
+                onMovieClick = { navController.navigate(movieRoute(it)) },
+                onCollectionClick = { navController.navigate(collectionRoute(it)) },
+                onSeeAllContinue = { navController.navigate(libraryAllRoute(LIBRARY_SECTION_CONTINUE)) },
+                onSeeAllCollections = { navController.navigate(libraryAllRoute(LIBRARY_SECTION_COLLECTIONS)) },
+                onSeeAllWatchlist = { navController.navigate(libraryAllRoute(LIBRARY_SECTION_WATCHLIST)) },
+            )
+        }
+        composable(
+            route = ROUTE_LIBRARY_ALL,
+            arguments = listOf(navArgument("section") { type = NavType.StringType }),
+        ) {
+            LibraryAllScreen(
                 onBack = { navController.popBackStack() },
                 onMovieClick = { navController.navigate(movieRoute(it)) },
                 onCollectionClick = { navController.navigate(collectionRoute(it)) },
