@@ -10,6 +10,7 @@ import {
   Flag,
   Inbox,
   LayoutDashboard,
+  LayoutGrid,
   MessagesSquare,
   Theater,
   Users,
@@ -37,6 +38,7 @@ export function AdminShell({
   const items: { href: string; label: string; icon: LucideIcon }[] = [
     { href: "/admin", label: dict.dashboard, icon: LayoutDashboard },
     { href: "/admin/movies", label: dict.movies, icon: Film },
+    { href: "/admin/curation", label: dict.curation, icon: LayoutGrid },
     { href: "/admin/users", label: dict.users, icon: Users },
     { href: "/admin/requests", label: dict.requests, icon: Inbox },
     { href: "/admin/boards", label: dict.boards, icon: MessagesSquare },

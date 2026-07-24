@@ -329,6 +329,23 @@ createdAt   Timestamp
 Self-written. The next `buildRecommendations` run reads these and excludes the movie, so a
 dismissal sticks rather than reappearing on the next rebuild.
 
+## `homeRows/{rowId}` — admin-curated Home rows (v1.3, Day 193)
+```
+titleEn     string
+titleFr     string
+movieIds    string[]           (ordered — the row exactly as it appears)
+enabled     boolean
+pinned      boolean            (true = render above the personalised rails)
+order       number             (position among curated rows)
+startAt     Timestamp | null   (campaign window start; null = no bound)
+endAt       Timestamp | null   (campaign window end;   null = no bound)
+createdAt   Timestamp
+updatedAt   Timestamp
+```
+Written only by admins (`/admin/curation`); any signed-in user may read. The schedule window
+and `enabled` are enforced on the client at render (they change with wall-clock time, not the
+data). HomeClient shows `pinned` rows above the personalised rails and unpinned rows below them.
+
 ## Later versions (documented for planning, not yet enforced)
 - **v1.3:** `referrals/{referralId}` (Days 197+)
 - **v2.0:** `tvshows/*`, `animes/*` + `seasons`/`episodes` subcollections

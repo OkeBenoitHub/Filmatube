@@ -37,6 +37,17 @@ interface ProgressEntry {
   completed: boolean;
 }
 
+interface CuratedRow {
+  id: string;
+  titleEn: string;
+  titleFr: string;
+  movieIds: string[];
+  pinned: boolean;
+  order: number;
+  startAtMs: number | null;
+  endAtMs: number | null;
+}
+
 /**
  * Client-side Home: subscribes to the catalog, the viewer's taste profile and their watch
  * progress with the client SDK. With IndexedDB persistence on, every snapshot below resolves
@@ -60,6 +71,7 @@ export function HomeClient({
   const [topPickIds, setTopPickIds] = useState<string[]>([]);
   const [followFeedIds, setFollowFeedIds] = useState<string[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [curatedRows, setCuratedRows] = useState<CuratedRow[]>([]);
 
   // Catalog — waits for client auth (rules require a signed-in reader).
   useEffect(() => {
@@ -94,6 +106,26 @@ export function HomeClient({
           .filter((r) => r.movieIds.length > 0),
       );
       setTopPickIds((snap.get("topPicks") as string[]) ?? []);
+    });
+  }, [user]);
+
+  // Admin-curated Home rows (Day 193). Only enabled rows are subscribed; schedule window and
+  // ordering are applied at render since they change with wall-clock time, not with the data.
+  useEffect(() => {
+    if (!user) return;
+    return onSnapshot(query(collection(db, "homeRows"), where("enabled", "==", true)), (snap) => {
+      setCuratedRows(
+        snap.docs.map((d) => ({
+          id: d.id,
+          titleEn: (d.get("titleEn") as string) ?? "",
+          titleFr: (d.get("titleFr") as string) ?? "",
+          movieIds: (d.get("movieIds") as string[]) ?? [],
+          pinned: d.get("pinned") === true,
+          order: (d.get("order") as number) ?? 0,
+          startAtMs: d.get("startAt")?.toMillis?.() ?? null,
+          endAtMs: d.get("endAt")?.toMillis?.() ?? null,
+        })),
+      );
     });
   }, [user]);
 
@@ -207,6 +239,22 @@ export function HomeClient({
     .map((row) => ({ seedTitle: row.seedTitle, movies: resolve(row.movieIds) }))
     .filter((row) => row.movies.length >= 3);
 
+  // Curated rows in their live schedule window, ordered, resolved. `pinned` decides placement:
+  // above the personalised rails (a boost) or below them.
+  const now = Date.now();
+  const liveCurated = curatedRows
+    .filter((r) => (r.startAtMs == null || now >= r.startAtMs) && (r.endAtMs == null || now <= r.endAtMs))
+    .sort((a, b) => a.order - b.order)
+    .map((r) => ({
+      key: r.id,
+      title: locale === "fr" && r.titleFr ? r.titleFr : r.titleEn,
+      pinned: r.pinned,
+      movies: resolve(r.movieIds),
+    }))
+    .filter((r) => r.movies.length > 0);
+  const pinnedCurated = liveCurated.filter((r) => r.pinned);
+  const unpinnedCurated = liveCurated.filter((r) => !r.pinned);
+
   // Top picks — the rec doc's overall ranking for this viewer.
   const topPicks = resolve(topPickIds);
   // What the people you follow are watching, minus anything you've already finished.
@@ -220,6 +268,11 @@ export function HomeClient({
         {/* Continue Watching gets no "See all" — it isn't a browsable slice, matching Android.
             Every other row's target mirrors the Android home rows exactly. */}
         <ContinueWatchingRow title={dict.continueWatching} items={continueWatching} locale={locale} />
+        {/* Pinned curated rows sit above the personalised rails — an admin boost outranks the
+            algorithm. Scheduled campaigns appear here only within their window. */}
+        {pinnedCurated.map((row) => (
+          <MovieRow key={row.key} title={row.title} movies={row.movies} locale={locale} />
+        ))}
         {/* Personalised rails, high on the page — most relevant thing on screen. Mirrors Android.
             Each is absent until it has enough to show, so a new account still gets a full page. */}
         {/* "Not interested" is offered only on the rec-doc rows, the ones recFeedback actually
@@ -238,6 +291,11 @@ export function HomeClient({
             locale={locale}
             onNotInterested={notInterested}
           />
+        ))}
+        {/* Unpinned curated rows sit below the personalised rails but above the generic catalogue
+            rows — featured, but not ahead of what the viewer is most likely to want. */}
+        {unpinnedCurated.map((row) => (
+          <MovieRow key={row.key} title={row.title} movies={row.movies} locale={locale} />
         ))}
         <MovieRow
           title={dict.trending}

@@ -307,6 +307,13 @@ service cloud.firestore {
       allow read, write: if isSelf(userId);
     }
 
+    // Admin-curated Home rows (Day 193): any signed-in reader; only admins write. Scheduling
+    // and enabled/pinned are enforced client-side on read — nothing here is sensitive.
+    match /homeRows/{rowId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
     // ───────── gamification ─────────
     match /achievements/{userId}/badges/{badgeId} {
       allow read: if isSignedIn();
