@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items as lazyItems
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -67,6 +68,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
@@ -260,10 +262,14 @@ private fun CollectionHeader(
     movieCount: Int,
     onChangeCover: () -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm)) {
+    // Image with the title to its right — the app's page-header pattern.
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md),
+        verticalAlignment = Alignment.Bottom,
+    ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
+                .width(150.dp)
                 .aspectRatio(16f / 9f)
                 .clip(RoundedCornerShape(16.dp))
                 .then(if (isOwner) Modifier.clickable(onClick = onChangeCover) else Modifier),
@@ -276,40 +282,55 @@ private fun CollectionHeader(
                     modifier = Modifier.fillMaxSize().background(Brush.linearGradient(listOf(FilmatubeBrandGreen, FilmatubeBrandGreenDeep))),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Outlined.Layers, contentDescription = null, tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(40.dp))
+                    Icon(Icons.Outlined.Layers, contentDescription = null, tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(32.dp))
                 }
             }
             if (uploading) {
                 Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.4f)), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color.White)
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(28.dp))
                 }
             } else if (isOwner) {
                 Box(
-                    modifier = Modifier.align(Alignment.BottomEnd).padding(FilmatubeSpacing.sm).size(36.dp).clip(CircleShape).background(Color.Black.copy(alpha = 0.55f)),
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(FilmatubeSpacing.xs).size(30.dp).clip(CircleShape).background(Color.Black.copy(alpha = 0.55f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Outlined.PhotoCamera, contentDescription = stringResource(R.string.collection_change_cover), tint = Color.White, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Outlined.PhotoCamera, contentDescription = stringResource(R.string.collection_change_cover), tint = Color.White, modifier = Modifier.size(18.dp))
                 }
             }
         }
-        Text(
-            title.ifBlank { stringResource(R.string.collection_untitled) },
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Black,
-        )
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xs)) {
-            Icon(
-                if (isPublic) Icons.Outlined.Public else Icons.Outlined.Lock,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp),
-            )
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
             Text(
-                stringResource(if (isPublic) R.string.collection_public else R.string.collection_private) +
-                    "  •  " + stringResource(R.string.collection_movie_count, movieCount),
-                style = MaterialTheme.typography.bodySmall,
+                stringResource(R.string.collection_eyebrow).uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.5.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Text(
+                title.ifBlank { stringResource(R.string.collection_untitled) },
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Black,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xs)) {
+                Icon(
+                    if (isPublic) Icons.Outlined.Public else Icons.Outlined.Lock,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(14.dp),
+                )
+                Text(
+                    stringResource(if (isPublic) R.string.collection_public else R.string.collection_private) +
+                        "  •  " + stringResource(R.string.collection_movie_count, movieCount),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }

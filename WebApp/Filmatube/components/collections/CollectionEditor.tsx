@@ -3,7 +3,8 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Upload, Search, X, Plus, Share2, Check, Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
+import { Upload, Search, X, Plus, Share2, Check, Bookmark, ChevronLeft, ChevronRight, Globe, Lock } from "lucide-react";
+import { CollectionCover } from "@/components/collections/CollectionCover";
 import {
   saveCollection,
   deleteCollection,
@@ -17,7 +18,6 @@ import type { Collection } from "@/lib/collections";
 import type { CatalogMovie } from "@/lib/movies";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 
 interface SearchResult {
@@ -101,36 +101,68 @@ export function CollectionEditor({
   };
 
   const inCollection = new Set(movies.map((m) => m.id));
+  const Visibility = isPublic ? Globe : Lock;
+  const visibilityLabel = isPublic ? dict.makePublic : dict.collectionPrivateShort;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 px-4 py-8 md:px-6">
-      {isOwner ? (
-        <>
-          <div className="flex flex-col gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => coverInput.current?.click()}
-              className="relative aspect-video w-full shrink-0 overflow-hidden rounded-lg border border-surface-border bg-surface-hover sm:w-64"
-            >
-              {coverUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={coverUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <span className="flex h-full items-center justify-center gap-2 text-sm text-ink-muted">
-                  <Upload className="h-4 w-4" aria-hidden />
-                  {dict.cover}
-                </span>
-              )}
-            </button>
-            <input ref={coverInput} type="file" accept="image/*" onChange={onCover} className="hidden" />
+    <div className="mx-auto max-w-4xl space-y-8 px-4 py-8 md:px-6">
+      {/* Hero — cover image with the title to its left/right, matching the app's page pattern. */}
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-end">
+        {isOwner ? (
+          <button
+            type="button"
+            onClick={() => coverInput.current?.click()}
+            className="group relative aspect-video w-full shrink-0 overflow-hidden rounded-2xl border border-surface-border shadow-xl shadow-black/30 sm:w-72"
+          >
+            <CollectionCover coverUrl={coverUrl} title={title} />
+            <span className="absolute inset-0 flex items-center justify-center gap-2 bg-black/45 text-sm font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+              <Upload className="h-4 w-4" aria-hidden />
+              {dict.cover}
+            </span>
+          </button>
+        ) : (
+          <div className="aspect-video w-full shrink-0 overflow-hidden rounded-2xl border border-surface-border shadow-xl shadow-black/30 sm:w-72">
+            <CollectionCover coverUrl={collection.coverUrl} title={collection.title} />
+          </div>
+        )}
+        <input ref={coverInput} type="file" accept="image/*" onChange={onCover} className="hidden" />
 
-            <div className="flex-1 space-y-3">
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={dict.collectionTitle} />
-              <label className="flex items-center gap-2 text-sm text-ink">
-                <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="h-4 w-4 accent-brand-500" />
-                {dict.makePublic}
-              </label>
-              <div className="flex gap-2">
+        <div className="min-w-0 flex-1 space-y-2.5 text-center sm:text-left">
+          <p className="text-xs font-bold uppercase tracking-widest text-ink-muted">{dict.collectionEyebrow}</p>
+          {isOwner ? (
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={dict.collectionTitle}
+              className="w-full border-b border-transparent bg-transparent text-center text-3xl font-black tracking-tight text-ink outline-none transition-colors placeholder:text-ink-faint focus:border-brand-500 sm:text-left md:text-4xl"
+            />
+          ) : (
+            <h1 className="text-3xl font-black tracking-tight text-ink md:text-4xl">{collection.title}</h1>
+          )}
+
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-ink-muted sm:justify-start">
+            {isOwner ? (
+              <button
+                type="button"
+                onClick={() => setIsPublic((v) => !v)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-surface-border px-2.5 py-0.5 font-medium text-ink transition-colors hover:bg-surface-hover"
+              >
+                <Visibility className={`h-3.5 w-3.5 ${isPublic ? "text-brand-400" : ""}`} aria-hidden />
+                {visibilityLabel}
+              </button>
+            ) : (
+              <span className="inline-flex items-center gap-1.5">
+                <Visibility className={`h-3.5 w-3.5 ${collection.isPublic ? "text-brand-400" : ""}`} aria-hidden />
+                {collection.isPublic ? dict.makePublic : dict.collectionPrivateShort}
+              </span>
+            )}
+            <span aria-hidden>·</span>
+            <span>{dict.collectionMovieCount.replace("{n}", String(movies.length))}</span>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-2 pt-1 sm:justify-start">
+            {isOwner ? (
+              <>
                 <Button
                   loading={pending}
                   onClick={() =>
@@ -142,6 +174,7 @@ export function CollectionEditor({
                 >
                   {dict.save}
                 </Button>
+                {ShareButton}
                 <Button
                   variant="outline"
                   onClick={() =>
@@ -153,75 +186,73 @@ export function CollectionEditor({
                 >
                   {dict.deleteLabel}
                 </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  loading={pending}
+                  onClick={() =>
+                    startTransition(async () => {
+                      const newId = await saveCollectionCopy(collection.id);
+                      router.push(`/collections/${newId}`);
+                    })
+                  }
+                >
+                  <Bookmark className="h-4 w-4" aria-hidden />
+                  {dict.saveCopy}
+                </Button>
                 {ShareButton}
-              </div>
-            </div>
-          </div>
-
-          {/* Add movies */}
-          <div className="space-y-3">
-            <div className="relative max-w-md">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" aria-hidden />
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => search(e.target.value)}
-                placeholder={dict.addMovies}
-                className="h-10 w-full rounded-lg border border-surface-border bg-surface pl-10 pr-3 text-sm text-ink placeholder:text-ink-faint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-              />
-            </div>
-            {results.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-                {results.map((r) => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    disabled={inCollection.has(r.id)}
-                    onClick={() =>
-                      startTransition(async () => {
-                        await addMovieToCollection(collection.id, r.id);
-                        setQuery("");
-                        setResults([]);
-                        router.refresh();
-                      })
-                    }
-                    className="group relative block overflow-hidden rounded-lg border border-surface-border disabled:opacity-40"
-                  >
-                    <div className="aspect-[2/3] bg-surface-hover">
-                      {r.posterUrl && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={r.posterUrl} alt="" className="h-full w-full object-cover" />
-                      )}
-                    </div>
-                    {!inCollection.has(r.id) && (
-                      <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                        <Plus className="h-6 w-6 text-white" aria-hidden />
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
+              </>
             )}
           </div>
-        </>
-      ) : (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold text-ink">{collection.title}</h1>
-          <div className="flex gap-2">
-            <Button
-              loading={pending}
-              onClick={() =>
-                startTransition(async () => {
-                  const newId = await saveCollectionCopy(collection.id);
-                  router.push(`/collections/${newId}`);
-                })
-              }
-            >
-              <Bookmark className="h-4 w-4" aria-hidden />
-              {dict.saveCopy}
-            </Button>
-            {ShareButton}
+        </div>
+      </div>
+
+      {/* Add movies (owner) */}
+      {isOwner && (
+        <div className="space-y-3">
+          <div className="relative max-w-md">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" aria-hidden />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => search(e.target.value)}
+              placeholder={dict.addMovies}
+              className="h-10 w-full rounded-lg border border-surface-border bg-surface pl-10 pr-3 text-sm text-ink placeholder:text-ink-faint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+            />
           </div>
+          {results.length > 0 && (
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+              {results.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  disabled={inCollection.has(r.id)}
+                  onClick={() =>
+                    startTransition(async () => {
+                      await addMovieToCollection(collection.id, r.id);
+                      setQuery("");
+                      setResults([]);
+                      router.refresh();
+                    })
+                  }
+                  className="group relative block overflow-hidden rounded-lg border border-surface-border disabled:opacity-40"
+                >
+                  <div className="aspect-[2/3] bg-surface-hover">
+                    {r.posterUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={r.posterUrl} alt="" className="h-full w-full object-cover" />
+                    )}
+                  </div>
+                  {!inCollection.has(r.id) && (
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                      <Plus className="h-6 w-6 text-white" aria-hidden />
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
