@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Ban,
   Bookmark,
   BookmarkCheck,
   Check,
@@ -48,12 +49,15 @@ export function MovieMenu({
   position,
   dict,
   onClose,
+  onNotInterested,
 }: {
   movie: CatalogMovie;
   locale: Locale;
   position: Pos;
   dict: Dictionary["catalog"];
   onClose: () => void;
+  /** Present only when the card came from a recommended row — see [MovieCard]. */
+  onNotInterested?: () => void;
 }) {
   const { user } = useAuth();
   const router = useRouter();
@@ -196,6 +200,21 @@ export function MovieMenu({
               <Divider />
               <Item icon={copied ? Check : Link2} label={copied ? dict.copied : dict.copyLink} onClick={copyLink} accent={copied} />
               <Item icon={Share2} label={dict.shareAction} onClick={share} />
+              {/* Only recommended rows pass this, so "Not interested" shows exactly where it can
+                  tune something — mirrors the Android option sheet. */}
+              {onNotInterested && (
+                <>
+                  <Divider />
+                  <Item
+                    icon={Ban}
+                    label={dict.notInterested}
+                    onClick={() => {
+                      onNotInterested();
+                      onClose();
+                    }}
+                  />
+                </>
+              )}
             </div>
           </>
         ) : (

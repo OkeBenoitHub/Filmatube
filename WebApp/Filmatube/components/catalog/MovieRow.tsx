@@ -14,12 +14,15 @@ export function MovieRow({
   locale,
   seeAllHref,
   seeAllLabel,
+  onNotInterested,
 }: {
   title: string;
   movies: CatalogMovie[];
   locale: Locale;
   seeAllHref?: string;
   seeAllLabel?: string;
+  /** Passed only by recommended rows; each card's menu then offers "Not interested". */
+  onNotInterested?: (movieId: string) => void;
 }) {
   if (movies.length === 0) return null;
 
@@ -41,7 +44,13 @@ export function MovieRow({
 
       <HScroller>
         {movies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} locale={locale} className="w-32 shrink-0 snap-start md:w-36" />
+          <MovieCard
+            key={movie.id}
+            movie={movie}
+            locale={locale}
+            className="w-32 shrink-0 snap-start md:w-36"
+            onNotInterested={onNotInterested ? () => onNotInterested(movie.id) : undefined}
+          />
         ))}
       </HScroller>
     </section>

@@ -8,6 +8,8 @@ import {
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
+  setDoc,
   where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -57,6 +59,7 @@ export function HomeClient({
   const [recRows, setRecRows] = useState<{ seedTitle: string; movieIds: string[] }[]>([]);
   const [topPickIds, setTopPickIds] = useState<string[]>([]);
   const [followFeedIds, setFollowFeedIds] = useState<string[]>([]);
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
   // Catalog — waits for client auth (rules require a signed-in reader).
   useEffect(() => {
@@ -146,6 +149,19 @@ export function HomeClient({
       .filter((x): x is ContinueWatchingItem => x !== null);
   }, [movies, progress]);
 
+  // "Not interested": hide the title from every rec rail at once, then persist the dismissal so
+  // the next nightly build excludes it. Local hiding is tracked in its own set rather than by
+  // mutating the rec state, so a re-fire of the recs snapshot can't bring the poster back.
+  // Mirrors the Android option-sheet action (Day 188); write shape matches RecsRepository.dismiss.
+  const notInterested = (movieId: string) => {
+    setDismissed((prev) => new Set(prev).add(movieId));
+    if (!user) return;
+    void setDoc(doc(db, "recFeedback", user.uid, "items", movieId), {
+      action: "dismissed",
+      createdAt: serverTimestamp(),
+    });
+  };
+
   // First-ever visit (nothing on disk yet): skeleton. Every visit after paints instantly.
   if (movies === null) {
     if (!authLoading && !user) {
@@ -180,17 +196,16 @@ export function HomeClient({
     .map((key) => ({ key, movies: pickByGenre(movies, key) }))
     .filter((row) => row.movies.length > 0);
 
-  // Resolve each rec row's ordered ids against the loaded catalogue, keeping the ranking and
-  // dropping any title unpublished since the nightly build. Rows under 3 aren't worth a rail.
+  // Resolve ids against the loaded catalogue, keeping the ranking, dropping any title
+  // unpublished since the nightly build, and dropping anything dismissed this session.
   const byId = new Map(movies.map((m) => [m.id, m]));
-  const becauseYouWatched = recRows
-    .map((row) => ({
-      seedTitle: row.seedTitle,
-      movies: row.movieIds.map((id) => byId.get(id)).filter((m): m is CatalogMovie => !!m),
-    }))
-    .filter((row) => row.movies.length >= 3);
+  const resolve = (ids: string[]) =>
+    ids.map((id) => byId.get(id)).filter((m): m is CatalogMovie => !!m && !dismissed.has(m.id));
 
-  const resolve = (ids: string[]) => ids.map((id) => byId.get(id)).filter((m): m is CatalogMovie => !!m);
+  // Rows under 3 aren't worth a rail.
+  const becauseYouWatched = recRows
+    .map((row) => ({ seedTitle: row.seedTitle, movies: resolve(row.movieIds) }))
+    .filter((row) => row.movies.length >= 3);
 
   // Top picks — the rec doc's overall ranking for this viewer.
   const topPicks = resolve(topPickIds);
@@ -207,8 +222,10 @@ export function HomeClient({
         <ContinueWatchingRow title={dict.continueWatching} items={continueWatching} locale={locale} />
         {/* Personalised rails, high on the page — most relevant thing on screen. Mirrors Android.
             Each is absent until it has enough to show, so a new account still gets a full page. */}
+        {/* "Not interested" is offered only on the rec-doc rows, the ones recFeedback actually
+            tunes — matching the Android option sheet. */}
         {topPicks.length >= 3 && (
-          <MovieRow title={dict.topPicks} movies={topPicks} locale={locale} />
+          <MovieRow title={dict.topPicks} movies={topPicks} locale={locale} onNotInterested={notInterested} />
         )}
         {fromPeopleYouFollow.length >= 3 && (
           <MovieRow title={dict.fromPeopleYouFollow} movies={fromPeopleYouFollow} locale={locale} />
@@ -219,6 +236,7 @@ export function HomeClient({
             title={dict.becauseYouWatched.replace("{title}", row.seedTitle)}
             movies={row.movies}
             locale={locale}
+            onNotInterested={notInterested}
           />
         ))}
         <MovieRow

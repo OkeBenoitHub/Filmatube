@@ -14,10 +14,13 @@ export function MovieCard({
   movie,
   locale,
   className,
+  onNotInterested,
 }: {
   movie: CatalogMovie;
   locale: Locale;
   className?: string;
+  /** Passed only by recommended rows; surfaces "Not interested" in the card's menu. */
+  onNotInterested?: () => void;
 }) {
   const { dict } = useI18n();
   const [menuAt, setMenuAt] = useState<{ top: number; left: number } | null>(null);
@@ -80,6 +83,7 @@ export function MovieCard({
           position={menuAt}
           dict={dict.catalog}
           onClose={() => setMenuAt(null)}
+          onNotInterested={onNotInterested}
         />
       )}
     </>

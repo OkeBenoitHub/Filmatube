@@ -326,7 +326,7 @@
 ### Week 28 — Recommendations (Web) + Admin Curation (Days 190–196) (W)
 - **Day 190** ✅ — "Because you watched X" rows on web home, consuming `recs/{userId}` via a client snapshot (read-only; resolved against the loaded catalogue, ranking preserved, rows <3 dropped). Detail "More like this" already shipped (`pickRelated`), so detail parity was in place.
 - **Day 191** ✅ — Web rec rails complete: "Top picks for you" (rec doc ranking) and "From people you follow" (viewer feed aggregated by movie, already-finished titles dropped) join "Because you watched". Each rail hides under 3 movies.
-- **Day 192** — Rec feedback controls (web).
+- **Day 192** ✅ — "Not interested" in the web movie menu, offered only on the rec-doc rows (Top picks + "Because you watched"). Hides the title from every rail immediately via a session dismissal set — robust to a recs-snapshot re-fire — and writes `recFeedback/{uid}/items/{movieId}` for the next nightly build. Mirrors the Android option-sheet action (Day 188); no rules change (recFeedback was already self-read/write).
 - **Day 193** — **Admin curation tools**: manual row builder, pin/boost titles, schedule home-row campaigns.
 - **Day 194** — Editorial collections (admin-curated, featured on home).
 - **Day 195** — Recs QA + relevance tuning.
