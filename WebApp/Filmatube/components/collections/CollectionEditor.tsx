@@ -105,7 +105,7 @@ export function CollectionEditor({
   const visibilityLabel = isPublic ? dict.makePublic : dict.collectionPrivateShort;
 
   return (
-    <div className="w-full space-y-8 px-4 py-8 md:px-6">
+    <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 md:px-6">
       {/* Hero — cover image with the title to its left/right, matching the app's page pattern. */}
       <div className="flex flex-col gap-6 sm:flex-row sm:items-end">
         {isOwner ? (
