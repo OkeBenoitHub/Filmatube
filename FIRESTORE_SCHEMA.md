@@ -356,7 +356,18 @@ Written only by admins (`/admin/curation`); any signed-in user may read. The sch
 and `enabled` are enforced on the client at render (they change with wall-clock time, not the
 data). HomeClient shows `pinned` rows above the personalised rails and unpinned rows below them.
 
+## `referrals/{referredId}` — invite attribution (v1.3, Day 197)
+```
+referrerId  string      (the inviter's uid — the "referral code")
+referredId  string      (== the doc id; the new user)
+status      string      ("completed")
+createdAt   Timestamp
+```
+Keyed by the **referred** user, so nobody can be referred twice. Written **server-side only**
+(the `/api/auth/session` route, via the admin SDK) on a new user's first sign-up, reading the
+`filmatube.ref` cookie dropped by `/invite/{code}`. Rules block all client writes; the referred
+user and the referrer may read their own. Self-referral and unknown referrers are ignored.
+
 ## Later versions (documented for planning, not yet enforced)
-- **v1.3:** `referrals/{referralId}` (Days 197+)
 - **v2.0:** `tvshows/*`, `animes/*` + `seasons`/`episodes` subcollections
 - **v2.1:** `subscriptions/{userId}`, `entitlements/{userId}`, `plans/{planId}`

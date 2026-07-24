@@ -314,6 +314,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Referrals (Day 197), keyed by the referred user. Written server-side only (the session
+    // route, via the admin SDK) so a referral can't be fabricated; the referred user and the
+    // referrer may read their own.
+    match /referrals/{referredId} {
+      allow read: if isSelf(referredId) || (isSignedIn() && resource.data.referrerId == request.auth.uid);
+      allow write: if false;
+    }
+
     // ───────── gamification ─────────
     match /achievements/{userId}/badges/{badgeId} {
       allow read: if isSignedIn();

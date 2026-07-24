@@ -612,6 +612,13 @@ const en = {
     userFlagMismatch: "out of sync",
     userFlagMismatchHint: "The users-doc flag disagrees with the ban claim — re-apply to fix.",
   },
+  referral: {
+    inviteHeading: "{name} invited you to Filmatube",
+    inviteSubtitle: "Movies, together. Create your free account to start watching and follow your friends.",
+    inviteCta: "Create your account",
+    inviteSignIn: "I already have an account",
+    inviteOpenApp: "Open Filmatube",
+  },
   adminEditorial: {
     title: "Editorial collections",
     subtitle: "Hand-curated, themed collections you can feature on Home. Edit a collection’s cover, title and movies from its page; feature and order it here.",
@@ -849,6 +856,7 @@ const en = {
     becauseYouWatched: "Because you watched {title}",
     topPicks: "Top picks for you",
     fromPeopleYouFollow: "From people you follow",
+    aFriend: "A friend",
     featuredCollections: "Featured collections",
     collectionMovieCount: "{n} movies",
     notInterested: "Not interested",
@@ -1701,6 +1709,13 @@ const fr: Dictionary = {
     userFlagMismatch: "désynchronisé",
     userFlagMismatchHint: "Le champ du document ne correspond pas au claim — réappliquez pour corriger.",
   },
+  referral: {
+    inviteHeading: "{name} vous invite sur Filmatube",
+    inviteSubtitle: "Le cinéma, ensemble. Créez votre compte gratuit pour commencer à regarder et suivre vos amis.",
+    inviteCta: "Créer votre compte",
+    inviteSignIn: "J’ai déjà un compte",
+    inviteOpenApp: "Ouvrir Filmatube",
+  },
   adminEditorial: {
     title: "Collections éditoriales",
     subtitle: "Des collections thématiques sélectionnées à la main, que vous pouvez mettre en avant sur l’accueil. Modifiez la couverture, le titre et les films depuis la page de la collection ; mettez-la en avant et ordonnez-la ici.",
@@ -1938,6 +1953,7 @@ const fr: Dictionary = {
     becauseYouWatched: "Parce que vous avez regardé {title}",
     topPicks: "Notre sélection pour vous",
     fromPeopleYouFollow: "Vus par vos abonnements",
+    aFriend: "Un ami",
     featuredCollections: "Collections à la une",
     collectionMovieCount: "{n} films",
     notInterested: "Ça ne m’intéresse pas",

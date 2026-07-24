@@ -333,7 +333,7 @@
 - **Day 196** ✅ — Week 28 review (see `docs/RECS_QA.md`): web rec rails + feedback (190–192), admin curation (193) + editorial collections (194), QA/tuning (195). **v1.3 rec pipeline seeded & live end-to-end** on the two demo accounts. Both platforms green.
 
 ### Week 29 — Referral + Gamification (Android) (Days 197–203) (A)
-- **Day 197** — **Referral**: invite link/code + deep link; `referrals/{}` tracking.
+- **Day 197** ✅ — **Referral foundation**: invite link `/invite/{uid}` (code = referrer uid, no lookup table) → branded landing that drops a `filmatube.ref` cookie; the session route attributes it once on first sign-up, writing `referrals/{referredId}` (server-only via admin SDK). Rules deployed (client writes blocked; referrer/referred read own). Self-referral + repeat-referral guarded.
 - **Day 198** — Invite-a-friend UI (share sheet, contacts); referral status screen.
 - **Day 199** — Referral rewards (badge, early premiere access); FCM on successful referral.
 - **Day 200** — Achievement engine + badges (First Watch, Binge Watcher, Cinephile, Critic, Social Butterfly, Premiere Goer, **Recruiter**).

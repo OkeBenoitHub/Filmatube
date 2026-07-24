@@ -44,7 +44,7 @@ export async function getUserProfile(uid: string): Promise<UserProfileDoc | null
  * Creates `users/{uid}` with defaults on first sign-in, otherwise refreshes `lastActiveAt`.
  * Mirrors the Android UserRepository so both platforms produce identical documents.
  */
-export async function ensureUserDocument(user: DecodedIdToken): Promise<void> {
+export async function ensureUserDocument(user: DecodedIdToken): Promise<{ isNew: boolean }> {
   const ref = getAdminDb().collection("users").doc(user.uid);
   const snapshot = await ref.get();
 
@@ -68,7 +68,8 @@ export async function ensureUserDocument(user: DecodedIdToken): Promise<void> {
       createdAt: FieldValue.serverTimestamp(),
       lastActiveAt: FieldValue.serverTimestamp(),
     });
-  } else {
-    await ref.update({ lastActiveAt: FieldValue.serverTimestamp() });
+    return { isNew: true };
   }
+  await ref.update({ lastActiveAt: FieldValue.serverTimestamp() });
+  return { isNew: false };
 }
