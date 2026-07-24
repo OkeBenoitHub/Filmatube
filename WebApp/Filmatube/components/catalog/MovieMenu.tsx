@@ -12,6 +12,7 @@ import {
   Link2,
   Play,
   Share2,
+  Trash2,
 } from "lucide-react";
 import {
   collection,
@@ -50,6 +51,8 @@ export function MovieMenu({
   dict,
   onClose,
   onNotInterested,
+  onRemove,
+  removeLabel,
 }: {
   movie: CatalogMovie;
   locale: Locale;
@@ -58,6 +61,9 @@ export function MovieMenu({
   onClose: () => void;
   /** Present only when the card came from a recommended row — see [MovieCard]. */
   onNotInterested?: () => void;
+  /** A context-specific destructive action (e.g. "Remove from Continue Watching"). */
+  onRemove?: () => void;
+  removeLabel?: string;
 }) {
   const { user } = useAuth();
   const router = useRouter();
@@ -215,6 +221,20 @@ export function MovieMenu({
                   />
                 </>
               )}
+              {onRemove && removeLabel && (
+                <>
+                  <Divider />
+                  <Item
+                    icon={Trash2}
+                    label={removeLabel}
+                    danger
+                    onClick={() => {
+                      onRemove();
+                      onClose();
+                    }}
+                  />
+                </>
+              )}
             </div>
           </>
         ) : (
@@ -253,20 +273,25 @@ function Item({
   label,
   onClick,
   accent,
+  danger,
 }: {
   icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
   label: string;
   onClick: () => void;
   accent?: boolean;
+  danger?: boolean;
 }) {
   return (
     <button
       type="button"
       role="menuitem"
       onClick={onClick}
-      className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-ink transition-colors hover:bg-surface-hover"
+      className={cn(
+        "flex w-full items-center gap-3 px-3 py-2 text-left text-sm transition-colors hover:bg-surface-hover",
+        danger ? "text-red-400" : "text-ink",
+      )}
     >
-      <Icon className={cn("h-4 w-4 shrink-0", accent ? "text-brand-400" : "text-ink-muted")} aria-hidden />
+      <Icon className={cn("h-4 w-4 shrink-0", danger ? "text-red-400" : accent ? "text-brand-400" : "text-ink-muted")} aria-hidden />
       {label}
     </button>
   );

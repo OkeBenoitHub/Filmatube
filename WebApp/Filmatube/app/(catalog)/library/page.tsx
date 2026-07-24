@@ -29,10 +29,16 @@ export default async function LibraryPage() {
         <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 shadow-lg shadow-brand-900/40">
           <LibraryBig className="h-7 w-7 text-white" aria-hidden />
         </div>
-        <h1 className="text-4xl font-extrabold tracking-tight text-ink md:text-5xl">{c.myStuff}</h1>
+        <h1 className="text-4xl font-extrabold tracking-tight text-ink md:text-5xl">{c.libraryTitle}</h1>
       </div>
 
-      <ContinueWatchingRow title={c.continueWatching} items={continueWatching} locale={locale} />
+      <ContinueWatchingRow
+        title={c.continueWatching}
+        items={continueWatching}
+        locale={locale}
+        seeAllHref={continueWatching.length > 0 ? "/library/continue" : undefined}
+        seeAllLabel={c.seeAll}
+      />
 
       {/* Collections */}
       <section className="space-y-3">
@@ -58,17 +64,22 @@ export default async function LibraryPage() {
 
       {/* Watch Later */}
       <section className="space-y-3">
-        <h2 className="px-4 text-lg font-semibold text-ink md:px-6">{c.watchLater}</h2>
+        <div className="flex items-center justify-between gap-3 px-4 md:px-6">
+          <h2 className="text-lg font-semibold text-ink">{c.watchLater}</h2>
+          {watchlist.length > 0 && (
+            <Link href="/library/watchlist" className="shrink-0 text-sm font-semibold text-brand-400 transition-colors hover:text-brand-300">
+              {c.seeAll}
+            </Link>
+          )}
+        </div>
         {watchlist.length === 0 ? (
           <p className="px-4 py-8 text-ink-muted md:px-6">{c.libraryEmpty}</p>
         ) : (
-          <div className="flex gap-3 overflow-x-auto px-4 pb-2 md:px-6">
-            {watchlist.map((movie) => (
-              <div key={movie.id} className="w-36 shrink-0">
-                <MovieCard movie={movie} locale={locale} />
-              </div>
+          <HScroller>
+            {watchlist.slice(0, 18).map((movie) => (
+              <MovieCard key={movie.id} movie={movie} locale={locale} className="w-36 shrink-0 snap-start" />
             ))}
-          </div>
+          </HScroller>
         )}
       </section>
     </div>
