@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,12 +14,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CardGiftcard
-import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.PersonAddAlt
@@ -68,6 +71,7 @@ fun ProfileScreen(
     val followerCount by viewModel.followerCount.collectAsStateWithLifecycle()
     val followingCount by viewModel.followingCount.collectAsStateWithLifecycle()
     val unreadNotifications by viewModel.unreadNotifications.collectAsStateWithLifecycle()
+    val badges by viewModel.badges.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize()) {
         when (val s = state) {
@@ -88,6 +92,7 @@ fun ProfileScreen(
                 onOpenSuggestions = onOpenSuggestions,
                 onOpenInbox = onOpenInbox,
                 onOpenNotifications = onOpenNotifications,
+                badges = badges,
             )
         }
     }
@@ -108,6 +113,7 @@ private fun ProfileContent(
     onOpenSuggestions: () -> Unit,
     onOpenNotifications: () -> Unit,
     onOpenInbox: () -> Unit,
+    badges: Set<String>,
 ) {
     Column(
         modifier = Modifier
@@ -229,14 +235,15 @@ private fun ProfileContent(
             )
         }
 
-        BadgesSection()
+        BadgesSection(earned = badges)
 
         Spacer(Modifier.height(FilmatubeSpacing.xl))
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun BadgesSection() {
+private fun BadgesSection(earned: Set<String>) {
     Column(
         // The parent Column pads each child individually rather than as a group, so this
         // needs its own horizontal inset or it sits flush against the screen edge.
@@ -245,28 +252,49 @@ private fun BadgesSection() {
             .padding(horizontal = FilmatubeSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm),
     ) {
-        Text(stringResource(R.string.profile_badges), style = MaterialTheme.typography.titleMedium)
-        Row(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md)) {
-            repeat(4) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHigh),
-                    contentAlignment = Alignment.Center,
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.profile_badges), style = MaterialTheme.typography.titleMedium)
+            Text(
+                stringResource(R.string.badges_earned, earned.size, Badge.entries.size),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md), verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.md)) {
+            Badge.entries.forEach { badge ->
+                val has = badge.id in earned
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.width(64.dp),
                 ) {
-                    Icon(
-                        Icons.Outlined.EmojiEvents,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(CircleShape)
+                            .background(if (has) MaterialTheme.colorScheme.primary.copy(alpha = 0.18f) else MaterialTheme.colorScheme.surfaceContainerHigh),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (has) {
+                            Text(badge.emoji, style = MaterialTheme.typography.titleLarge)
+                        } else {
+                            Icon(
+                                Icons.Outlined.Lock,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                modifier = Modifier.size(22.dp),
+                            )
+                        }
+                    }
+                    Text(
+                        stringResource(badge.labelRes),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (has) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.padding(top = FilmatubeSpacing.xs),
                     )
                 }
             }
         }
-        Text(
-            stringResource(R.string.profile_badges_empty),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }

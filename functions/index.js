@@ -633,15 +633,13 @@ exports.onReferralCreated = onDocumentWritten(
     const referredId = after.get("referredId") || event.params.referredId;
     if (!referrerId || referrerId === referredId) return;
 
-    // Reward the referrer. Cross-user write, which only the admin SDK (this function) may do.
+    // Reward the referrer. Cross-user writes only the admin SDK (this function) may do. The
+    // entitlement lives on the user doc; the badge in achievements/{uid}/badges (see awardBadge).
     await db.collection("users").doc(referrerId).set(
-      {
-        referralCount: FieldValue.increment(1),
-        badges: FieldValue.arrayUnion(RECRUITER_BADGE),
-        earlyAccess: true,
-      },
+      { referralCount: FieldValue.increment(1), earlyAccess: true },
       { merge: true },
     );
+    await awardBadge(referrerId, RECRUITER_BADGE);
 
     const referred = await db.collection("users").doc(referredId).get();
     const name = (referred.exists && referred.get("displayName")) || "A friend";
@@ -654,6 +652,113 @@ exports.onReferralCreated = onDocumentWritten(
       route: "/refer",
       extra: { movieId: "" },
     });
+  },
+);
+
+// ───────── achievements / badges (v1.3, Day 200) ─────────
+
+/**
+ * Every badge, with the signal threshold that unlocks it. Signals are gathered once per user in
+ * [evaluateBadges]; the ids match FIRESTORE_SCHEMA's achievements/{uid}/badges/{badgeId}.
+ */
+const BADGES = [
+  { id: "first_watch", name: "First Watch", test: (s) => s.watched >= 1 },
+  { id: "binge_watcher", name: "Binge Watcher", test: (s) => s.watched >= 10 },
+  { id: "cinephile", name: "Cinephile", test: (s) => s.watched >= 25 },
+  { id: "critic", name: "Critic", test: (s) => s.reviews >= 5 },
+  { id: "social_butterfly", name: "Social Butterfly", test: (s) => s.following >= 10 },
+  { id: "premiere_goer", name: "Premiere Goer", test: (s) => s.premieres >= 1 },
+  { id: "recruiter", name: "Recruiter", test: (s) => s.referrals >= 1 },
+];
+
+/** Write one badge (idempotent — set with a fixed id); does not re-notify on repeats. */
+async function awardBadge(uid, badgeId) {
+  await db.collection("achievements").doc(uid).collection("badges").doc(badgeId).set(
+    { badgeId, unlockedAt: FieldValue.serverTimestamp() },
+    { merge: true },
+  );
+}
+
+/** Award any newly-earned badges for one user and notify once each. Returns the count awarded. */
+async function evaluateBadges(uid, userData) {
+  const [watched, following, stats, owned] = await Promise.all([
+    db.collection("watchProgress").doc(uid).collection("items").where("completed", "==", true).count().get(),
+    db.collection("follows").where("followerId", "==", uid).count().get(),
+    db.collection("stats").doc(uid).get(),
+    db.collection("achievements").doc(uid).collection("badges").get(),
+  ]);
+  const signals = {
+    watched: watched.data().count,
+    following: following.data().count,
+    reviews: (stats.exists && stats.get("reviewsWritten")) || 0,
+    premieres: (stats.exists && stats.get("premieresAttended")) || 0,
+    referrals: userData.referralCount || 0,
+  };
+  const have = new Set(owned.docs.map((d) => d.id));
+  const newly = BADGES.filter((b) => b.test(signals) && !have.has(b.id));
+  for (const b of newly) {
+    await awardBadge(uid, b.id);
+    await notifyUser(uid, {
+      type: "badge",
+      category: "social",
+      title: `You earned ${b.name} 🏅`,
+      body: `New achievement unlocked: ${b.name}.`,
+      route: "/account",
+      extra: { movieId: "" },
+    });
+  }
+  return newly.length;
+}
+
+/** Nightly sweep: award badges for recently-active users. Recruiter is also granted immediately. */
+exports.awardBadges = onSchedule(
+  { schedule: "every 24 hours", region: "europe-west4" },
+  async () => {
+    const cutoff = new Date(Date.now() - 30 * 24 * 3600e3);
+    const users = await db.collection("users").where("lastActiveAt", ">=", cutoff).limit(500).get();
+    let awarded = 0;
+    for (const u of users.docs) {
+      try {
+        awarded += await evaluateBadges(u.id, u.data());
+      } catch (e) {
+        console.error(`badges: failed for ${u.id}`, e);
+      }
+    }
+    console.log(`badges: awarded ${awarded} across ${users.size} users`);
+  },
+);
+
+/** Keep stats/{uid}.reviewsWritten in step so Critic (and the Day 201 dashboard) can read it. */
+exports.onReviewWritten = onDocumentWritten(
+  { document: "reviews/{movieId}/items/{reviewId}", region: "europe-west4" },
+  async (event) => {
+    const before = event.data?.before;
+    const after = event.data?.after;
+    const created = after?.exists && !before?.exists;
+    const deleted = before?.exists && !after?.exists;
+    if (!created && !deleted) return;
+    const uid = created ? after.get("userId") : before.get("userId");
+    if (!uid) return;
+    await db.collection("stats").doc(uid).set(
+      { reviewsWritten: FieldValue.increment(created ? 1 : -1), updatedAt: FieldValue.serverTimestamp() },
+      { merge: true },
+    );
+  },
+);
+
+/** Count premiere attendance for the Premiere Goer badge (increment-only; a badge is permanent). */
+exports.onPremiereAttended = onDocumentWritten(
+  { document: "showtimes/{showtimeId}/attendees/{userId}", region: "europe-west4" },
+  async (event) => {
+    const before = event.data?.before;
+    const after = event.data?.after;
+    if (!after?.exists || before?.exists) return; // create only
+    const showtime = await db.collection("showtimes").doc(event.params.showtimeId).get();
+    if (!showtime.exists || showtime.get("isPremiere") !== true) return;
+    await db.collection("stats").doc(event.params.userId).set(
+      { premieresAttended: FieldValue.increment(1), updatedAt: FieldValue.serverTimestamp() },
+      { merge: true },
+    );
   },
 );
 

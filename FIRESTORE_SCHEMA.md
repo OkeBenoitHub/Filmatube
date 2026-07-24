@@ -220,12 +220,17 @@ updatedAt   Timestamp
 
 ---
 
-## `achievements/{userId}/badges/{badgeId}`
+## `achievements/{userId}/badges/{badgeId}` — awarded (v1.3, Day 200)
 ```
 badgeId     string   ("first_watch" | "binge_watcher" | "cinephile" | "critic" |
                       "social_butterfly" | "premiere_goer" | "recruiter")
 unlockedAt  Timestamp
 ```
+Written **function-only**; any signed-in user may read (badges show on public profiles). The
+nightly `awardBadges` evaluates thresholds from cheap signals — completed `watchProgress` count,
+`follows` count, `stats/{uid}.reviewsWritten` (kept by `onReviewWritten`),
+`stats/{uid}.premieresAttended` (kept by `onPremiereAttended`), `users/{uid}.referralCount` — and
+awards any newly-earned badge (notifying once). Recruiter is also granted immediately on referral.
 
 ## `stats/{userId}`
 ```
@@ -372,10 +377,10 @@ Creating a `referrals/{}` doc triggers `onReferralCreated` (Day 199), which rewa
 on `users/{referrerId}` (function-written; admin bypasses the self-only update rule):
 ```
 referralCount  number     (incremented per successful referral)
-badges         string[]   (arrayUnion "recruiter"; the achievement engine reads this, Day 200)
 earlyAccess    boolean    (early-premiere-access entitlement)
 ```
-and pushes a "Recruiter" notification (inbox + FCM) via `notifyUser`.
+grants the `recruiter` badge (in `achievements/{referrerId}/badges`, see Day 200), and pushes a
+"Recruiter" notification (inbox + FCM) via `notifyUser`.
 
 ## Later versions (documented for planning, not yet enforced)
 - **v2.0:** `tvshows/*`, `animes/*` + `seasons`/`episodes` subcollections

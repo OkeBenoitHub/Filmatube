@@ -2,8 +2,10 @@ import Link from "next/link";
 import { Bell, ChevronRight, Clapperboard, Gift, Pencil, Users, type LucideIcon } from "lucide-react";
 import { AccountHeader } from "@/components/account/AccountHeader";
 import { Avatar } from "@/components/account/Avatar";
+import { Badges } from "@/components/account/Badges";
 import { requireUser } from "@/lib/auth/guards";
 import { getDict } from "@/lib/i18n/server";
+import { getUserBadges } from "@/lib/achievements";
 import { getUserProfile } from "@/lib/user";
 
 export default async function AccountPage() {
@@ -11,7 +13,7 @@ export default async function AccountPage() {
   const dict = await getDict();
   const a = dict.account;
   const c = dict.catalog;
-  const profile = await getUserProfile(user.uid);
+  const [profile, badges] = await Promise.all([getUserProfile(user.uid), getUserBadges(user.uid)]);
 
   const links: { href: string; icon: LucideIcon; title: string; desc: string }[] = [
     { href: "/account/edit", icon: Pencil, title: a.edit, desc: a.editSubtitle },
@@ -71,6 +73,11 @@ export default async function AccountPage() {
               <ChevronRight className="h-4 w-4 shrink-0 text-ink-faint transition-transform group-hover:translate-x-0.5" aria-hidden />
             </Link>
           ))}
+        </div>
+
+        {/* ── Achievements ── */}
+        <div className="mt-10">
+          <Badges earned={badges} dict={c} />
         </div>
       </main>
     </div>
