@@ -29,6 +29,7 @@ import com.filmatube.app.ui.home.HomeScreen
 import com.filmatube.app.ui.landing.LandingScreen
 import com.filmatube.app.ui.notifications.NotificationCenterScreen
 import com.filmatube.app.ui.notifications.NotificationPreferencesScreen
+import com.filmatube.app.ui.collections.CollectionDetailScreen
 import com.filmatube.app.ui.library.LibraryScreen
 import com.filmatube.app.ui.player.PlayerScreen
 import com.filmatube.app.ui.profile.EditProfileScreen
@@ -50,6 +51,7 @@ private const val ROUTE_SETTINGS = "settings"
 private const val ROUTE_PROFILES = "settings/profiles"
 private const val ROUTE_DOWNLOADS = "downloads"
 private const val ROUTE_LIBRARY = "library"
+private const val ROUTE_COLLECTION = "collection/{collectionId}"
 private const val ROUTE_FOLLOWS = "follows/{mode}"
 private const val ROUTE_SUGGESTIONS = "suggestions"
 private const val ROUTE_INBOX = "inbox"
@@ -84,6 +86,7 @@ private const val ROUTE_BROWSE = "browse?genre={genre}&sort={sort}&comingSoon={c
 private const val ROUTE_ACTOR = "actor/{name}"
 
 fun movieRoute(movieId: String) = "movie/$movieId"
+fun collectionRoute(collectionId: String) = "collection/$collectionId"
 fun playerRoute(movieId: String) = "player/$movieId"
 fun partyPlayerRoute(movieId: String, partyId: String) = "player/$movieId?party=$partyId"
 fun theaterPlayerRoute(movieId: String, showtimeId: String) = "player/$movieId?showtime=$showtimeId"
@@ -229,6 +232,7 @@ fun FilmatubeNavHost(
             ProfileScreen(
                 onEditProfile = { navController.navigate(ROUTE_PROFILE_EDIT) },
                 onOpenSettings = { navController.navigate(ROUTE_SETTINGS) },
+                onOpenLibrary = { navController.navigate(ROUTE_LIBRARY) },
                 onOpenFollowers = { navController.navigate(followsRoute("followers")) },
                 onOpenFollowing = { navController.navigate(followsRoute("following")) },
                 onOpenSuggestions = { navController.navigate(ROUTE_SUGGESTIONS) },
@@ -268,6 +272,16 @@ fun FilmatubeNavHost(
         }
         composable(ROUTE_LIBRARY) {
             LibraryScreen(
+                onBack = { navController.popBackStack() },
+                onMovieClick = { navController.navigate(movieRoute(it)) },
+                onCollectionClick = { navController.navigate(collectionRoute(it)) },
+            )
+        }
+        composable(
+            route = ROUTE_COLLECTION,
+            arguments = listOf(navArgument("collectionId") { type = NavType.StringType }),
+        ) {
+            CollectionDetailScreen(
                 onBack = { navController.popBackStack() },
                 onMovieClick = { navController.navigate(movieRoute(it)) },
             )

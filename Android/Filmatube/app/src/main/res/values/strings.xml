@@ -152,7 +152,10 @@
     <string name="inbox_title">Recommendations</string>
     <string name="inbox_empty">No recommendations yet.</string>
     <string name="recommend_from">%1$s recommends</string>
-    <string name="my_library">My Library</string>
+    <string name="my_library">Library</string>
+    <string name="library_collections">Collections</string>
+    <string name="collection_empty">This collection has no movies yet.</string>
+    <string name="profile_link_library_desc">Continue watching, collections and watch later</string>
     <string name="library_empty">Your library is empty.</string>
     <string name="detail_download">Download</string>
     <string name="detail_downloading">Downloading…</string>

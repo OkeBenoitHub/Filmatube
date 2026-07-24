@@ -43,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.filmatube.app.R
 import com.filmatube.app.domain.model.Movie
+import com.filmatube.app.ui.components.CollectionCoverCard
 import com.filmatube.app.ui.components.ContentRow
 import com.filmatube.app.ui.components.ContinueWatchingTile
 import com.filmatube.app.ui.components.MoviePosterTile
@@ -59,10 +60,12 @@ import com.filmatube.app.ui.theme.FilmatubeSpacing
 fun LibraryScreen(
     onBack: () -> Unit,
     onMovieClick: (String) -> Unit,
+    onCollectionClick: (String) -> Unit,
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
     val watchlist by viewModel.watchlist.collectAsStateWithLifecycle()
     val continueWatching by viewModel.continueWatching.collectAsStateWithLifecycle()
+    val collections by viewModel.collections.collectAsStateWithLifecycle()
     val language = com.filmatube.app.util.LocaleController.currentTag()
 
     Scaffold(
@@ -126,6 +129,24 @@ fun LibraryScreen(
                             title = entry.movie.title.get(language),
                             progress = entry.progress,
                             onClick = { onMovieClick(entry.movie.id) },
+                        )
+                    }
+                }
+            }
+
+            // Collections — mirrors the web Library's middle section: a row of cover cards, each
+            // opening the collection. Read-only on Android (created on web); hidden when there
+            // are none, since there's no way to create one here.
+            if (collections.isNotEmpty()) {
+                item {
+                    ContentRow(
+                        title = stringResource(R.string.library_collections),
+                        items = collections,
+                        key = { it.id },
+                    ) { collection ->
+                        CollectionCoverCard(
+                            collection = collection,
+                            onClick = { onCollectionClick(collection.id) },
                         )
                     }
                 }

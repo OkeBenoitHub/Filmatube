@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.PersonAddAlt
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,6 +54,7 @@ import com.filmatube.app.ui.theme.FilmatubeSpacing
 fun ProfileScreen(
     onEditProfile: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenLibrary: () -> Unit,
     onOpenFollowers: () -> Unit,
     onOpenFollowing: () -> Unit,
     onOpenSuggestions: () -> Unit,
@@ -77,6 +79,7 @@ fun ProfileScreen(
                 unreadNotifications = unreadNotifications,
                 onEditProfile = onEditProfile,
                 onOpenSettings = onOpenSettings,
+                onOpenLibrary = onOpenLibrary,
                 onOpenFollowers = onOpenFollowers,
                 onOpenFollowing = onOpenFollowing,
                 onOpenSuggestions = onOpenSuggestions,
@@ -95,11 +98,12 @@ private fun ProfileContent(
     unreadNotifications: Int,
     onEditProfile: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenLibrary: () -> Unit,
     onOpenFollowers: () -> Unit,
     onOpenFollowing: () -> Unit,
     onOpenSuggestions: () -> Unit,
-    onOpenInbox: () -> Unit,
     onOpenNotifications: () -> Unit,
+    onOpenInbox: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -182,6 +186,12 @@ private fun ProfileContent(
             modifier = Modifier.padding(horizontal = FilmatubeSpacing.lg),
             verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm),
         ) {
+            QuickLinkCard(
+                icon = Icons.Outlined.VideoLibrary,
+                title = stringResource(R.string.my_library),
+                description = stringResource(R.string.profile_link_library_desc),
+                onClick = onOpenLibrary,
+            )
             QuickLinkCard(
                 icon = Icons.Outlined.Notifications,
                 title = stringResource(R.string.notifications_title),
