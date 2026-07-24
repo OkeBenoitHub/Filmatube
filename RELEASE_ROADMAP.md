@@ -329,8 +329,8 @@
 - **Day 192** ✅ — "Not interested" in the web movie menu, offered only on the rec-doc rows (Top picks + "Because you watched"). Hides the title from every rail immediately via a session dismissal set — robust to a recs-snapshot re-fire — and writes `recFeedback/{uid}/items/{movieId}` for the next nightly build. Mirrors the Android option-sheet action (Day 188); no rules change (recFeedback was already self-read/write).
 - **Day 193** ✅ — **Admin curation** (`/admin/curation`): manual Home-row builder (search + add + reorder movies), a pinned/boost flag (renders the row above the personalised rails), and campaign scheduling (start/end window + enable toggle). New `homeRows/{id}` collection (admin-write, signed-in read); HomeClient renders live rows — pinned above the rec rails, unpinned below. Two demo rows seeded.
 - **Day 194** ✅ — Editorial collections: admin-curated, themed collections featured on Home. Reuse the `collections/{id}` model (admin-owned, so the shared /collections/[id] editor handles cover/title/movies) plus `isEditorial`/`subtitle`/`featured`/`featuredOrder`. New `/admin/collections` manager (feature toggle, order, subtitle, delete); Home shows a server-fetched "Featured collections" marquee of cover cards. Two demo collections seeded.
-- **Day 195** — Recs QA + relevance tuning.
-- **Day 196** — Week review.
+- **Day 195** ✅ — Recs QA + relevance tuning: 7 Vitest tests exercise the *real* shared scorer (`recs-core.js`) via an in-memory Firestore fake; tuned relevance = exclude coming-soon titles + a gentle recency tie-breaker. Function redeployed, demo recs refreshed. `docs/RECS_QA.md`.
+- **Day 196** ✅ — Week 28 review (see `docs/RECS_QA.md`): web rec rails + feedback (190–192), admin curation (193) + editorial collections (194), QA/tuning (195). **v1.3 rec pipeline seeded & live end-to-end** on the two demo accounts. Both platforms green.
 
 ### Week 29 — Referral + Gamification (Android) (Days 197–203) (A)
 - **Day 197** — **Referral**: invite link/code + deep link; `referrals/{}` tracking.

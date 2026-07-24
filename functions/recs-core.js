@@ -86,17 +86,23 @@ async function buildRecsForUser(db, FieldValue, uid, movies) {
     moviePeople(movie).forEach((p) => add(personW, p, w));
   }
 
+  const nowYear = new Date().getFullYear();
   const score = (movie) => {
     let s = 0;
     (movie.genres ?? []).forEach((g) => { s += genreW.get(g) ?? 0; });
     moviePeople(movie).forEach((p) => { s += (personW.get(p) ?? 0) * REC_PERSON_MULTIPLIER; });
-    // A gentle popularity nudge only breaks ties between equally-matched candidates.
-    return s + Math.log10((movie.viewsCount ?? 0) + 1) * 0.01;
+    // Two gentle nudges that only break ties between equally-matched candidates: popularity,
+    // and recency so a fresh title edges out an interchangeable older one. Both are small
+    // enough (≈0.05 max) that they never outweigh a real genre/person overlap match.
+    const popularity = Math.log10((movie.viewsCount ?? 0) + 1) * 0.01;
+    const recency = Math.max(0, ((movie.year ?? 0) - (nowYear - 10))) * 0.005;
+    return s + popularity + recency;
   };
 
-  // ── Score every unseen candidate once. ──
+  // ── Score every unseen candidate once. Coming-soon titles are excluded: recommending a movie
+  //    the viewer can't actually watch yet is a dead end, not a recommendation. ──
   const candidates = movies
-    .filter((m) => !seen.has(m.id))
+    .filter((m) => !seen.has(m.id) && !m.isComingSoon)
     .map((m) => ({ id: m.id, movie: m, score: score(m) }))
     .filter((c) => c.score > 0)
     .sort((a, b) => b.score - a.score);
