@@ -114,17 +114,27 @@ updatedAt   Timestamp
 
 ## `collections/{collectionId}` — user-curated lists
 ```
-userId      string
-title       string
-description string
-coverUrl    string   (R2)
-isPublic    boolean
-itemCount   number
-createdAt   Timestamp
-updatedAt   Timestamp
+userId       string
+title        string
+description  string
+coverUrl     string   (R2)
+isPublic     boolean
+itemCount    number
+createdAt    Timestamp
+updatedAt    Timestamp
 ```
+Editorial collections (v1.3, Day 194) are the same doc, admin-owned, with:
+```
+isEditorial  boolean   (true = admin-curated editorial collection)
+subtitle     string    (tagline under the title on the Home card)
+featured     boolean   (true = shown in the Home "Featured collections" strip)
+featuredOrder number   (position in that strip)
+```
+Managed at `/admin/collections`; content edited through the shared `/collections/[id]` editor
+(the admin owns the doc). `getFeaturedCollections()` reads `featured == true` server-side for Home.
 ### `collections/{collectionId}/items/{movieId}`
 ```
+order       number
 addedAt     Timestamp
 ```
 

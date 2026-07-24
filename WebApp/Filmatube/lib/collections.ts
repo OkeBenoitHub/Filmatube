@@ -38,6 +38,55 @@ export async function getPublicCollections(uid: string): Promise<Collection[]> {
     .sort((a, b) => a.title.localeCompare(b.title));
 }
 
+/** A featured editorial collection, as shown in the Home marquee strip. */
+export interface FeaturedCollection {
+  id: string;
+  title: string;
+  subtitle: string;
+  coverUrl: string;
+  movieCount: number;
+  /** First few poster URLs — a fallback stack when there's no cover art. */
+  posters: string[];
+}
+
+/**
+ * Admin-curated collections flagged `featured`, ordered for the Home marquee. Server-only (the
+ * admin SDK bypasses rules), so Home can fetch them without a client-side collection-group read.
+ */
+export async function getFeaturedCollections(): Promise<FeaturedCollection[]> {
+  const snap = await getAdminDb().collection("collections").where("featured", "==", true).limit(20).get();
+  if (snap.empty) return [];
+  const catalog = await getPublishedMovies();
+  const byId = new Map(catalog.map((m) => [m.id, m]));
+
+  const rows = await Promise.all(
+    snap.docs.map(async (d) => {
+      const items = await d.ref.collection("items").limit(50).get();
+      const orderedIds = items.docs
+        .map((i) => ({ id: i.id, order: (i.get("order") as number) ?? 0 }))
+        .sort((a, b) => a.order - b.order)
+        .map((o) => o.id);
+      const posters = orderedIds
+        .map((id) => byId.get(id)?.posterUrl)
+        .filter((p): p is string => !!p)
+        .slice(0, 3);
+      return {
+        id: d.id,
+        title: (d.get("title") as string) ?? "",
+        subtitle: (d.get("subtitle") as string) ?? "",
+        coverUrl: (d.get("coverUrl") as string) ?? "",
+        featuredOrder: (d.get("featuredOrder") as number) ?? 0,
+        movieCount: orderedIds.length,
+        posters,
+      };
+    }),
+  );
+  return rows
+    .filter((r) => r.movieCount > 0)
+    .sort((a, b) => a.featuredOrder - b.featuredOrder)
+    .map((r) => ({ id: r.id, title: r.title, subtitle: r.subtitle, coverUrl: r.coverUrl, movieCount: r.movieCount, posters: r.posters }));
+}
+
 export async function getCollection(
   id: string,
 ): Promise<{ collection: Collection; movies: CatalogMovie[] } | null> {

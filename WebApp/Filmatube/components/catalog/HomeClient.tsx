@@ -17,6 +17,8 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { Hero } from "@/components/catalog/Hero";
 import { MovieRow } from "@/components/catalog/MovieRow";
 import { ContinueWatchingRow } from "@/components/catalog/ContinueWatchingRow";
+import { FeaturedCollections } from "@/components/catalog/FeaturedCollections";
+import type { FeaturedCollection } from "@/lib/collections";
 import { Skeleton } from "@/components/ui/Skeleton";
 import {
   mapMovieDoc,
@@ -58,10 +60,13 @@ export function HomeClient({
   dict,
   genresDict,
   locale,
+  featuredCollections,
 }: {
   dict: Dictionary["catalog"];
   genresDict: Dictionary["genres"];
   locale: Locale;
+  /** Admin-curated editorial collections, server-fetched (they change rarely). */
+  featuredCollections: FeaturedCollection[];
 }) {
   const { user, loading: authLoading } = useAuth();
   const [movies, setMovies] = useState<CatalogMovie[] | null>(null);
@@ -268,6 +273,12 @@ export function HomeClient({
         {/* Continue Watching gets no "See all" — it isn't a browsable slice, matching Android.
             Every other row's target mirrors the Android home rows exactly. */}
         <ContinueWatchingRow title={dict.continueWatching} items={continueWatching} locale={locale} />
+        {/* Editorial collections marquee — admin-curated, featured near the top. */}
+        <FeaturedCollections
+          title={dict.featuredCollections}
+          collections={featuredCollections}
+          movieCountLabel={dict.collectionMovieCount}
+        />
         {/* Pinned curated rows sit above the personalised rails — an admin boost outranks the
             algorithm. Scheduled campaigns appear here only within their window. */}
         {pinnedCurated.map((row) => (

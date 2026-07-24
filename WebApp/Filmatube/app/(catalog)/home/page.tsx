@@ -1,4 +1,5 @@
 import { HomeClient } from "@/components/catalog/HomeClient";
+import { getFeaturedCollections } from "@/lib/collections";
 import { getDict, getLocale } from "@/lib/i18n/server";
 
 /**
@@ -8,6 +9,17 @@ import { getDict, getLocale } from "@/lib/i18n/server";
  * layout already gates auth.
  */
 export default async function CatalogHomePage() {
-  const [locale, dict] = await Promise.all([getLocale(), getDict()]);
-  return <HomeClient dict={dict.catalog} genresDict={dict.genres} locale={locale} />;
+  const [locale, dict, featuredCollections] = await Promise.all([
+    getLocale(),
+    getDict(),
+    getFeaturedCollections(),
+  ]);
+  return (
+    <HomeClient
+      dict={dict.catalog}
+      genresDict={dict.genres}
+      locale={locale}
+      featuredCollections={featuredCollections}
+    />
+  );
 }
