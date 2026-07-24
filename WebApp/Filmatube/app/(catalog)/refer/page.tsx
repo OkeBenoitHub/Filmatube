@@ -29,7 +29,7 @@ export default async function ReferPage() {
   ).filter((f): f is { id: string; name: string; avatarUrl: string } => f !== null);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8 px-4 py-10 md:px-6">
+    <div className="mx-auto max-w-6xl space-y-8 px-4 py-10 md:px-6">
       <div className="flex items-center gap-4">
         <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 shadow-lg shadow-brand-900/40">
           <Gift className="h-7 w-7 text-white" aria-hidden />

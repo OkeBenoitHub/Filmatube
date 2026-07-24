@@ -7,7 +7,7 @@ export default async function RequestsPage() {
   const dict = await getDict();
   const c = dict.catalog;
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 md:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-8 md:px-6">
       <PageHero icon={Clapperboard} eyebrow={c.requestsEyebrow} title={c.requestMovie} subtitle={c.requestsSubtitle} />
       <div className="mx-auto mt-10 max-w-2xl">
         <RequestForm dict={c} />

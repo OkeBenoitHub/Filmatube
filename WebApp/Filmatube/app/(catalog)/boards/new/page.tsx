@@ -8,7 +8,7 @@ export default async function NewBoardPage() {
   const c = dict.catalog;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 md:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-8 md:px-6">
       <PageHero
         icon={MessagesSquare}
         eyebrow={c.boardsEyebrow}

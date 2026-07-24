@@ -15,7 +15,7 @@ export default async function BoardPage({ params }: { params: Promise<{ id: stri
   const members = board.memberCount === 1 ? c.memberCountOne : c.memberCount;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 md:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-8 md:px-6">
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end">
         <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-xl border border-surface-border bg-gradient-to-br from-brand-700/40 to-surface-hover sm:w-56">
           {board.coverUrl ? (

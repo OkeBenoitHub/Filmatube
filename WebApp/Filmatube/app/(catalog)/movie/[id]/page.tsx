@@ -68,7 +68,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
         positioned elements paint above static ones whatever the DOM order — without this, the
         gradient's opaque bottom covers the top of the poster and the title.
       */}
-      <div className="relative z-10 mx-auto max-w-5xl px-4 md:px-6">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 md:px-6">
         {/* Poster overlaps the banner; the title sits beside it — both on the solid gradient base. */}
         <div className="-mt-24 flex flex-col gap-5 sm:flex-row sm:items-end md:-mt-28">
           {/* Poster */}

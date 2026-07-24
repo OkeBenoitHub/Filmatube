@@ -22,7 +22,7 @@ export default async function TheaterPage() {
   const upcomingRest = upcoming.filter((s) => s.id !== featured?.id);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 md:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-8 md:px-6">
       <PageHero
         icon={Clapperboard}
         eyebrow={c.theaterEyebrow}

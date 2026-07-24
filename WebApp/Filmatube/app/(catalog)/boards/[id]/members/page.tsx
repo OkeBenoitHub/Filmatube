@@ -16,7 +16,7 @@ export default async function BoardMembersPage({ params }: { params: Promise<{ i
   const canModerate = !!user && (board.ownerId === user.uid || user.admin === true);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 md:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-8 md:px-6">
       <PageHero icon={Users} eyebrow={board.title} title={c.membersTitle} subtitle={c.membersSubtitle} />
       <ul className="mt-12 space-y-2">
         {members.map((m) => (
