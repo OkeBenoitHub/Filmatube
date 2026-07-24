@@ -8,9 +8,23 @@ export interface UserStats {
   moviesCompleted: number;
   reviewsWritten: number;
   topGenres: string[];
+  /** Light gamification (Day 202). */
+  currentStreak: number;
+  longestStreak: number;
+  weeklyCompleted: number;
+  weeklyGoal: number;
 }
 
-const EMPTY: UserStats = { totalWatchMinutes: 0, moviesCompleted: 0, reviewsWritten: 0, topGenres: [] };
+const EMPTY: UserStats = {
+  totalWatchMinutes: 0,
+  moviesCompleted: 0,
+  reviewsWritten: 0,
+  topGenres: [],
+  currentStreak: 0,
+  longestStreak: 0,
+  weeklyCompleted: 0,
+  weeklyGoal: 3,
+};
 
 export async function getUserStats(uid: string): Promise<UserStats> {
   const doc = await getAdminDb().collection("stats").doc(uid).get();
@@ -20,6 +34,10 @@ export async function getUserStats(uid: string): Promise<UserStats> {
     moviesCompleted: (doc.get("moviesCompleted") as number) ?? 0,
     reviewsWritten: (doc.get("reviewsWritten") as number) ?? 0,
     topGenres: ((doc.get("topGenres") as string[]) ?? []).slice(0, 3),
+    currentStreak: (doc.get("currentStreak") as number) ?? 0,
+    longestStreak: (doc.get("longestStreak") as number) ?? 0,
+    weeklyCompleted: (doc.get("weeklyCompleted") as number) ?? 0,
+    weeklyGoal: (doc.get("weeklyGoal") as number) || 3,
   };
 }
 

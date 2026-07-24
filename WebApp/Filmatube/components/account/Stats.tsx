@@ -19,18 +19,45 @@ export function Stats({
     { value: watchHours(stats), label: dict.statHours },
     { value: stats.moviesCompleted, label: dict.statMovies },
     { value: stats.reviewsWritten, label: dict.statReviews },
+    { value: stats.currentStreak, label: dict.statStreak, suffix: "🔥" },
   ];
+
+  // Progress toward this week's goal — a meter, capped so an over-achieved week doesn't overflow.
+  const goal = Math.max(1, stats.weeklyGoal);
+  const pct = Math.min(100, Math.round((stats.weeklyCompleted / goal) * 100));
 
   return (
     <section className="space-y-3">
       <h2 className="text-lg font-semibold text-ink">{dict.statsTitle}</h2>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {tiles.map((t) => (
           <div key={t.label} className="rounded-2xl border border-surface-border bg-surface-card p-4 text-center">
-            <p className="text-3xl font-black tabular-nums text-ink">{t.value}</p>
+            <p className="text-3xl font-black tabular-nums text-ink">
+              {t.value}
+              {t.suffix && t.value > 0 && <span className="ml-1 text-xl">{t.suffix}</span>}
+            </p>
             <p className="mt-1 text-xs text-ink-muted">{t.label}</p>
           </div>
         ))}
+      </div>
+
+      {/* Weekly goal */}
+      <div className="rounded-2xl border border-surface-border bg-surface-card p-4">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-sm font-medium text-ink">{dict.weeklyGoalTitle}</p>
+          <p className="text-sm tabular-nums text-ink-muted">
+            {dict.weeklyGoalProgress.replace("{n}", String(stats.weeklyCompleted)).replace("{goal}", String(goal))}
+          </p>
+        </div>
+        <div
+          className="mt-2 h-2 w-full overflow-hidden rounded-full bg-surface-hover"
+          role="progressbar"
+          aria-valuenow={stats.weeklyCompleted}
+          aria-valuemin={0}
+          aria-valuemax={goal}
+        >
+          <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: `${pct}%` }} />
+        </div>
       </div>
 
       {stats.topGenres.length > 0 && (

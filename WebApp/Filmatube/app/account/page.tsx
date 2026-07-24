@@ -4,6 +4,7 @@ import { AccountHeader } from "@/components/account/AccountHeader";
 import { Avatar } from "@/components/account/Avatar";
 import { Badges } from "@/components/account/Badges";
 import { Stats } from "@/components/account/Stats";
+import { StatsCard } from "@/components/account/StatsCard";
 import { requireUser } from "@/lib/auth/guards";
 import { getDict } from "@/lib/i18n/server";
 import { getUserBadges } from "@/lib/achievements";
@@ -87,6 +88,9 @@ export default async function AccountPage() {
         </div>
         <div className="mt-10">
           <Badges earned={badges} dict={c} />
+        </div>
+        <div className="mt-10">
+          <StatsCard uid={user.uid} dict={c} />
         </div>
       </main>
     </div>

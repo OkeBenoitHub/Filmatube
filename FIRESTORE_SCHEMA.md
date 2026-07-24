@@ -234,12 +234,21 @@ awards any newly-earned badge (notifying once). Recruiter is also granted immedi
 
 ## `stats/{userId}`
 ```
-totalWatchMinutes  number
+totalWatchMinutes  number     (counts partial views: duration × progress)
 moviesCompleted    number
-reviewsWritten     number
-topGenres          string[]
+reviewsWritten     number     (kept live by onReviewWritten)
+premieresAttended  number     (kept live by onPremiereAttended)
+topGenres          string[]   (top 3 by completed movies)
+currentStreak      number     (consecutive active days)
+longestStreak      number
+streakLastDay      string     (YYYY-MM-DD last counted — makes the streak idempotent per day)
+weeklyCompleted    number     (movies finished in the last 7 days)
+weeklyGoal         number     (default 3)
 updatedAt          Timestamp
 ```
+Written **function-only** (`buildStats` nightly, merged so the trigger-kept counters survive);
+any signed-in user may read, since stats show on public profiles. A shareable PNG of these
+figures is rendered at `/api/stats-card/{uid}` (Day 202).
 
 ---
 

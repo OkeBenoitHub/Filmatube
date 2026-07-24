@@ -197,6 +197,9 @@
     <string name="stat_movies">Movies finished</string>
     <string name="stat_reviews">Reviews written</string>
     <string name="stat_top_genres">Top genres</string>
+    <string name="weekly_goal_title">This week’s goal</string>
+    <string name="weekly_goal_progress">%1$d of %2$d movies</string>
+    <string name="stat_streak_value">%1$d day streak 🔥</string>
     <string name="badge_first_watch">First Watch</string>
     <string name="badge_first_watch_desc">Finish your first movie</string>
     <string name="badge_binge_watcher">Binge Watcher</string>

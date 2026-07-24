@@ -886,6 +886,11 @@ const en = {
     statMovies: "Movies finished",
     statReviews: "Reviews written",
     statTopGenres: "Top genres",
+    statStreak: "Day streak",
+    weeklyGoalTitle: "This week’s goal",
+    weeklyGoalProgress: "{n} of {goal} movies",
+    statsCardTitle: "Your stats card",
+    statsCardDownload: "Download",
     badgesTitle: "Achievements",
     badgesEarned: "{n} of {total} earned",
     badgeMeta: {
@@ -2023,6 +2028,11 @@ const fr: Dictionary = {
     statMovies: "Films terminés",
     statReviews: "Avis écrits",
     statTopGenres: "Genres favoris",
+    statStreak: "Jours d’affilée",
+    weeklyGoalTitle: "Objectif de la semaine",
+    weeklyGoalProgress: "{n} sur {goal} films",
+    statsCardTitle: "Votre carte de stats",
+    statsCardDownload: "Télécharger",
     badgesTitle: "Réussites",
     badgesEarned: "{n} sur {total} obtenus",
     badgeMeta: {

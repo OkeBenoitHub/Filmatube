@@ -746,9 +746,43 @@ exports.onReviewWritten = onDocumentWritten(
   },
 );
 
+/** Movies-a-week target used until a user sets their own. */
+const WEEKLY_GOAL_DEFAULT = 3;
+
+/** UTC calendar day, the unit a streak is counted in. */
+const dayKey = (d) => d.toISOString().slice(0, 10);
+
+/**
+ * Streak fields for one user (Day 202), derived from `users.lastActiveAt`.
+ *
+ * Counted once per calendar day of activity — re-running the job the same day is a no-op, so the
+ * streak can't be inflated by an extra pass. Activity on the day after the last counted day
+ * extends the run; any longer gap restarts it at 1.
+ */
+function streakUpdate(lastActiveAt, prev) {
+  const lastActive = lastActiveAt?.toDate?.();
+  if (!lastActive) return {};
+
+  const activeDay = dayKey(lastActive);
+  const countedDay = prev.exists ? prev.get("streakLastDay") : null;
+  if (countedDay === activeDay) return {}; // already counted this day
+
+  const streak = (prev.exists && prev.get("currentStreak")) || 0;
+  const longest = (prev.exists && prev.get("longestStreak")) || 0;
+  const dayAfterCounted = countedDay ? dayKey(new Date(Date.parse(countedDay) + 24 * 3600e3)) : null;
+
+  const currentStreak = dayAfterCounted === activeDay ? streak + 1 : 1;
+  return {
+    currentStreak,
+    longestStreak: Math.max(longest, currentStreak),
+    streakLastDay: activeDay,
+  };
+}
+
 /**
  * Nightly stats roll-up → `stats/{uid}` (Day 201): watch minutes, movies completed and top
- * genres. Merged, so the trigger-maintained `reviewsWritten`/`premieresAttended` survive.
+ * genres, plus streak + weekly-goal progress (Day 202). Merged, so the trigger-maintained
+ * `reviewsWritten`/`premieresAttended` survive.
  *
  * Watch time counts partial views too (duration × progress), so the number reflects time actually
  * spent rather than only finished films.
@@ -762,12 +796,17 @@ exports.buildStats = onSchedule(
     const cutoff = new Date(Date.now() - 30 * 24 * 3600e3);
     const users = await db.collection("users").where("lastActiveAt", ">=", cutoff).limit(500).get();
 
+    const weekAgo = Date.now() - 7 * 24 * 3600e3;
     let built = 0;
     for (const user of users.docs) {
       try {
-        const items = await db.collection("watchProgress").doc(user.id).collection("items").get();
+        const [items, prev] = await Promise.all([
+          db.collection("watchProgress").doc(user.id).collection("items").get(),
+          db.collection("stats").doc(user.id).get(),
+        ]);
         let minutes = 0;
         let completed = 0;
+        let weeklyCompleted = 0;
         const genreTally = new Map();
 
         for (const item of items.docs) {
@@ -779,6 +818,8 @@ exports.buildStats = onSchedule(
           if (done) {
             completed += 1;
             (movie.genres ?? []).forEach((g) => genreTally.set(g, (genreTally.get(g) ?? 0) + 1));
+            const touched = item.get("updatedAt")?.toMillis?.() ?? 0;
+            if (touched >= weekAgo) weeklyCompleted += 1;
           }
         }
 
@@ -792,6 +833,9 @@ exports.buildStats = onSchedule(
             totalWatchMinutes: Math.round(minutes),
             moviesCompleted: completed,
             topGenres,
+            weeklyCompleted,
+            weeklyGoal: prev.get("weeklyGoal") || WEEKLY_GOAL_DEFAULT,
+            ...streakUpdate(user.get("lastActiveAt"), prev),
             updatedAt: FieldValue.serverTimestamp(),
           },
           { merge: true },

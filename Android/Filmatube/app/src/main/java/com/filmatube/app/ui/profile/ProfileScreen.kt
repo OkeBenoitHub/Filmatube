@@ -28,6 +28,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -275,6 +276,34 @@ private fun StatsSection(stats: com.filmatube.app.data.achievements.UserStats) {
                 modifier = Modifier.weight(1f),
             )
         }
+        // Weekly goal + streak — the light-gamification card.
+        Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(FilmatubeSpacing.md),
+                verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm),
+            ) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(stringResource(R.string.weekly_goal_title), style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        stringResource(R.string.weekly_goal_progress, stats.weeklyCompleted, stats.weeklyGoal),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                LinearProgressIndicator(
+                    progress = { stats.weeklyProgress },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                if (stats.currentStreak > 0) {
+                    Text(
+                        stringResource(R.string.stat_streak_value, stats.currentStreak),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+
         if (stats.topGenres.isNotEmpty()) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(FilmatubeSpacing.sm), verticalArrangement = Arrangement.spacedBy(FilmatubeSpacing.xs)) {
                 Text(
