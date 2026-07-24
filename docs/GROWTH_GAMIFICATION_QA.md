@@ -60,19 +60,41 @@ A shareable **1200×630 PNG** is rendered at `/api/stats-card/{uid}` via `next/o
 `onReferralCreated` · `awardBadges` · `onReviewWritten` · `onPremiereAttended` · `buildStats`
 (+ `buildRecommendations` from Week 28). Verified present via `firebase functions:list`.
 
-## Manual checklist — NOT yet executed
-Everything below is **built and deployed but not exercised against live data**. This is the
-honest state of Week 29:
+## Verified against live data (2026-07-24)
+
+Run with `node --env-file=.env.local scripts/run-gamification.mjs`, which executes the **same**
+`functions/gamification-core.js` the nightly jobs run — a rehearsal of the deployed job, not a copy.
+
+```
+buildStats  → built 5/5 users (catalogue 30)
+awardBadges → awarded 2 badges; notifications delivered
+```
+
+| Account | Watched | Movies | Streak | Week | Top genres | Badges |
+|---|---|---|---|---|---|---|
+| BENOIT PRESLY NDONG OKE | 6h | 3 | 1 | 3/3 | crime, action, thriller | first_watch |
+| presly benoit | 7h | 3 | 1 | 3/3 | horror, scifi, thriller | first_watch |
+| 3 x "Inc" accounts | 0h | 0 | 1 | 0/3 | — | — |
+
+**What this confirms:** the roll-up derives real figures from watch data (top genres match each
+seeded taste profile), the weekly goal fills, badges are awarded, and notifications fire.
+
+**Idempotency verified** — a second immediate run reported `awarded 0 badges`, sent no duplicate
+notifications, and left every streak at 1. The `streakLastDay` guard works as designed.
+
+**Correction to an earlier prediction:** only *First Watch* was earned, not Cinephile. The demo
+accounts have 3 completed movies; Binge Watcher needs 10 and Cinephile 25. The thresholds behave
+correctly — the earlier guess was simply wrong.
+
+## Still unexercised
+These paths still have not been run end to end:
 - [ ] Open `/invite/<your-uid>` in a fresh browser, register a throwaway account, confirm
       `referrals/<new-uid>` appears and the referrer gets the Recruiter notification + badge.
 - [ ] Android: open a `filmatube://invite/<uid>` link, register, confirm `/api/referral` fires
       (needs `WEB_API_BASE_URL` reachable from the device — it's `10.0.2.2:3000` in debug).
-- [ ] Wait for (or manually trigger) `awardBadges`; the seeded demo accounts have completed watch
-      progress and should earn **First Watch** / **Cinephile**.
-- [ ] Wait for (or trigger) `buildStats`; confirm hours/movies/top-genres populate and the tiles
-      stop reading 0.
 - [ ] Load `/api/stats-card/<uid>` and check the PNG renders (first exercise of `next/og` here).
 - [ ] Write 5 reviews on one account → `stats.reviewsWritten` climbs → Critic on next sweep.
+- [ ] Confirm the badge/stat tiles render the new values in both clients' UI.
 
 ## Known gaps / follow-ups
 - **Badges lag up to 24h.** Only Recruiter is immediate; the rest wait for the nightly sweep.
@@ -92,6 +114,8 @@ notification, with stats and light gamification layered on top and a shareable c
 loop. Integrity was the recurring theme — referrals are unforgeable by construction, badges are
 function-awarded, and the streak is idempotent per day.
 
-The honest caveat, unchanged from Week 28: **none of it has run against real users yet.** Both
-platforms build green (web `tsc` + `next lint` + 17 Vitest tests; Android `:app:assembleDebug`)
-and all functions are deployed, but the first real signal will come from the checklist above.
+Both platforms build green (web `tsc` + `next lint` + 17 Vitest tests; Android
+`:app:assembleDebug`), all functions are deployed, and — unlike Week 28 — the stats and badge
+jobs have now been **run against live data and verified**, including a second run proving the
+streak/badge idempotency. What remains unproven is the referral flow itself (a real invited
+sign-up) and the stats-card PNG render.
