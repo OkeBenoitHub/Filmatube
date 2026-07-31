@@ -345,7 +345,7 @@
 - **Day 204** ✅ — Referral on web — **already delivered in Days 197–199** (built both platforms together): `/invite/{uid}` landing + cookie, session-route attribution, `/refer` dashboard, `onReferralCreated` reward.
 - **Day 205** ✅ — Gamification on web — **already delivered in Days 200–201**: badge grid + stat tiles on the account page and the public profile `/u/[id]`, plus the shareable stats card.
 - **Day 206** ✅ — Admin `/admin/referrals`: analytics (total / 7d / 30d / referrers / flagged, top referrers, recent table) + **fraud guard**. Self-referral blocked at write time; a hashed signup IP (`ipHash`, salted SHA-256, never stored raw) flags a referrer whose referred accounts cluster on one network (≥2), not lone shared-IP signups. **Revoke** rolls back the reward (referralCount−−, strips Recruiter badge + earlyAccess when it was their last). Pure classifier extracted + 5 Vitest tests; rules give admins read; deployed.
-- **Day 207** — QA (recs + referral + gamification parity).
+- **Day 207** ✅ — Cross-platform parity QA → `docs/V13_PARITY_QA.md`: shared-backend parity table for recs/referral/gamification, the deliberate differences (Android attribution via `/api/referral` bearer vs web session cookie; stats-card PNG web-only; admin web-only), integrity notes, and an honest verification-status section (gamification verified live; recs seeded; **referral flow still unexercised end to end** — the top v1.3 open item). Web 22 Vitest tests + tsc + lint; Android assembleDebug.
 - **Day 208** — Hardening + Crashlytics review.
 - **Day 209** — Beta + fixes.
 - **Day 210** — **🚀 v1.3 release**; monitoring.
