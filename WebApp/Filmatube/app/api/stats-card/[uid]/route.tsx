@@ -90,6 +90,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ uid: st
         </div>
       </div>
     ),
-    { width: 1200, height: 630 },
+    {
+      width: 1200,
+      height: 630,
+      // Stats change at most daily; cache so a shared card being unfurled by many clients
+      // doesn't re-render the image each time (it's public and CPU-bound).
+      headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" },
+    },
   );
 }
