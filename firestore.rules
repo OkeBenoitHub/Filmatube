@@ -318,7 +318,7 @@ service cloud.firestore {
     // route, via the admin SDK) so a referral can't be fabricated; the referred user and the
     // referrer may read their own.
     match /referrals/{referredId} {
-      allow read: if isSelf(referredId) || (isSignedIn() && resource.data.referrerId == request.auth.uid);
+      allow read: if isAdmin() || isSelf(referredId) || (isSignedIn() && resource.data.referrerId == request.auth.uid);
       allow write: if false;
     }
 

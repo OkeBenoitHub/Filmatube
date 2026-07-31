@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
   const { code } = (await request.json().catch(() => ({}))) as { code?: string };
   if (!code) return NextResponse.json({ error: "Missing code" }, { status: 400 });
 
-  const recorded = await recordReferral(code, user.uid);
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+  const recorded = await recordReferral(code, user.uid, ip);
   return NextResponse.json({ recorded });
 }

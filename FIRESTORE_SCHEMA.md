@@ -375,8 +375,11 @@ data). HomeClient shows `pinned` rows above the personalised rails and unpinned 
 referrerId  string      (the inviter's uid — the "referral code")
 referredId  string      (== the doc id; the new user)
 status      string      ("completed")
+ipHash      string      (salted SHA-256 of the signup IP, 16 hex — a fraud-clustering signal,
+                         never a recoverable address; Day 206)
 createdAt   Timestamp
 ```
+Admins may read all (referral analytics, Day 206); the referred user and referrer read their own.
 Keyed by the **referred** user, so nobody can be referred twice. Written **server-side only**
 (the `/api/auth/session` route, via the admin SDK) on a new user's first sign-up, reading the
 `filmatube.ref` cookie dropped by `/invite/{code}`. Rules block all client writes; the referred

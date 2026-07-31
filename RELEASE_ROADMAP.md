@@ -342,9 +342,9 @@
 - **Day 203** ✅ — Week 29 review → `docs/GROWTH_GAMIFICATION_QA.md`: the full referral → reward → badge → stats loop, the design decisions (referral code = uid, server-only referral writes, streak idempotency via `streakLastDay`, badges as a subcollection, nightly batch over per-write triggers), all 6 v1.3 functions verified deployed in europe-west4, plus an explicit **not-yet-executed** manual checklist and the known gaps (24h badge lag, unconsumed `earlyAccess`, activity-based streaks, fixed weeklyGoal).
 
 ### Week 30 — Referral + Gamification (Web) + **v1.3 Release** (Days 204–210) (W)
-- **Day 204** — Referral on web (link/code, landing attribution, reward grant).
-- **Day 205** — Gamification (badges/stats) on web profile.
-- **Day 206** — Admin: referral analytics + abuse/fraud guard (self-referral, multi-account).
+- **Day 204** ✅ — Referral on web — **already delivered in Days 197–199** (built both platforms together): `/invite/{uid}` landing + cookie, session-route attribution, `/refer` dashboard, `onReferralCreated` reward.
+- **Day 205** ✅ — Gamification on web — **already delivered in Days 200–201**: badge grid + stat tiles on the account page and the public profile `/u/[id]`, plus the shareable stats card.
+- **Day 206** ✅ — Admin `/admin/referrals`: analytics (total / 7d / 30d / referrers / flagged, top referrers, recent table) + **fraud guard**. Self-referral blocked at write time; a hashed signup IP (`ipHash`, salted SHA-256, never stored raw) flags a referrer whose referred accounts cluster on one network (≥2), not lone shared-IP signups. **Revoke** rolls back the reward (referralCount−−, strips Recruiter badge + earlyAccess when it was their last). Pure classifier extracted + 5 Vitest tests; rules give admins read; deployed.
 - **Day 207** — QA (recs + referral + gamification parity).
 - **Day 208** — Hardening + Crashlytics review.
 - **Day 209** — Beta + fixes.

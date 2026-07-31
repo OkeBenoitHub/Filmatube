@@ -5,6 +5,11 @@ import { ensureUserDocument } from "@/lib/user";
 import { recordReferral } from "@/lib/referrals";
 import { REF_COOKIE } from "@/lib/referral-shared";
 
+/** Best-effort client IP from the proxy chain — used only as a hashed fraud signal. */
+function clientIp(request: NextRequest): string | null {
+  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+}
+
 /** POST { idToken } -> sets the session cookie and provisions the user doc. */
 export async function POST(request: NextRequest) {
   const { idToken } = (await request.json().catch(() => ({}))) as { idToken?: string };
@@ -21,7 +26,7 @@ export async function POST(request: NextRequest) {
     // cleared either way so a later sign-in on the same device can't re-trigger attribution.
     const refCode = request.cookies.get(REF_COOKIE)?.value;
     if (refCode) {
-      if (isNew) await recordReferral(refCode, decoded.uid);
+      if (isNew) await recordReferral(refCode, decoded.uid, clientIp(request));
       response.cookies.set(REF_COOKIE, "", { maxAge: 0, path: "/" });
     }
     return response;

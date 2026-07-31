@@ -1,7 +1,15 @@
 import "server-only";
 
+import { createHash } from "node:crypto";
 import { FieldValue } from "firebase-admin/firestore";
 import { getAdminDb } from "@/lib/firebase-admin";
+
+/** Short, salted hash of a signup IP — a clustering signal, not a recoverable address. */
+function hashIp(ip?: string | null): string {
+  if (!ip) return "";
+  const salt = process.env.REFERRAL_IP_SALT ?? "filmatube";
+  return createHash("sha256").update(`${salt}:${ip}`).digest("hex").slice(0, 16);
+}
 
 /**
  * Referrals (v1.3, Day 197).
@@ -27,7 +35,11 @@ export interface Referral {
  * the referrer doesn't exist, or the referred user was already attributed. Server-only; the
  * rules block client writes so a referral can't be fabricated.
  */
-export async function recordReferral(referrerId: string, referredId: string): Promise<boolean> {
+export async function recordReferral(
+  referrerId: string,
+  referredId: string,
+  ip?: string | null,
+): Promise<boolean> {
   if (!referrerId || referrerId === referredId) return false;
   const db = getAdminDb();
 
@@ -41,6 +53,9 @@ export async function recordReferral(referrerId: string, referredId: string): Pr
     referrerId,
     referredId,
     status: "completed",
+    // Hashed so it's a fraud signal (which referrals share a signup network), never a stored
+    // address. Admin analytics flags a referrer whose referred accounts cluster on one hash.
+    ipHash: hashIp(ip),
     createdAt: FieldValue.serverTimestamp(),
   });
   return true;
